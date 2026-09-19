@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   Edit3
 } from 'lucide-react';
+import { resolverAvatarUrl, DEFAULT_AVATAR } from '../../utils/avatarUtils';
 
 export const DashboardView: React.FC = () => {
   const {
@@ -237,8 +238,12 @@ export const DashboardView: React.FC = () => {
               >
                 <div className="flex items-center gap-3">
                   <img
-                    src={worker.avatarUrl || 'https://images.unsplash.com/photo-1594824813590-7815d9b68c2d?w=100&auto=format&fit=crop&q=80'}
+                    src={resolverAvatarUrl(worker.avatarUrl)}
                     alt={worker.nombre}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = DEFAULT_AVATAR;
+                    }}
                     className="w-10 h-10 rounded-full object-cover border border-[#274A3F]/20"
                   />
                   <div>

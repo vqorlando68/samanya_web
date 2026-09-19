@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ShieldCheck
 } from 'lucide-react';
+import { resolverAvatarUrl, DEFAULT_AVATAR } from '../../utils/avatarUtils';
 
 export const ShiftsView: React.FC = () => {
   const { turnos, trabajadores, asignarTrabajadorATurno, activeSede } = useAdmin();
@@ -115,11 +116,12 @@ export const ShiftsView: React.FC = () => {
                   >
                     <div className="flex items-center gap-2.5">
                       <img
-                        src={
-                          worker.avatarUrl ||
-                          'https://images.unsplash.com/photo-1594824813590-7815d9b68c2d?w=100&auto=format&fit=crop&q=80'
-                        }
+                        src={resolverAvatarUrl(worker.avatarUrl)}
                         alt={worker.nombre}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = DEFAULT_AVATAR;
+                        }}
                         className="w-8 h-8 rounded-full object-cover border border-[#DEDBD1]"
                       />
                       <div>

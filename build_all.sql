@@ -2,17 +2,17 @@
 -- PROYECTO: SAMANYA OS
 -- ARCHIVO: build_all.sql
 -- DESCRIPCIÓN: Script maestro orquestador de compilación PL/SQL.
---              Invoca secuencialmente cada uno de los 105 artefactos PL/SQL
+--              Invoca secuencialmente cada uno de los 116 artefactos PL/SQL
 --              en su estricto orden lógico de dependencias utilizando directivas relativas "@@".
 --              Compatible con SQL*Plus, SQLcl, Oracle SQL Developer y scripts de migración.
 --
---              Estructura Arquitectónica de Artefactos (104 objetos):
---              - 1 Función base de fecha (f_fecha_actual.sql)
+--              Estructura Arquitectónica de Artefactos (116 objetos):
+--              - 2 Utilidades base de fecha y transacciones (f_fecha_actual.sql, p_do_commit.sql)
 --              - 91 Paquetes DAO de acceso a datos por PK/ROWID (pkgsmy_*_dao.sql)
 --              - 1 Paquete de utilidades de excepciones y logging (uti_ge_excepciones_pkg.sql)
---              - 5 Paquetes de consultas y filtros (pkgca_residentes, pkgca_smy_usuarios, pkgca_smy_dispositivos_push, pkgca_smy_consentimientos, pkgca_smy_archivos)
---              - 3 Paquetes DML de proceso multi-tabla (pkgcn_auth, pkgcn_consentimientos, pkgcn_archivos)
---              - 3 Paquetes de Lógica de Negocio con COMMIT (pkgln_archivos, pkgln_auth, pkgln_consentimientos)
+--              - 6 Paquetes de consultas, filtros y DML no-PK (pkgca_residentes, pkgca_smy_usuarios, pkgca_smy_dispositivos_push, pkgca_smy_consentimientos, pkgca_smy_archivos, pkgca_smy_residente_acudiente)
+--              - 6 Paquetes DML/JSON de proceso multi-tabla (pkgcn_auth, pkgcn_consentimientos, pkgcn_archivos, pkgcn_superadmin, pkgcn_dashboard_administrador, pkgcn_cuadrantes_turnos)
+--              - 10 Paquetes de Lógica de Negocio con COMMIT (pkgln_archivos, pkgln_auth, pkgln_consentimientos, pkgln_superadmin, pkgln_dashboard_administrador, pkgln_admision_residente, pkgln_gestion_familiares, pkgln_talento_humano, pkgln_cuadrantes_turnos, pkgln_permisos_ausencias)
 --              - 1 Bloque final de verificación y reporte de objetos inválidos en USER_OBJECTS
 -- =============================================================================
 
@@ -28,12 +28,12 @@ SET PAGESIZE 100;
 DECLARE
     v_fecha_bogota VARCHAR2(50);
 BEGIN
-    SELECT TO_CHAR(CAST(SYSTIMESTAMP AT TIME ZONE '-05:00' AS DATE), 'YYYY-MM-DD HH24:MI:SS')
+    SELECT TO_CHAR(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE), 'YYYY-MM-DD HH24:MI:SS')
       INTO v_fecha_bogota
       FROM DUAL;
     DBMS_OUTPUT.PUT_LINE('============================================================================');
     DBMS_OUTPUT.PUT_LINE('  INICIANDO COMPILACIÓN COMPLETA DE ARTEFACTOS PL/SQL - SAMANYA OS');
-    DBMS_OUTPUT.PUT_LINE('  TOTAL OBJETOS A COMPILAR: 105');
+    DBMS_OUTPUT.PUT_LINE('  TOTAL OBJETOS A COMPILAR: 116');
     DBMS_OUTPUT.PUT_LINE('  HORA OFICIAL (Bogotá, Colombia - UTC-5): ' || v_fecha_bogota);
     DBMS_OUTPUT.PUT_LINE('============================================================================');
 END;
@@ -43,14 +43,14 @@ PROMPT
 PROMPT ============================================================================
 PROMPT [1/6] COMPILANDO FUNCIONES Y UTILIDADES BASE
 PROMPT ============================================================================
-PROMPT >> [01/101] Compilando f_fecha_actual.sql...
+PROMPT >> Compilando f_fecha_actual.sql...
 @@f_fecha_actual.sql
-PROMPT >> [02/101] Compilando p_do_commit.sql...
+PROMPT >> Compilando p_do_commit.sql...
 @@p_do_commit.sql
 
 PROMPT
 PROMPT ============================================================================
-PROMPT [2/6] COMPILANDO CAPA DE ACCESO A DATOS (87 PAQUETES DAO)
+PROMPT [2/6] COMPILANDO CAPA DE ACCESO A DATOS (91 PAQUETES DAO)
 PROMPT ============================================================================
 PROMPT >> Compilando pkgsmy_estados_organizaciones_dao.sql...
 @@pkgsmy_estados_organizaciones_dao.sql
@@ -256,32 +256,50 @@ PROMPT >> [94/101] Compilando pkgca_smy_consentimientos.sql...
 @@pkgca_smy_consentimientos.sql
 PROMPT >> [95/101] Compilando pkgca_smy_archivos.sql...
 @@pkgca_smy_archivos.sql
+PROMPT >> Compilando pkgca_smy_residente_acudiente.sql...
+@@pkgca_smy_residente_acudiente.sql
 
 PROMPT
 PROMPT ============================================================================
 PROMPT [5/6] COMPILANDO CAPA DML MULTI-TABLA DE PROCESO (PKGCN)
 PROMPT ============================================================================
-PROMPT >> [96/101] Compilando pkgcn_auth.sql...
+PROMPT >> Compilando pkgcn_auth.sql...
 @@pkgcn_auth.sql
-PROMPT >> [97/101] Compilando pkgcn_consentimientos.sql...
+PROMPT >> Compilando pkgcn_consentimientos.sql...
 @@pkgcn_consentimientos.sql
-PROMPT >> [98/103] Compilando pkgcn_archivos.sql...
+PROMPT >> Compilando pkgcn_archivos.sql...
 @@pkgcn_archivos.sql
-PROMPT >> [99/103] Compilando pkgcn_superadmin.sql...
+PROMPT >> Compilando pkgcn_superadmin.sql...
 @@pkgcn_superadmin.sql
+PROMPT >> Compilando pkgcn_dashboard_administrador.sql...
+@@pkgcn_dashboard_administrador.sql
+PROMPT >> Compilando pkgcn_cuadrantes_turnos.sql...
+@@pkgcn_cuadrantes_turnos.sql
 
 PROMPT
 PROMPT ============================================================================
 PROMPT [6/6] COMPILANDO CAPA DE LÓGICA DE NEGOCIO Y TRANSACCIONES (PKGLN)
 PROMPT ============================================================================
-PROMPT >> [100/103] Compilando pkgln_archivos.sql...
+PROMPT >> Compilando pkgln_archivos.sql...
 @@pkgln_archivos.sql
-PROMPT >> [101/103] Compilando pkgln_auth.sql...
+PROMPT >> Compilando pkgln_auth.sql...
 @@pkgln_auth.sql
-PROMPT >> [102/103] Compilando pkgln_consentimientos.sql...
+PROMPT >> Compilando pkgln_consentimientos.sql...
 @@pkgln_consentimientos.sql
-PROMPT >> [103/103] Compilando pkgln_superadmin.sql...
+PROMPT >> Compilando pkgln_superadmin.sql...
 @@pkgln_superadmin.sql
+PROMPT >> Compilando pkgln_dashboard_administrador.sql...
+@@pkgln_dashboard_administrador.sql
+PROMPT >> Compilando pkgln_admision_residente.sql...
+@@pkgln_admision_residente.sql
+PROMPT >> Compilando pkgln_gestion_familiares.sql...
+@@pkgln_gestion_familiares.sql
+PROMPT >> Compilando pkgln_talento_humano.sql...
+@@pkgln_talento_humano.sql
+PROMPT >> Compilando pkgln_cuadrantes_turnos.sql...
+@@pkgln_cuadrantes_turnos.sql
+PROMPT >> Compilando pkgln_permisos_ausencias.sql...
+@@pkgln_permisos_ausencias.sql
 
 PROMPT
 PROMPT ============================================================================
@@ -309,7 +327,7 @@ BEGIN
 
     IF vn_invalidos = 0 THEN
         DBMS_OUTPUT.PUT_LINE('============================================================================');
-        DBMS_OUTPUT.PUT_LINE('  OK: Todos los 105 objetos PL/SQL se encuentran en estado VALID.');
+        DBMS_OUTPUT.PUT_LINE('  OK: Todos los 116 objetos PL/SQL se encuentran en estado VALID.');
         DBMS_OUTPUT.PUT_LINE('============================================================================');
     ELSE
         DBMS_OUTPUT.PUT_LINE('============================================================================');
@@ -325,13 +343,13 @@ END;
 DECLARE
     v_fecha_fin VARCHAR2(50);
 BEGIN
-    SELECT TO_CHAR(CAST(SYSTIMESTAMP AT TIME ZONE '-05:00' AS DATE), 'YYYY-MM-DD HH24:MI:SS')
+    SELECT TO_CHAR(f_fecha_actual, 'YYYY-MM-DD HH24:MI:SS')
       INTO v_fecha_fin
       FROM DUAL;
     DBMS_OUTPUT.PUT_LINE('============================================================================');
     DBMS_OUTPUT.PUT_LINE('  COMPILACIÓN COMPLETADA - HORA BOGOTÁ (UTC-5): ' || v_fecha_fin);
-    DBMS_OUTPUT.PUT_LINE('  Total objetos orquestados: 105');
-    DBMS_OUTPUT.PUT_LINE('  (2 Utilidades Base + 91 DAOs + 1 Utilidad Logging + 5 Consultas PKGCA + 3 DML Multi-Tabla PKGCN + 3 Lógica de Negocio PKGLN)');
+    DBMS_OUTPUT.PUT_LINE('  Total objetos orquestados: 116');
+    DBMS_OUTPUT.PUT_LINE('  (2 Utilidades Base + 91 DAOs + 1 Utilidad Logging + 6 Consultas/DML PKGCA + 6 DML/JSON Multi-Tabla PKGCN + 10 Lógica de Negocio PKGLN)');
     DBMS_OUTPUT.PUT_LINE('============================================================================');
 END;
 /

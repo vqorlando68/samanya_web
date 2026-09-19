@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 import { X, Save, UserCheck, Briefcase, Phone, Mail, Shield, Camera } from 'lucide-react';
 import { TrabajadorEmpleado } from '../../types';
+import { subirFotoTalentoHumano } from '../../services/driveService';
+import { resolverAvatarUrl, DEFAULT_AVATAR } from '../../utils/avatarUtils';
 
 export const EditWorkerModal: React.FC = () => {
   const {
@@ -9,11 +11,13 @@ export const EditWorkerModal: React.FC = () => {
     setEditingTrabajador,
     isEditTrabajadorOpen,
     setIsEditTrabajadorOpen,
-    actualizarTrabajador
+    actualizarTrabajador,
+    showToast
   } = useAdmin();
 
   const [formData, setFormData] = useState<Partial<TrabajadorEmpleado>>({});
   const [fotoPreview, setFotoPreview] = useState<string | undefined>(undefined);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -36,6 +40,7 @@ export const EditWorkerModal: React.FC = () => {
         avatarUrl: editingTrabajador.avatarUrl
       });
       setFotoPreview(editingTrabajador.avatarUrl);
+      setSelectedFile(null);
     }
   }, [editingTrabajador]);
 
@@ -44,11 +49,13 @@ export const EditWorkerModal: React.FC = () => {
   const handleClose = () => {
     setIsEditTrabajadorOpen(false);
     setEditingTrabajador(null);
+    setSelectedFile(null);
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFotoPreview(reader.result as string);
@@ -61,9 +68,32 @@ export const EditWorkerModal: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      let avatarFinalUrl = fotoPreview;
+
+      // Si se cargó un archivo físico, ejecutar el flujo Google Drive + PKGLN_ARCHIVOS
+      if (selectedFile) {
+        try {
+          const uploadRes = await subirFotoTalentoHumano({
+            file: selectedFile,
+            idUsuario: editingTrabajador.id,
+            idEmpleado: editingTrabajador.id,
+            identificacion: formData.identificacion || editingTrabajador.identificacion,
+            nombreCompleto: `${formData.nombres || editingTrabajador.nombres} ${formData.apellidos || editingTrabajador.apellidos}`.trim()
+          });
+          if (uploadRes.avatarUrl) {
+            avatarFinalUrl = uploadRes.avatarUrl;
+            showToast('Fotografía almacenada en Google Drive y registrada en Oracle exitosamente', 'success');
+          }
+        } catch (uploadErr: any) {
+          console.error('Carga a Google Drive / PKGLN_ARCHIVOS falló:', uploadErr);
+          showToast(`Error al subir fotografía a Drive/Oracle: ${uploadErr.message || uploadErr}`, 'alert');
+          throw uploadErr;
+        }
+      }
+
       await actualizarTrabajador(editingTrabajador.id, {
         ...formData,
-        avatarUrl: fotoPreview
+        avatarUrl: avatarFinalUrl
       });
       handleClose();
     } catch (err) {
@@ -108,8 +138,12 @@ export const EditWorkerModal: React.FC = () => {
             <div className="relative">
               {fotoPreview ? (
                 <img
-                  src={fotoPreview}
+                  src={resolverAvatarUrl(fotoPreview)}
                   alt={editingTrabajador.nombreCompleto}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = DEFAULT_AVATAR;
+                  }}
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-[#274A3F] shadow-xs"
                 />
               ) : (

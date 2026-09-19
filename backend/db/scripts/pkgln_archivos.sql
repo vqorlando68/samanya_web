@@ -50,6 +50,11 @@ AS
         p_identificacion IN VARCHAR2
     ) RETURN VARCHAR2;
 
+    FUNCTION fn_construir_ruta_talento_humano (
+        p_id_usuario     IN NUMBER,
+        p_identificacion IN VARCHAR2
+    ) RETURN VARCHAR2;
+
     FUNCTION fn_resolver_mime_type (
         p_extension IN VARCHAR2
     ) RETURN VARCHAR2;
@@ -124,6 +129,19 @@ AS
         p_id_archivo        IN  smy_archivos.id%TYPE,
         p_id_usuario        IN  smy_usuarios.id%TYPE,
         p_mensaje_resultado OUT VARCHAR2
+    );
+
+    PROCEDURE pr_preparar_carga_foto_talento (
+        pcl_json      IN  CLOB,
+        p_json_salida OUT CLOB
+    );
+
+    PROCEDURE pr_registrar_foto_talento_humano (
+        pcl_json IN CLOB
+    );
+
+    PROCEDURE pr_subir_foto_talento_humano (
+        pcl_json IN CLOB
     );
 
     -- -------------------------------------------------------------------------
@@ -277,6 +295,18 @@ AS
                || fn_construir_ruta_residente(p_id_residente, p_identificacion)
                || '/Documentos';
     END fn_construir_ruta_documentos;
+
+    FUNCTION fn_construir_ruta_talento_humano (
+        p_id_usuario     IN NUMBER,
+        p_identificacion IN VARCHAR2
+    ) RETURN VARCHAR2
+    IS
+    BEGIN
+        RETURN 'Samanya/Talento_humano/'
+               || p_id_usuario
+               || '_'
+               || fn_sanitizar_cadena(p_identificacion);
+    END fn_construir_ruta_talento_humano;
 
     FUNCTION fn_resolver_mime_type (
         p_extension IN VARCHAR2
@@ -676,6 +706,292 @@ AS
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_restaurar_archivo;
+
+    PROCEDURE pr_preparar_carga_foto_talento (
+        pcl_json      IN  CLOB,
+        p_json_salida OUT CLOB
+    )
+    IS
+        v_id_usuario        smy_usuarios.id%TYPE;
+        v_identificacion    VARCHAR2(50);
+        v_nombre_original   VARCHAR2(255);
+        v_id_centro         smy_centros.id%TYPE;
+        v_extension_norm    VARCHAR2(30);
+        v_id_reserva        smy_archivos.id%TYPE;
+        v_nombre_almacenado VARCHAR2(255);
+        v_ruta_relativa     VARCHAR2(500);
+        v_tipo_mime         VARCHAR2(100);
+        vro_usuario         smy_usuarios%ROWTYPE;
+    BEGIN
+        -- 1. Extracción con JSON_VALUE
+        v_id_usuario      := TO_NUMBER(JSON_VALUE(pcl_json, '$.idUsuario'));
+        v_identificacion  := TRIM(JSON_VALUE(pcl_json, '$.identificacion'));
+        v_nombre_original := TRIM(JSON_VALUE(pcl_json, '$.nombreOriginal'));
+        v_id_centro       := TO_NUMBER(JSON_VALUE(pcl_json, '$.idCentro'));
+
+        -- 2. Validaciones de negocio
+        IF v_id_usuario IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20001, 'El ID de usuario (smy_usuarios) es obligatorio para preparar la carga.');
+        END IF;
+
+        IF v_nombre_original IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20002, 'El nombre original de la fotografía es obligatorio.');
+        END IF;
+
+        IF PKGSMY_USUARIOS_DAO.f_existe(v_id_usuario, vro_usuario) = FALSE THEN
+            RAISE_APPLICATION_ERROR(-20003, 'El usuario con ID ' || v_id_usuario || ' no existe en el sistema.');
+        END IF;
+
+        IF v_identificacion IS NULL THEN
+            v_identificacion := vro_usuario.username;
+        END IF;
+
+        -- 3. Normalizar extensión y tipo MIME
+        v_extension_norm := fn_normalizar_extension(v_nombre_original);
+        v_tipo_mime      := fn_resolver_mime_type(v_extension_norm);
+
+        -- 4. Reservar ID de secuencia (asignación directa)
+        v_id_reserva := SEQ_SMY_ARCHIVOS.NEXTVAL;
+
+        -- 5. Generar nombre almacenado con el hash SHA-256 del ID reservado + extensión
+        v_nombre_almacenado := fn_generar_nombre_almacenado(v_id_reserva, v_extension_norm);
+
+        -- 6. Construir ruta relativa estándar: Talento_humano/{id_usuario}_{identificacion}
+        v_ruta_relativa := fn_construir_ruta_talento_humano(v_id_usuario, v_identificacion);
+
+        -- 7. Generar JSON de salida nativo
+        SELECT JSON_OBJECT(
+                   'idReserva'          VALUE v_id_reserva,
+                   'nombreAlmacenado'   VALUE v_nombre_almacenado,
+                   'directorioRaiz'     VALUE 'Samanya/Talento_humano',
+                   'directorioUsuario'  VALUE v_id_usuario || '_' || fn_sanitizar_cadena(v_identificacion),
+                   'rutaRelativa'       VALUE v_ruta_relativa,
+                   'extension'          VALUE v_extension_norm,
+                   'tipoMime'           VALUE v_tipo_mime,
+                   'idCentro'           VALUE NVL(v_id_centro, 1)
+                   RETURNING CLOB
+               )
+          INTO p_json_salida
+          FROM DUAL;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            IF SQLCODE BETWEEN -20999 AND -20001 THEN
+                RAISE;
+            END IF;
+            vro_error.nombre_programa     := 'PKGLN_ARCHIVOS';
+            vro_error.nombre_metodo       := 'PR_PREPARAR_CARGA_FOTO_TALENTO';
+            vro_error.parametros          := SUBSTR(pcl_json, 1, 4000);
+            vro_error.id_usuario_creacion := v_id_usuario;
+            uti_ge_excepciones_pkg.p_grabar_log(vro_error);
+            RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
+    END pr_preparar_carga_foto_talento;
+
+    PROCEDURE pr_registrar_foto_talento_humano (
+        pcl_json IN CLOB
+    )
+    IS
+        v_id                          smy_archivos.id%TYPE;
+        v_id_usuario                  smy_usuarios.id%TYPE;
+        v_id_empleado                 smy_empleados.id%TYPE;
+        v_identificacion              VARCHAR2(50);
+        v_nombre_archivo              smy_archivos.nombre_archivo%TYPE;
+        v_nombre_archivo_almacenado   smy_archivos.nombre_archivo_almacenado%TYPE;
+        v_hash_archivo                smy_archivos.hash_archivo%TYPE;
+        v_ruta_relativa               smy_archivos.ruta_relativa%TYPE;
+        v_ruta_completa               smy_archivos.ruta_completa_almacenamiento%TYPE;
+        v_avatar_url                  smy_usuarios.avatar_url%TYPE;
+        v_extension                   smy_archivos.extension%TYPE;
+        v_tipo_mime                   smy_archivos.tipo_mime%TYPE;
+        v_tamano_bytes                smy_archivos.tamano_bytes%TYPE;
+        v_id_centro                   smy_archivos.id_centro%TYPE;
+        v_id_usuario_creacion         smy_usuarios.id%TYPE;
+        v_json_busqueda               CLOB;
+        v_id_existente                smy_archivos.id%TYPE;
+
+        vro_archivo                   smy_archivos%ROWTYPE;
+        vro_usuario                   smy_usuarios%ROWTYPE;
+        vro_empleado                  smy_empleados%ROWTYPE;
+    BEGIN
+        -- 1. Extracción con JSON_VALUE
+        v_id                        := TO_NUMBER(JSON_VALUE(pcl_json, '$.id'));
+        v_id_usuario                := TO_NUMBER(JSON_VALUE(pcl_json, '$.idUsuario'));
+        v_id_empleado               := TO_NUMBER(JSON_VALUE(pcl_json, '$.idEmpleado'));
+        IF v_id_empleado IS NULL THEN
+            v_id_empleado := TO_NUMBER(JSON_VALUE(pcl_json, '$.idTrabajador'));
+        END IF;
+
+        v_identificacion            := TRIM(JSON_VALUE(pcl_json, '$.identificacion'));
+        v_nombre_archivo            := TRIM(JSON_VALUE(pcl_json, '$.nombreArchivo'));
+        v_nombre_archivo_almacenado := TRIM(JSON_VALUE(pcl_json, '$.nombreArchivoAlmacenado'));
+        v_hash_archivo              := TRIM(JSON_VALUE(pcl_json, '$.hashArchivo'));
+        v_ruta_relativa             := TRIM(JSON_VALUE(pcl_json, '$.rutaRelativa'));
+        v_ruta_completa             := TRIM(JSON_VALUE(pcl_json, '$.rutaCompletaAlmacenamiento'));
+        v_avatar_url                := TRIM(JSON_VALUE(pcl_json, '$.avatarUrl'));
+        v_extension                 := TRIM(JSON_VALUE(pcl_json, '$.extension'));
+        v_tipo_mime                 := TRIM(JSON_VALUE(pcl_json, '$.tipoMime'));
+        v_tamano_bytes              := TO_NUMBER(JSON_VALUE(pcl_json, '$.tamanoBytes'));
+        v_id_centro                 := TO_NUMBER(JSON_VALUE(pcl_json, '$.idCentro'));
+        v_id_usuario_creacion       := TO_NUMBER(JSON_VALUE(pcl_json, '$.idUsuarioCreacion'));
+
+        -- Si no se suministró idUsuario pero sí idEmpleado/idTrabajador, resolverlo vía DAO
+        IF v_id_usuario IS NULL AND v_id_empleado IS NOT NULL THEN
+            IF PKGSMY_EMPLEADOS_DAO.f_existe(v_id_empleado, vro_empleado) = TRUE THEN
+                v_id_usuario := vro_empleado.id_usuario;
+                IF v_identificacion IS NULL THEN
+                    v_identificacion := vro_empleado.identificacion;
+                END IF;
+                IF v_id_centro IS NULL THEN
+                    v_id_centro := vro_empleado.id_centro;
+                END IF;
+            END IF;
+        END IF;
+
+        -- 2. Validaciones obligatorias de negocio
+        IF v_id_usuario IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20001, 'El ID de usuario (smy_usuarios) es obligatorio para registrar la foto.');
+        END IF;
+
+        IF v_avatar_url IS NULL AND v_ruta_completa IS NOT NULL THEN
+            v_avatar_url := v_ruta_completa;
+        ELSIF v_ruta_completa IS NULL AND v_avatar_url IS NOT NULL THEN
+            v_ruta_completa := v_avatar_url;
+        END IF;
+
+        IF v_avatar_url IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20003, 'La URL del avatar es obligatoria para actualizar el perfil.');
+        END IF;
+
+        -- Si el usuario no existe aún en SMY_USUARIOS, se auto-aprovisiona vía DAO
+        IF PKGSMY_USUARIOS_DAO.f_existe(v_id_usuario, vro_usuario) = FALSE THEN
+            vro_usuario.id                             := v_id_usuario;
+            vro_usuario.id_rol                         := 2;
+            vro_usuario.id_tipo_usuario                 := 2;
+            vro_usuario.username                       := LOWER(SUBSTR(NVL(v_identificacion, 'usr_' || v_id_usuario), 1, 30));
+            vro_usuario.email                          := LOWER(NVL(JSON_VALUE(pcl_json, '$.email'), 'colaborador' || v_id_usuario || '@samanyacare.com'));
+            vro_usuario.nombre_completo                := NVL(JSON_VALUE(pcl_json, '$.nombreCompleto'), 'Colaborador ' || v_id_usuario);
+            vro_usuario.telefono                       := NVL(JSON_VALUE(pcl_json, '$.telefono'), '3000000000');
+            vro_usuario.avatar_url                     := v_avatar_url;
+            vro_usuario.id_canal_notif_pref            := 1;
+            vro_usuario.id_estado_usuario              := 1;
+            vro_usuario.fecha_creacion                 := f_fecha_actual;
+            vro_usuario.id_usuario_ultima_modificacion := NVL(v_id_usuario_creacion, v_id_usuario);
+            PKGSMY_USUARIOS_DAO.p_insertar(vro_usuario);
+        END IF;
+
+        IF v_identificacion IS NULL THEN
+            v_identificacion := vro_usuario.username;
+        END IF;
+
+        IF v_nombre_archivo IS NULL THEN
+            v_nombre_archivo := 'foto_talento_' || v_id_usuario || '.jpg';
+        END IF;
+
+        v_extension := fn_normalizar_extension(NVL(v_extension, v_nombre_archivo));
+        IF v_tipo_mime IS NULL THEN
+            v_tipo_mime := fn_resolver_mime_type(v_extension);
+        END IF;
+
+        -- Asignación directa de secuencia si no se pasó reserva previa
+        IF v_id IS NOT NULL THEN
+            vro_archivo.id := v_id;
+        ELSE
+            vro_archivo.id := SEQ_SMY_ARCHIVOS.NEXTVAL;
+        END IF;
+
+        IF v_nombre_archivo_almacenado IS NULL THEN
+            v_nombre_archivo_almacenado := fn_generar_nombre_almacenado(vro_archivo.id, v_extension);
+        END IF;
+
+        IF v_hash_archivo IS NULL THEN
+            v_hash_archivo := SUBSTR(v_nombre_archivo_almacenado, 1, INSTR(v_nombre_archivo_almacenado, '.') - 1);
+            IF v_hash_archivo IS NULL THEN
+                v_hash_archivo := v_nombre_archivo_almacenado;
+            END IF;
+        END IF;
+
+        -- Ruta relativa exacta requerida: Talento_humano/{id_usuario}_{identificacion}
+        IF v_ruta_relativa IS NULL THEN
+            v_ruta_relativa := fn_construir_ruta_talento_humano(v_id_usuario, v_identificacion);
+        END IF;
+
+        -- 3. Asignación del registro en SMY_ARCHIVOS
+        vro_archivo.nombre_archivo               := v_nombre_archivo;
+        vro_archivo.nombre_archivo_almacenado    := v_nombre_archivo_almacenado;
+        vro_archivo.hash_archivo                 := v_hash_archivo;
+        vro_archivo.nombre_directorio_bd         := NULL;
+        vro_archivo.ruta_relativa                := v_ruta_relativa;
+        vro_archivo.ruta_completa_almacenamiento := v_ruta_completa;
+        vro_archivo.extension                    := v_extension;
+        vro_archivo.tipo_mime                    := v_tipo_mime;
+        vro_archivo.tamano_bytes                 := NVL(v_tamano_bytes, 0);
+        vro_archivo.id_clase_archivo             := 5; -- Evidencia / Foto asistencial o clase configurada
+        vro_archivo.id_centro                    := NVL(v_id_centro, 1);
+        vro_archivo.id_residente                 := NULL;
+        vro_archivo.id_estado_archivo            := 1; -- Activo / Disponible
+        vro_archivo.tabla_origen                 := 'SMY_USUARIOS';
+        vro_archivo.id_registro_origen           := v_id_usuario;
+        SELECT JSON_OBJECT(
+                   'modulo'         VALUE 'TALENTO_HUMANO',
+                   'identificacion' VALUE v_identificacion,
+                   'avatarUrl'      VALUE v_avatar_url,
+                   'directorioRaiz' VALUE 'Samanya/Talento_humano'
+                   RETURNING CLOB
+               )
+          INTO vro_archivo.metadatos_json
+          FROM DUAL;
+        vro_archivo.fecha_creacion               := f_fecha_actual;
+        vro_archivo.fecha_ultima_modificacion    := f_fecha_actual;
+        vro_archivo.id_usuario_ultima_modificacion := NVL(v_id_usuario_creacion, v_id_usuario);
+
+        -- Verificar si ya existe registro con este nombre almacenado para evitar ORA-00001 en UQ_SMY_ARC_ALMACENADO
+        SELECT JSON_OBJECT(
+                   'nombreArchivoAlmacenado' VALUE vro_archivo.nombre_archivo_almacenado
+                   RETURNING CLOB
+               )
+          INTO v_json_busqueda
+          FROM DUAL;
+
+        v_id_existente := PKGCA_SMY_ARCHIVOS.fn_obtener_id_por_almacenado(v_json_busqueda);
+
+        IF v_id_existente IS NOT NULL THEN
+            vro_archivo.id := v_id_existente;
+            PKGSMY_ARCHIVOS_DAO.p_actualizar(vro_archivo);
+        ELSE
+            PKGSMY_ARCHIVOS_DAO.p_insertar(vro_archivo);
+        END IF;
+
+        -- 4. Actualización del campo avatar_url en SMY_USUARIOS vía DAO
+        vro_usuario.avatar_url                     := v_avatar_url;
+        vro_usuario.fecha_creacion                 := NVL(vro_usuario.fecha_creacion, f_fecha_actual);
+        vro_usuario.id_usuario_ultima_modificacion := NVL(v_id_usuario_creacion, v_id_usuario);
+        PKGSMY_USUARIOS_DAO.p_actualizar(vro_usuario);
+
+        -- 5. Control transaccional en pkgln_ (COMMIT controlado)
+        p_do_commit('pkgln_archivos.pr_registrar_foto_talento_humano');
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            IF SQLCODE BETWEEN -20999 AND -20001 THEN
+                RAISE;
+            END IF;
+            vro_error.nombre_programa     := 'PKGLN_ARCHIVOS';
+            vro_error.nombre_metodo       := 'PR_REGISTRAR_FOTO_TALENTO_HUMANO';
+            vro_error.parametros          := SUBSTR(pcl_json, 1, 4000);
+            vro_error.id_usuario_creacion := NVL(v_id_usuario_creacion, v_id_usuario);
+            uti_ge_excepciones_pkg.p_grabar_log(vro_error);
+            RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
+    END pr_registrar_foto_talento_humano;
+
+    PROCEDURE pr_subir_foto_talento_humano (
+        pcl_json IN CLOB
+    )
+    IS
+    BEGIN
+        -- Orquesta la persistencia completa delegando la transacción controlada
+        pr_registrar_foto_talento_humano(pcl_json);
+    END pr_subir_foto_talento_humano;
 
     -- =========================================================================
     -- 3. Consultas y representación de datos

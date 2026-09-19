@@ -153,3 +153,44 @@ FECHA Y HORA (Bogotá, Colombia - UTC-5): 2026-09-18 21:38:44
 ================================================================================
 Subir este proyecto al repositorio:
 https://github.com/vqorlando68/samanya_web.git
+
+================================================================================
+FECHA Y HORA (Bogotá, Colombia - UTC-5): 2026-09-18 22:02:36
+================================================================================
+Subir al repositorio cuando lo indique.
+pkgln_archivos tiene toda la logica para subir archivos, deseo que cuando se suba una foto de una persona de talento humano quede almacenada en la ruta de google drive dentro del directorio de la raiz llamado "Talento_humano" en caso de no existir el directorio crearlo, dentro de el un directorio con el id + '_' + identificacion de la persona, el id corresponde al id de smy_usuarios y dentro el archivo con el hash + extension del archivo, debe quedar el registro en la tabla smy_archivos, el avatar debe quedar la url en el campo avatar_url
+
+================================================================================
+FECHA Y HORA (Bogotá, Colombia - UTC-5): 2026-09-18 22:08:34
+================================================================================
+En caso de necesitarse compilar un objeto de la base de datos lo hare de manera manual lo mismo que las pruebas y validaciones.
+Proceder con el plan
+================================================================================
+FECHA Y HORA (Bogotá, Colombia - UTC-5): 2026-09-18 22:19:03
+================================================================================
+Package Body PKGLN_ARCHIVOS compilado
+
+LINE/COL  ERROR
+--------- -------------------------------------------------------------
+743/9     PL/SQL: Statement ignored
+748/57    PLS-00684: tipo de datos no válido para el valor de retorno de JSON
+Errores: comprobar log de compilador
+================================================================================
+FECHA Y HORA (Bogotá, Colombia - UTC-5): 2026-09-18 22:25:30
+================================================================================
+Al cambiar la foto y darle Guardar cambios no subio el archivo al drive ni grabo en la base de datos.
+
+================================================================================
+FECHA Y HORA (Bogotá, Colombia - UTC-5): 2026-09-18 22:51:35
+================================================================================
+El directorio Talento_humano debe estar dentro del directorio Samanya
+
+================================================================================
+FECHA Y HORA (Bogotá, Colombia - UTC-5): 2026-09-18 23:02:32
+================================================================================
+El archivo se grabo bien en las tablas y en el directorio de base de datos pero el avatar no se visualiza en la aplicacion
+
+================================================================================
+FECHA Y HORA (Bogotá, Colombia - UTC-5): 2026-09-18 23:11:23
+================================================================================
+Subir al repositorio y hacer push

@@ -232,5 +232,43 @@ export const adminApi = {
     }) {
       return postToPackage('/pkgsmy_centros_dao/p_actualizar', payload);
     }
+  },
+
+  // 8. Gestión de Archivos y Google Drive (PKGLN_ARCHIVOS)
+  archivos: {
+    async prepararCargaFotoTalento(payload: {
+      idUsuario: number;
+      identificacion: string;
+      nombreOriginal: string;
+      idCentro?: number;
+    }) {
+      return postToPackage('/pkgln_archivos/pr_preparar_carga_foto_talento', payload);
+    },
+
+    async registrarFotoTalentoHumano(payload: {
+      id?: number;
+      idUsuario: number;
+      idEmpleado?: number;
+      idTrabajador?: number;
+      identificacion: string;
+      nombreArchivo: string;
+      nombreArchivoAlmacenado: string;
+      hashArchivo: string;
+      rutaRelativa: string;
+      rutaCompletaAlmacenamiento: string;
+      avatarUrl: string;
+      tamanoBytes?: number;
+      extension?: string;
+      tipoMime?: string;
+      idCentro?: number;
+      idUsuarioCreacion?: number;
+    }) {
+      return postToPackage('/pkgln_archivos/pr_registrar_foto_talento_humano', payload);
+    },
+
+    async subirFotoTalentoHumano(payload: Record<string, any>) {
+      return postToPackage('/pkgln_archivos/pr_subir_foto_talento_humano', payload);
+    }
   }
 };
+

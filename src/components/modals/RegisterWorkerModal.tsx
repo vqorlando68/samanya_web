@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 import { X, UserCheck, Briefcase, Camera } from 'lucide-react';
+import { subirFotoTalentoHumano } from '../../services/driveService';
 
 export const RegisterWorkerModal: React.FC = () => {
   const { isRegisterWorkerOpen, setIsRegisterWorkerOpen, registrarTrabajador, activeSede } = useAdmin();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fotoPreview, setFotoPreview] = useState<string | undefined>(undefined);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -31,6 +33,7 @@ export const RegisterWorkerModal: React.FC = () => {
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFotoPreview(reader.result as string);
@@ -48,6 +51,26 @@ export const RegisterWorkerModal: React.FC = () => {
 
     setIsSubmitting(true);
     try {
+      let avatarFinalUrl = fotoPreview || `https://images.unsplash.com/photo-1594824813590-7815d9b68c2d?w=150&auto=format&fit=crop&q=80`;
+
+      // Si se seleccionó archivo físico, ejecutar flujo Google Drive y PKGLN_ARCHIVOS
+      if (selectedFile) {
+        try {
+          const uploadRes = await subirFotoTalentoHumano({
+            file: selectedFile,
+            idUsuario: Math.floor(Math.random() * 9000) + 1000,
+            identificacion: formData.identificacion,
+            idCentro: activeSede.id,
+            nombreCompleto: `${formData.nombres} ${formData.apellidos}`.trim()
+          });
+          if (uploadRes.avatarUrl) {
+            avatarFinalUrl = uploadRes.avatarUrl;
+          }
+        } catch (uploadErr) {
+          console.warn('Carga a Google Drive / PKGLN_ARCHIVOS en modo local:', uploadErr);
+        }
+      }
+
       await registrarTrabajador({
         idCentro: activeSede.id,
         tipoIdentificacion: formData.tipoIdentificacion,
@@ -64,11 +87,12 @@ export const RegisterWorkerModal: React.FC = () => {
         arl: formData.arl,
         estado: formData.estado,
         turnoHabitual: formData.turnoHabitual,
-        avatarUrl: fotoPreview || `https://images.unsplash.com/photo-1594824813590-7815d9b68c2d?w=150&auto=format&fit=crop&q=80`
+        avatarUrl: avatarFinalUrl
       });
 
       setIsRegisterWorkerOpen(false);
       setFotoPreview(undefined);
+      setSelectedFile(null);
       setFormData({
         tipoIdentificacion: 'CC',
         identificacion: '',

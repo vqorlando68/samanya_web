@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Edit3
 } from 'lucide-react';
+import { resolverAvatarUrl, DEFAULT_AVATAR } from '../../utils/avatarUtils';
 
 export const WorkersView: React.FC = () => {
   const {
@@ -118,11 +119,12 @@ export const WorkersView: React.FC = () => {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <img
-                    src={
-                      worker.avatarUrl ||
-                      'https://images.unsplash.com/photo-1594824813590-7815d9b68c2d?w=100&auto=format&fit=crop&q=80'
-                    }
+                    src={resolverAvatarUrl(worker.avatarUrl)}
                     alt={worker.nombreCompleto}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = DEFAULT_AVATAR;
+                    }}
                     className="w-12 h-12 rounded-xl object-cover border border-[#274A3F]/20 shrink-0"
                   />
                   <div>

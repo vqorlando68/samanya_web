@@ -25,6 +25,11 @@ AS
         p_id_archivo IN smy_archivos.id%TYPE
     ) RETURN CLOB;
 
+    -- Busca el ID de un archivo a partir del nombre_archivo_almacenado para evitar colisiones UQ
+    FUNCTION fn_obtener_id_por_almacenado (
+        pcl_json IN CLOB
+    ) RETURN NUMBER;
+
 END PKGCA_SMY_ARCHIVOS;
 /
 
@@ -108,6 +113,31 @@ AS
         WHEN NO_DATA_FOUND THEN
             RETURN NULL;
     END fn_obtener_archivo_json;
+
+    FUNCTION fn_obtener_id_por_almacenado (
+        pcl_json IN CLOB
+    ) RETURN NUMBER
+    IS
+        v_nombre_almacenado smy_archivos.nombre_archivo_almacenado%TYPE;
+        v_id                smy_archivos.id%TYPE;
+    BEGIN
+        v_nombre_almacenado := TRIM(JSON_VALUE(pcl_json, '$.nombreArchivoAlmacenado'));
+        IF v_nombre_almacenado IS NULL THEN
+            RETURN NULL;
+        END IF;
+
+        BEGIN
+            SELECT a.id
+              INTO v_id
+              FROM smy_archivos a
+             WHERE a.nombre_archivo_almacenado = v_nombre_almacenado
+               AND ROWNUM = 1;
+            RETURN v_id;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                RETURN NULL;
+        END;
+    END fn_obtener_id_por_almacenado;
 
 END PKGCA_SMY_ARCHIVOS;
 /

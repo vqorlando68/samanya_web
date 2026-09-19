@@ -33,3 +33,10 @@ Thumbs.db
 configuraciones.txt
 *.local.*
 *.bak
+
+# Python
+__pycache__/
+*.py[cod]
+scratch/
+*gdrive_credentials.json
+!*gdrive_credentials.example.json

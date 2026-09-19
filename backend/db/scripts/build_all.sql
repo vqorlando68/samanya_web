@@ -2,7 +2,7 @@
 -- PROYECTO: SAMANYA OS
 -- ARCHIVO: build_all.sql
 -- DESCRIPCIÓN: Script maestro orquestador de compilación PL/SQL.
---              Invoca secuencialmente cada uno de los 105 artefactos PL/SQL
+--              Invoca secuencialmente cada uno de los 116 artefactos PL/SQL
 --              en su estricto orden lógico de dependencias utilizando directivas relativas "@@".
 --              Compatible con SQL*Plus, SQLcl, Oracle SQL Developer y scripts de migración.
 --
