@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Secuencia de Petición y Ejecución Arquitectónica PL/SQL - Samanya OS",
+    "output": "public/diagrams/samanya-sequence.html",
+    "viewBox": [1080, 580],
+    "column_fit": "spread",
+    "quality_profile": "standard",
+    "views": [
+      {
+        "id": "http-layer",
+        "label": "Capa HTTP y Auth",
+        "focus": ["user", "web", "api", "auth"],
+        "note": "Recepción de la petición y validación de seguridad de Superusuario."
+      },
+      {
+        "id": "plsql-layer",
+        "label": "Ejecución PL/SQL",
+        "focus": ["api", "pkgln", "dao", "db"],
+        "note": "Paso de parámetros en CLOB JSON, persistencia DAO y commit controlado."
+      }
+    ]
+  },
+  "participants": [
+    { "id": "user", "type": "external", "label": "Superadmin", "sublabel": "Navegador Web" },
+    { "id": "web", "type": "frontend", "label": "Portal Web", "sublabel": "SPA Vanilla JS" },
+    { "id": "api", "type": "backend", "label": "Express API", "sublabel": "Node.js / TS" },
+    { "id": "auth", "type": "security", "label": "JWT Guard", "sublabel": "ID_TIPO = 1" },
+    { "id": "pkgln", "type": "backend", "label": "PKGLN Layer", "sublabel": "Lógica (0 SQL)" },
+    { "id": "dao", "type": "database", "label": "DAOs Layer", "sublabel": "Acceso PK/ROWID" },
+    { "id": "db", "type": "database", "label": "Oracle DB", "sublabel": "Autonomous Cloud" }
+  ],
+  "segments": [
+    { "from": 150, "to": 280, "label": "Petición HTTP y Seguridad" },
+    { "from": 285, "to": 390, "label": "Orquestación PL/SQL y DAOs" },
+    { "from": 395, "to": 495, "label": "Commit y Respuesta JSON" }
+  ],
+  "messages": [
+    { "id": "m1", "from": "user", "to": "web", "y": 160, "label": "Guardar Organización", "variant": "default" },
+    { "id": "m2", "from": "web", "to": "api", "y": 195, "label": "POST /api/organizaciones", "variant": "emphasis" },
+    { "id": "m3", "from": "api", "to": "auth", "y": 230, "label": "Valida JWT (ID=1)", "variant": "security" },
+    { "id": "m4", "from": "auth", "to": "api", "y": 265, "label": "Autorizado", "variant": "return" },
+    { "id": "m5", "from": "api", "to": "pkgln", "y": 300, "label": "pr_guardar_organizacion(CLOB)", "variant": "emphasis" },
+    { "id": "m6", "from": "pkgln", "to": "dao", "y": 335, "label": "pkgsmy_org_dao.p_insertar", "variant": "default" },
+    { "id": "m7", "from": "dao", "to": "db", "y": 370, "label": "DML Mono-Tabla PK/ROWID", "variant": "emphasis" },
+    { "id": "m8", "from": "pkgln", "to": "db", "y": 410, "label": "p_do_commit('pkgln...')", "variant": "emphasis" },
+    { "id": "m9", "from": "pkgln", "to": "api", "y": 445, "label": "CLOB JSON {success: true}", "variant": "return" },
+    { "id": "m10", "from": "api", "to": "web", "y": 480, "label": "201 Created (JSON)", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "web", "from": 190, "to": 490, "type": "frontend" },
+    { "participant": "api", "from": 195, "to": 485, "type": "backend" },
+    { "participant": "auth", "from": 225, "to": 270, "type": "security" },
+    { "participant": "pkgln", "from": 295, "to": 450, "type": "backend" },
+    { "participant": "dao", "from": 330, "to": 380, "type": "database" },
+    { "participant": "db", "from": 365, "to": 420, "type": "database" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Intercambio en CLOB JSON",
+      "items": [
+        "El backend serializa el payload a un parámetro unificado CLOB con formato JSON",
+        "El paquete PKGLN parsea y retorna utilizando la API nativa JSON_OBJECT_T de Oracle"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Cero SQL en Lógica de Negocio",
+      "items": [
+        "Toda sentencia DML es encapsulada estrictamente en paquetes DAO de acceso a datos",
+        "El commit se realiza de manera controlada por medio de p_do_commit con contexto"
+      ]
+    }
+  ]
+}

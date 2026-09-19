@@ -1,0 +1,150 @@
+export type SedeCentro = {
+  id: number;
+  nombre: string;
+  codigo: string;
+  ciudad: string;
+  direccion: string;
+  telefono: string;
+  capacidadTotal: number;
+  esSedePrincipal?: boolean;
+};
+
+export type Residente = {
+  id: number;
+  idCentro: number;
+  codigoExpediente: string;
+  tipoIdentificacion: string;
+  identificacion: string;
+  nombres: string;
+  apellidos: string;
+  nombreCompleto: string;
+  fechaNacimiento: string;
+  edad: number;
+  genero: 'M' | 'F' | 'OTRO';
+  fotoUrl?: string;
+  habitacion: string;
+  cama: string;
+  eps: string;
+  planComplementario?: string;
+  tipoSangre: string;
+  nivelMovilidad: 'Independiente' | 'Asistencia Leve' | 'Asistencia Moderada' | 'Dependiente Total';
+  tipoDieta: 'Normal / General' | 'Blanda' | 'Hiposódica' | 'Diabética' | 'Licuada / Papilla';
+  alertasClinicas?: string;
+  estado: 'Activo' | 'En Observación' | 'Hospitalizado' | 'Egresado';
+  fechaIngreso: string;
+  acudientes: Array<{
+    id: number;
+    nombreCompleto: string;
+    parentesco: string;
+    telefono: string;
+    email: string;
+    esPrincipal: boolean;
+  }>;
+};
+
+export type FamiliarAcudiente = {
+  id: number;
+  tipoIdentificacion: string;
+  identificacion: string;
+  nombres: string;
+  apellidos: string;
+  nombreCompleto: string;
+  telefonoPrincipal: string;
+  telefonoSecundario?: string;
+  email: string;
+  direccion: string;
+  ciudad: string;
+  canalNotificacionPref: 'WhatsApp' | 'Correo' | 'Push App' | 'Llamada';
+  fotoUrl?: string;
+  residentesAsociados: Array<{
+    idResidente: number;
+    nombreResidente: string;
+    parentesco: string;
+    esPrincipal: boolean;
+    autorizadoSalidas: boolean;
+    responsablePago: boolean;
+  }>;
+};
+
+export type TrabajadorEmpleado = {
+  id: number;
+  idCentro: number;
+  tipoIdentificacion: string;
+  identificacion: string;
+  nombres: string;
+  apellidos: string;
+  nombreCompleto: string;
+  cargo: string;
+  area: 'Enfermería' | 'Cuidado Asistencial' | 'Medicina / Especialistas' | 'Nutrición / Cocina' | 'Servicios Generales' | 'Administrativo';
+  unidadAsignada?: string;
+  telefono: string;
+  email: string;
+  fechaContratacion: string;
+  tipoContrato: 'Término Indefinido' | 'Término Fijo' | 'Prestación de Servicios';
+  eps: string;
+  arl: string;
+  estado: 'Activo' | 'En Permiso' | 'Inactivo';
+  avatarUrl?: string;
+  turnoHabitual?: string;
+};
+
+export type TurnoAsignado = {
+  id: number;
+  idCentro: number;
+  nombre: string;
+  tipo: 'Mañana' | 'Tarde' | 'Noche' | '24 Horas';
+  horario: string;
+  fecha: string;
+  coberturaMinimaRequerida: number;
+  trabajadoresAsignados: Array<{
+    idTrabajador: number;
+    nombre: string;
+    cargo: string;
+    area: string;
+    avatarUrl?: string;
+  }>;
+  estado: 'Programado' | 'Activo' | 'Finalizado' | 'Alerta Cobertura';
+  alertas?: string;
+};
+
+export type PermisoAusencia = {
+  id: number;
+  idTrabajador: number;
+  nombreTrabajador: string;
+  area: string;
+  tipo: 'Incapacidad Médica' | 'Vacaciones' | 'Permiso Personal' | 'Licencia';
+  fechaInicio: string;
+  fechaFin: string;
+  motivo: string;
+  soporteUrl?: string;
+  estado: 'Pendiente' | 'Aprobado' | 'Rechazado';
+  comentariosAdmin?: string;
+  fechaSolicitud: string;
+};
+
+export type IncidenteOperativo = {
+  id: number;
+  idCentro: number;
+  idResidente: number;
+  nombreResidente: string;
+  habitacion: string;
+  tipo: 'Caída' | 'Alteración de Signos' | 'Traslado a Urgencias' | 'Comportamiento / Agitación' | 'Otro';
+  severidad: 'Baja' | 'Media' | 'Alta' | 'Crítica';
+  descripcion: string;
+  accionesTomadas: string;
+  reportadoPor: string;
+  fechaHora: string;
+  estado: 'Abierto' | 'En Seguimiento' | 'Cerrado';
+  notificadoFamiliar: boolean;
+};
+
+export type AdminDashboardMetrics = {
+  totalResidentes: number;
+  capacidadTotal: number;
+  porcentajeOcupacion: number;
+  personalActivoTurno: number;
+  tareasCumplimiento: number;
+  incidentesActivos: number;
+  permisosPendientes: number;
+  alertasCriticas: number;
+};

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Ciclo de Vida de Entidades y Cuentas - Samanya OS",
+    "output": "public/diagrams/samanya-lifecycle.html",
+    "viewBox": [1050, 640],
+    "quality_profile": "standard",
+    "views": [
+      {
+        "id": "operational-path",
+        "label": "Ruta Operativa",
+        "focus": ["registrado", "verificado", "activo", "auditado", "historico"],
+        "note": "Ciclo de vida estándar de una entidad desde su registro hasta su archivado histórico."
+      },
+      {
+        "id": "suspension-recovery",
+        "label": "Suspensiones y Bloqueos",
+        "focus": ["activo", "suspendido", "anulado"],
+        "note": "Gestión de bloqueos temporales por el Superadministrador y bajas definitivas."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "main", "label": "Fases Operativas Principales" },
+    { "id": "waiting", "label": "Estados de Espera y Suspensión" },
+    { "id": "terminal", "label": "Estados Finales / Retiro" }
+  ],
+  "states": [
+    { "id": "registrado", "type": "start", "label": "Registrado", "sublabel": "Creación Inicial", "lane": "main", "col": 0, "step": "01", "tag": "Alta" },
+    { "id": "verificado", "type": "active", "label": "En Verificación", "sublabel": "Validación Jurídica / NIT", "lane": "main", "col": 1, "step": "02", "tag": "Revisión" },
+    { "id": "activo", "type": "active", "label": "Activo", "sublabel": "Operación Habilitada", "lane": "main", "col": 2, "step": "03", "tag": "Producción" },
+    { "id": "auditado", "type": "decision", "label": "En Auditoría", "sublabel": "Control de Calidad", "lane": "main", "col": 3, "step": "04", "tag": "Control" },
+    { "id": "historico", "type": "success", "label": "Histórico", "sublabel": "Archivo Permanente", "lane": "main", "col": 4, "step": "05", "tag": "Archivo" },
+    { "id": "pendiente_doc", "type": "waiting", "label": "Pendiente Doc", "sublabel": "Esperando Soportes", "lane": "waiting", "col": 0, "tag": "Espera" },
+    { "id": "suspendido", "type": "waiting", "label": "Suspendido", "sublabel": "Pausa Administrativa", "lane": "waiting", "col": 1, "tag": "Bloqueo" },
+    { "id": "rechazado", "type": "failure", "label": "Rechazado", "sublabel": "No Cumple Criterios", "lane": "terminal", "col": 0, "tag": "Terminal" },
+    { "id": "anulado", "type": "failure", "label": "Inactivo / Baja", "sublabel": "Retiro Definitivo", "lane": "terminal", "col": 1, "tag": "Terminal" }
+  ],
+  "transitions": [
+    { "id": "t1", "from": "registrado", "to": "verificado", "variant": "emphasis" },
+    { "id": "t2", "from": "verificado", "to": "activo", "variant": "emphasis" },
+    { "id": "t3", "from": "activo", "to": "auditado", "variant": "default" },
+    { "id": "t4", "from": "auditado", "to": "historico", "variant": "emphasis" },
+    { "id": "t5", "from": "verificado", "to": "pendiente_doc", "variant": "default", "route": "drop" },
+    { "id": "t6", "from": "activo", "to": "suspendido", "variant": "security", "route": "drop" },
+    { "id": "t7", "from": "pendiente_doc", "to": "rechazado", "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "straight" },
+    { "id": "t8", "from": "suspendido", "to": "anulado", "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "straight" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Integridad de Estados",
+      "items": [
+        "Transiciones de estado gobernadas por tablas maestras SMY_ESTADOS_*",
+        "Ninguna entidad se elimina físicamente; se mantiene la integridad referencial histórica"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Control de Superusuario",
+      "items": [
+        "Capacidad de suspensión inmediata ante anomalías operativas o requerimientos de auditoría",
+        "Trazabilidad completa del usuario responsable de cada cambio de estado"
+      ]
+    }
+  ]
+}

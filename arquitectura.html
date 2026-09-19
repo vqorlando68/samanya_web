@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arquitectura de Sistemas - Samanya OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-sans);
+      background-color: var(--color-page-bg);
+      color: var(--color-text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Bar */
+    .top-header {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid var(--color-border);
+      padding: 0.85rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--color-primary), #055961);
+      color: #FFFFFF;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      font-family: var(--font-family-heading);
+      box-shadow: 0 4px 10px rgba(6, 133, 145, 0.25);
+    }
+
+    .brand-titles h1 {
+      font-family: var(--font-family-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-titles p {
+      font-size: 0.78rem;
+      color: var(--color-text-sec);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .badge-pill {
+      background-color: var(--color-primary-subtle);
+      color: var(--color-primary);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-action {
+      background-color: #FFFFFF;
+      color: var(--color-text-main);
+      border: 1px solid var(--color-border);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-action:hover {
+      background-color: var(--color-card-subtle);
+      border-color: var(--color-text-sec);
+    }
+
+    .btn-primary-action {
+      background-color: var(--color-primary);
+      color: #FFFFFF;
+      border: 1px solid var(--color-primary);
+    }
+
+    .btn-primary-action:hover {
+      background-color: var(--color-primary-hover);
+      color: #FFFFFF;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      width: 100%;
+    }
+
+    /* Diagram Switcher Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 0.5rem;
+      background-color: #FFFFFF;
+      padding: 0.5rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      overflow-x: auto;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 200px;
+      background: transparent;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--font-family-heading);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--color-text-sec);
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .tab-btn:hover {
+      background-color: var(--color-card-subtle);
+      color: var(--color-text-main);
+    }
+
+    .tab-btn.active {
+      background-color: var(--color-primary);
+      color: #FFFFFF;
+      box-shadow: 0 3px 8px rgba(6, 133, 145, 0.3);
+    }
+
+    .tab-btn .tab-icon {
+      font-size: 1.25rem;
+    }
+
+    .tab-btn .tab-meta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-btn .tab-meta small {
+      font-size: 0.7rem;
+      font-weight: 500;
+      opacity: 0.85;
+    }
+
+    /* Main Viewer Card */
+    .viewer-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .viewer-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--color-border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #FAFAFA;
+    }
+
+    .viewer-title h2 {
+      font-family: var(--font-family-heading);
+      font-size: 1.15rem;
+      color: var(--color-text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .viewer-title p {
+      font-size: 0.82rem;
+      color: var(--color-text-sec);
+      margin-top: 0.2rem;
+    }
+
+    .viewer-controls {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Frame Window */
+    .iframe-container {
+      position: relative;
+      width: 100%;
+      height: 720px;
+      background: #12161A;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Technical Details Card */
+    .details-grid {
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      background-color: #FFFFFF;
+    }
+
+    .detail-box {
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+      background: var(--color-card-subtle);
+    }
+
+    .detail-box h4 {
+      font-family: var(--font-family-heading);
+      font-size: 0.95rem;
+      color: var(--color-text-main);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .detail-box ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .detail-box li {
+      font-size: 0.85rem;
+      color: var(--color-text-sec);
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .detail-box li::before {
+      content: "•";
+      color: var(--color-primary);
+      font-weight: bold;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    /* Footer */
+    footer {
+      background-color: #FFFFFF;
+      border-top: 1px solid var(--color-border);
+      padding: 1.25rem 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      margin-top: auto;
+    }
+
+    @media (max-width: 900px) {
+      .top-header {
+        padding: 0.75rem 1rem;
+      }
+      .container {
+        padding: 1rem;
+      }
+      .iframe-container {
+        height: 520px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="top-header">
+    <div class="brand-area">
+      <div class="brand-logo">S</div>
+      <div class="brand-titles">
+        <h1>Centro de Arquitectura de Sistemas <span class="badge-pill">Archify v2.17</span></h1>
+        <p>Especificación visual, interactiva y validada de la plataforma corporativa Samanya OS</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="/" class="btn-action">
+        &larr; Volver al Portal Superadmin
+      </a>
+      <a id="btn-standalone" href="/diagrams/samanya-architecture.html" target="_blank" class="btn-action btn-primary-action">
+        ⤢ Pantalla Completa
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- Switcher Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-type="architecture" data-file="/diagrams/samanya-architecture.html">
+        <span class="tab-icon">🏛️</span>
+        <div class="tab-meta">
+          <span>1. Arquitectura General</span>
+          <small>Type: architecture</small>
+        </div>
+      </button>
+      <button class="tab-btn" data-type="workflow" data-file="/diagrams/samanya-workflow.html">
+        <span class="tab-icon">🔄</span>
+        <div class="tab-meta">
+          <span>2. Flujo de Proceso</span>
+          <small>Type: workflow</small>
+        </div>
+      </button>
+      <button class="tab-btn" data-type="sequence" data-file="/diagrams/samanya-sequence.html">
+        <span class="tab-icon">⏱️</span>
+        <div class="tab-meta">
+          <span>3. Secuencia de Ejecución</span>
+          <small>Type: sequence</small>
+        </div>
+      </button>
+      <button class="tab-btn" data-type="dataflow" data-file="/diagrams/samanya-dataflow.html">
+        <span class="tab-icon">📊</span>
+        <div class="tab-meta">
+          <span>4. Flujo de Datos</span>
+          <small>Type: dataflow</small>
+        </div>
+      </button>
+      <button class="tab-btn" data-type="lifecycle" data-file="/diagrams/samanya-lifecycle.html">
+        <span class="tab-icon">🔁</span>
+        <div class="tab-meta">
+          <span>5. Ciclo de Vida</span>
+          <small>Type: lifecycle</small>
+        </div>
+      </button>
+    </nav>
+
+    <!-- Viewer Card -->
+    <section class="viewer-card">
+      <div class="viewer-header">
+        <div class="viewer-title">
+          <h2 id="viewer-title-text">🏛️ Arquitectura Corporativa Samanya OS</h2>
+          <p id="viewer-desc-text">Topología global de componentes, límites de seguridad y capas Oracle PL/SQL</p>
+        </div>
+        <div class="viewer-controls">
+          <button id="btn-reload-frame" class="btn-action" title="Recargar diagrama interactivo">↻ Recargar</button>
+          <a id="btn-external-link" href="/diagrams/samanya-architecture.html" target="_blank" class="btn-action">Abrir pestaña independiente</a>
+        </div>
+      </div>
+
+      <!-- Iframe Area -->
+      <div class="iframe-container">
+        <iframe id="diagram-frame" src="/diagrams/samanya-architecture.html" title="Diagrama Archify"></iframe>
+      </div>
+
+      <!-- Technical Details Section -->
+      <div id="technical-details" class="details-grid">
+        <!-- Rellenado dinámicamente según la pestaña activa -->
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    Samanya OS &copy; 2026 &bull; Plataforma Especializada en Gestión y Cuidado Integral Geriátrico &bull; Cumplimiento Estándar Oracle PL/SQL
+  </footer>
+
+  <script>
+    const diagramMeta = {
+      architecture: {
+        title: "🏛️ Arquitectura Corporativa Samanya OS",
+        desc: "Topología integral: Frontend SPA, REST API Express, Pool Oracle Wallet y capas PL/SQL (PKGLN, PKGCN, DAOs).",
+        file: "/diagrams/samanya-architecture.html",
+        details: [
+          {
+            title: "Capa de Lógica de Negocio (PKGLN)",
+            items: [
+              "Regla mandatoria: CERO sentencias SQL directas (SELECT, INSERT, UPDATE, DELETE).",
+              "Intercambio unificado de parámetros mediante CLOB con formato JSON nativo.",
+              "Orquestación transaccional con commit centralizado vía p_do_commit('<paquete>.<metodo>')."
+            ]
+          },
+          {
+            title: "Capa Multi-Tabla (PKGCN)",
+            items: [
+              "Consultas complejas y reportes que involucran múltiples tablas en una misma sentencia.",
+              "Uso obligatorio de sintaxis relacional clásica con comas en el FROM y (+) en el WHERE (prohibida la palabra JOIN).",
+              "Generación nativa de JSON mediante JSON_OBJECT y JSON_ARRAYAGG con RETURNING CLOB."
+            ]
+          },
+          {
+            title: "Capa de Acceso a Datos (DAOs)",
+            items: [
+              "Plantilla oficial de 18 métodos exclusivos por PK/ROWID sin COMMIT ni ROLLBACK.",
+              "Persistencia atómica de las 15 tablas maestras y entidades principales del dominio.",
+              "Asignación de secuencias por variable directa (SEQ_<TABLA>.NEXTVAL), sin SELECT FROM DUAL."
+            ]
+          }
+        ]
+      },
+      workflow: {
+        title: "🔄 Flujo de Aprovisionamiento y Gestión de Centros",
+        desc: "Proceso de alta de organizaciones, validación de perfil superadministrador y commit con auditoría.",
+        file: "/diagrams/samanya-workflow.html",
+        details: [
+          {
+            title: "Gobernanza y Aprobación",
+            items: [
+              "Verificación estricta de ID_TIPO_USUARIO = 1 para el acceso a funciones nucleares.",
+              "Aislamiento de permisos y trazabilidad de cada acción de creación o edición."
+            ]
+          },
+          {
+            title: "Integridad de Negocio",
+            items: [
+              "Validación de unicidad de NIT / Identificación tributaria antes de registrar la organización.",
+              "Inserción segura en PKGSMY_CENTROS_DAO con asignación de capacidad de residentes."
+            ]
+          },
+          {
+            title: "Recuperación de Excepciones",
+            items: [
+              "Captura de excepciones en bloque WHEN OTHERS con ROLLBACK total de la transacción.",
+              "Registro en SMY_ERRORES vía uti_ge_excepciones_pkg.p_grabar_log para soporte técnico."
+            ]
+          }
+        ]
+      },
+      sequence: {
+        title: "⏱️ Secuencia de Petición y Ejecución Arquitectónica PL/SQL",
+        desc: "Traza temporal paso a paso desde el clic del usuario hasta la respuesta JSON con estado 201 Created.",
+        file: "/diagrams/samanya-sequence.html",
+        details: [
+          {
+            title: "Paso de Parámetros en CLOB JSON",
+            items: [
+              "El controlador Express recibe la petición y delega al servicio superadmin.service.ts.",
+              "El payload se transforma a string JSON y se envía como parámetro de entrada/salida tipo CLOB."
+            ]
+          },
+          {
+            title: "Procesamiento con JSON_OBJECT_T",
+            items: [
+              "PKGLN parsea el CLOB utilizando la API orientada a objetos JSON_OBJECT_T de Oracle.",
+              "Se extraen tipos nativos (get_string, get_number) sin necesidad de tablas temporales."
+            ]
+          },
+          {
+            title: "Retorno y Feedback UI",
+            items: [
+              "La base de datos devuelve un objeto JSON estructurado con { success: true, id: ... }.",
+              "El frontend actualiza las tablas del DOM dinámicamente y emite notificaciones Toast."
+            ]
+          }
+        ]
+      },
+      dataflow: {
+        title: "📊 Flujo de Datos y Transaccionalidad en Samanya OS",
+        desc: "Pipeline de datos por etapas: Fuentes, API Gateway, Capas PL/SQL, Persistencia y Bitácoras.",
+        file: "/diagrams/samanya-dataflow.html",
+        details: [
+          {
+            title: "Transformación de Datos",
+            items: [
+              "Los datos fluyen de JSON plano a CLOB estructurado y luego a registros %ROWTYPE tipados.",
+              "Eliminación de conversiones innecesarias gracias al soporte nativo de Oracle 19c+."
+            ]
+          },
+          {
+            title: "Seguridad y Cifrado",
+            items: [
+              "Contraseñas con hashing seguro bcrypt (cost factor 10) procesadas antes de persistir.",
+              "Parámetros confidenciales con flag ES_ENCRIPTADO = 'S' protegidos en SMY_PARAMETROS."
+            ]
+          },
+          {
+            title: "Auditoría en Tiempo Real",
+            items: [
+              "Cada operación exitosa dispara el registro de trazabilidad en SMY_AUDITORIA_ACCESOS.",
+              "Conservación del usuario, fecha y contexto de la ejecución."
+            ]
+          }
+        ]
+      },
+      lifecycle: {
+        title: "🔁 Ciclo de Vida de Entidades y Cuentas",
+        desc: "Transiciones de estado: Registrado, Verificación, Activo, Auditoría, Histórico y Suspensión.",
+        file: "/diagrams/samanya-lifecycle.html",
+        details: [
+          {
+            title: "Estados de Negocio (Tablas Maestras)",
+            items: [
+              "Estados normalizados en SMY_ESTADOS_ORGANIZACIONES, SMY_ESTADOS_USUARIOS, etc.",
+              "Garantía de integridad referencial: ninguna entidad operativa se elimina físicamente."
+            ]
+          },
+          {
+            title: "Manejo de Suspensiones",
+            items: [
+              "Capacidad de suspensión inmediata por parte del Superadministrador ante irregularidades.",
+              "Ruta de reactivación controlada o baja definitiva pasando a estado histórico inactivo."
+            ]
+          },
+          {
+            title: "Auditoría de Cambios de Estado",
+            items: [
+              "Campos obligatorios fecha_creacion y id_usuario_ultima_modificacion en todas las tablas.",
+              "Historial inalterable de auditoría para trazabilidad clínica y administrativa."
+            ]
+          }
+        ]
+      }
+    };
+
+    function renderDetails(type) {
+      const data = diagramMeta[type];
+      if (!data) return;
+
+      const container = document.getElementById('technical-details');
+      container.innerHTML = data.details.map(box => `
+        <div class="detail-box">
+          <h4>${box.title}</h4>
+          <ul>
+            ${box.items.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+    }
+
+    function getResolvedPath(file) {
+      if (window.location.protocol === 'file:') {
+        return './public' + file;
+      }
+      return file;
+    }
+
+    function switchDiagram(type) {
+      const data = diagramMeta[type];
+      if (!data) return;
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-type') === type);
+      });
+
+      const resolvedPath = getResolvedPath(data.file);
+
+      document.getElementById('viewer-title-text').textContent = data.title;
+      document.getElementById('viewer-desc-text').textContent = data.desc;
+      document.getElementById('diagram-frame').src = resolvedPath;
+      document.getElementById('btn-standalone').href = resolvedPath;
+      document.getElementById('btn-external-link').href = resolvedPath;
+
+      renderDetails(type);
+    }
+
+    // Eventos
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const type = btn.getAttribute('data-type');
+        switchDiagram(type);
+      });
+    });
+
+    document.getElementById('btn-reload-frame').addEventListener('click', () => {
+      const frame = document.getElementById('diagram-frame');
+      frame.src = frame.src;
+    });
+
+    // Iniciar con arquitectura
+    switchDiagram('architecture');
+  </script>
+</body>
+</html>

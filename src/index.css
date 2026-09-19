@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+:root {
+  --font-serif: 'Fraunces', serif;
+  --font-sans: 'Source Sans 3', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  --forest: #274a3f;
+  --forest-deep: #182f28;
+  --ochre: #b3803f;
+  --ochre-soft: #dcb87f;
+  --admin-color: #7a4f9e;
+  --empleado-color: #2c7a6b;
+  --paper: #f7f6f2;
+  --paper-card: #ffffff;
+  --paper-soft: #ece7db;
+  --line-color: #dedbd1;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--paper);
+  color: #26241f;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, .font-serif-heading {
+  font-family: var(--font-serif);
+}
+
+.font-mono-code {
+  font-family: var(--font-mono);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1ede3;
+}
+::-webkit-scrollbar-thumb {
+  background: #cdc4ac;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b3803f;
+}
+
+/* Glass & Card effects */
+.admin-card {
+  background: #ffffff;
+  border: 1px solid var(--line-color);
+  border-radius: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+.admin-card:hover {
+  border-color: #b3803f;
+}
+
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+  background-color: rgba(24, 47, 40, 0.45);
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Flujo de Datos y Transaccionalidad - Samanya OS",
+    "output": "public/diagrams/samanya-dataflow.html",
+    "viewBox": [1080, 580],
+    "quality_profile": "standard",
+    "views": [
+      {
+        "id": "ingest-pipeline",
+        "label": "Pipeline de Ingesta",
+        "focus": ["web_ui", "api_route", "pkgln_node", "dao_node", "audit_node"],
+        "note": "Paso de datos desde el navegador hasta la persistencia y auditoría de la transacción."
+      },
+      {
+        "id": "multi-table-flow",
+        "label": "Consultas y Tablas Maestras",
+        "focus": ["pkgln_node", "pkgcn_node", "oracle_tablas"],
+        "note": "Construcción nativa de JSON agregando múltiples tablas sin JOIN."
+      }
+    ]
+  },
+  "stages": [
+    { "label": "Clientes" },
+    { "label": "API Gateway" },
+    { "label": "Capa PL/SQL" },
+    { "label": "Persistencia" },
+    { "label": "Auditoría / Logs" }
+  ],
+  "nodes": [
+    { "id": "web_ui", "type": "frontend", "label": "Portal Web", "sublabel": "Superadmin UI", "stage": 0, "row": 0, "tag": "Browser" },
+    { "id": "auth_agent", "type": "security", "label": "Cliente Auth", "sublabel": "Bearer JWT Token", "stage": 0, "row": 1, "tag": "ID=1" },
+    { "id": "api_route", "type": "backend", "label": "Controlador REST", "sublabel": "Express Route / Service", "stage": 1, "row": 0, "tag": "Node.js" },
+    { "id": "pool_transit", "type": "cloud", "label": "Pool Oracle", "sublabel": "node-oracledb Wallet", "stage": 1, "row": 1, "tag": "mTLS" },
+    { "id": "pkgln_node", "type": "backend", "label": "PKGLN Orquestador", "sublabel": "JSON_OBJECT_T (0 SQL)", "stage": 2, "row": 0, "tag": "CLOB RPC" },
+    { "id": "pkgcn_node", "type": "backend", "label": "PKGCN Multi-Tabla", "sublabel": "Formateo Nativo JSON", "stage": 2, "row": 1, "tag": "Sin JOIN" },
+    { "id": "dao_node", "type": "database", "label": "DAOs Entidad", "sublabel": "18 Métodos Estándar", "stage": 3, "row": 0, "tag": "PK/ROWID" },
+    { "id": "oracle_tablas", "type": "database", "label": "Tablas Relacionales", "sublabel": "Esquema SAMANYA", "stage": 3, "row": 1, "tag": "15 Maestras" },
+    { "id": "audit_node", "type": "database", "label": "Auditoría Accesos", "sublabel": "SMY_AUDITORIA_ACCESOS", "stage": 4, "row": 0, "tag": "Trazabilidad" },
+    { "id": "error_log", "type": "security", "label": "Bitácora Errores", "sublabel": "SMY_ERRORES Autonomous", "stage": 4, "row": 1, "tag": "Soporte" }
+  ],
+  "flows": [
+    { "from": "web_ui", "to": "api_route", "label": "HTTP Payload", "classification": "JSON", "route": "straight", "variant": "emphasis" },
+    { "from": "auth_agent", "to": "pool_transit", "label": "Token Claims", "classification": "Validación", "route": "straight", "variant": "security" },
+    { "from": "api_route", "to": "pkgln_node", "label": "Execute RPC", "classification": "CLOB IN/OUT", "route": "straight", "variant": "emphasis" },
+    { "from": "pkgln_node", "to": "pkgcn_node", "label": "Query Multi-Tabla", "classification": "JSON Nativo", "fromSide": "bottom", "toSide": "top", "route": "straight", "labelDy": 24 },
+    { "from": "pkgln_node", "to": "dao_node", "label": "Persistencia", "classification": "%ROWTYPE", "route": "straight", "variant": "emphasis" },
+    { "from": "dao_node", "to": "oracle_tablas", "label": "DML Relacional", "classification": "PK/ROWID", "fromSide": "bottom", "toSide": "top", "route": "straight", "labelDy": 24 },
+    { "from": "dao_node", "to": "audit_node", "label": "p_do_commit", "classification": "Auditoría", "route": "straight", "variant": "emphasis" },
+    { "from": "oracle_tablas", "to": "error_log", "label": "Excepción", "classification": "WHEN OTHERS", "route": "straight", "variant": "security" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Pipeline de Datos Unificado",
+      "items": [
+        "Transmisión de información en CLOB conteniendo estructuras JSON nativas",
+        "Sin mapeos ORM pesados: interacción directa vía procedimientos almacenados en Oracle"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Gobernanza y Trazabilidad",
+      "items": [
+        "Inmutabilidad del registro de auditoría de accesos para el superusuario",
+        "Aislamiento transaccional completo en transacciones autónomas de error"
+      ]
+    }
+  ]
+}

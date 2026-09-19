@@ -1,0 +1,57 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Flujo de Aprovisionamiento y Gestión de Centros - Samanya OS",
+    "output": "public/diagrams/samanya-workflow.html",
+    "quality_profile": "standard",
+    "views": [
+      {
+        "id": "main-flow",
+        "label": "Flujo Exitoso",
+        "focus": ["login", "valida_jwt", "ingreso_org", "pkgln_superadmin", "dao_insert", "oracle_commit"],
+        "note": "Ruta crítica desde el ingreso del Superadministrador hasta el commit en Oracle."
+      },
+      {
+        "id": "exception-flow",
+        "label": "Ruta de Excepción",
+        "focus": ["pkgln_superadmin", "dao_insert", "rollback_node"],
+        "note": "Captura en WHEN OTHERS, ejecución de ROLLBACK y registro en SMY_ERRORES."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "user", "label": "Superadministrador (Web Portal)" },
+    { "id": "security", "label": "Políticas y Seguridad", "variant": "exception" },
+    { "id": "backend", "label": "Servicios API (Node.js)" },
+    { "id": "database", "label": "Capa PL/SQL y Motor Oracle" }
+  ],
+  "phases": [
+    { "id": "intake", "label": "Ingreso y Autenticación", "fromCol": 0, "toCol": 1 },
+    { "id": "processing", "label": "Orquestación y Reglas de Negocio", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "persistence", "label": "Persistencia y Auditoría", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": ["login", "valida_jwt", "ingreso_org", "pkgln_superadmin", "dao_insert", "oracle_commit"],
+  "nodes": [
+    { "id": "login", "lane": "user", "col": 0, "type": "frontend", "label": "Login Superadmin", "sublabel": "Credenciales de Acceso", "width": 140 },
+    { "id": "valida_jwt", "lane": "security", "col": 1, "type": "security", "label": "Validación de Perfil", "sublabel": "ID_TIPO_USUARIO = 1", "tag": "JWT Guard", "width": 140 },
+    { "id": "ingreso_org", "lane": "user", "col": 2, "type": "frontend", "label": "Formulario Centro", "sublabel": "Datos Sede / Capacidad", "width": 140 },
+    { "id": "pkgln_superadmin", "lane": "backend", "col": 3, "type": "backend", "label": "PKGLN_SUPERADMIN", "sublabel": "pr_guardar_centro (0 SQL)", "tag": "CLOB JSON", "width": 150 },
+    { "id": "dao_insert", "lane": "database", "col": 4, "type": "database", "label": "PKGSMY_CENTROS_DAO", "sublabel": "p_insertar / SEQ.NEXTVAL", "tag": "DAO Oficial", "width": 150 },
+    { "id": "oracle_commit", "lane": "database", "col": 5, "type": "database", "label": "Base de Datos Oracle", "sublabel": "p_do_commit + Auditoría", "tag": "Commit", "width": 140 },
+    { "id": "rollback_node", "lane": "security", "col": 4, "type": "security", "label": "Gestión Excepciones", "sublabel": "ROLLBACK + Log Error", "tag": "WHEN OTHERS", "width": 140 }
+  ],
+  "edges": [
+    { "id": "e1", "from": "login", "to": "valida_jwt", "label": "Credenciales" },
+    { "id": "e2", "from": "valida_jwt", "to": "ingreso_org", "label": "Token Válido", "variant": "emphasis" },
+    { "id": "e3", "from": "ingreso_org", "to": "pkgln_superadmin", "label": "POST /api/centros" },
+    { "id": "e4", "from": "pkgln_superadmin", "to": "dao_insert", "label": "DAO.p_insertar", "variant": "emphasis" },
+    { "id": "e5", "from": "dao_insert", "to": "oracle_commit", "label": "Confirmación", "variant": "emphasis" },
+    { "id": "e6", "from": "dao_insert", "to": "rollback_node", "label": "Error Transacción", "variant": "security" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Gobernanza de Acceso", "items": ["Exclusivo para Superusuarios con ID_TIPO_USUARIO = 1", "Protección de rutas frontend y backend mediante verificación JWT"] },
+    { "dot": "amber", "title": "Estándar Arquitectónico PL/SQL", "items": ["PKGLN orquesta el proceso sin ninguna sentencia SQL directa", "Inserción efectuada mediante paquetes DAO oficiales"] },
+    { "dot": "rose", "title": "Manejo de Errores", "items": ["Captura WHEN OTHERS con ROLLBACK total", "Registro en SMY_ERRORES vía uti_ge_excepciones_pkg.p_grabar_log"] }
+  ]
+}

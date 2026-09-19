@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auditoría de Componentes React & TypeScript: SAMANYA vs Diseñador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0B0F17;
+      --bg-card: #151D2C;
+      --bg-card-sub: #1E293B;
+      --border-color: #2E3E56;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --primary: #068591;
+      --primary-light: #14B8C7;
+      --accent: #F59E0B;
+      --danger: #EF4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --success: #10B981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --warning: #F59E0B;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --info: #3B82F6;
+      --info-bg: rgba(59, 130, 246, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 32px 20px;
+    }
+
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+
+    /* Header Banner */
+    .header-banner {
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 36px 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-banner::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(20, 184, 199, 0.15) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .badge-alert {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-info {
+      background: var(--info-bg);
+      color: var(--info);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-success {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-warning {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #FFFFFF;
+      margin-bottom: 10px;
+    }
+
+    .header-subtitle {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 900px;
+      margin-bottom: 20px;
+    }
+
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      font-size: 13px;
+    }
+
+    .metadata-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metadata-label {
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .metadata-value {
+      color: #E2E8F0;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    /* KPIs */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 18px;
+      margin-bottom: 36px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .kpi-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .kpi-number {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .kpi-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Section Cards */
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 30px;
+      margin-bottom: 36px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: var(--bg-card-sub);
+      color: #E2E8F0;
+      font-weight: 600;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: #CBD5E1;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+
+    /* Risk boxes */
+    .risk-box {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 18px;
+    }
+
+    .risk-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #F87171;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .risk-desc {
+      font-size: 14px;
+      color: #E2E8F0;
+      line-height: 1.6;
+    }
+
+    .risk-mitigation {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(239, 68, 68, 0.3);
+      font-size: 13px;
+      color: #FCA5A5;
+    }
+
+    /* Tabs & Filters */
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: var(--bg-card-sub);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover, .tab-btn.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary-light);
+    }
+
+    /* Code & Diff styling */
+    .diff-container {
+      background: #0D1117;
+      border: 1px solid #30363D;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .diff-header {
+      background: #161B22;
+      padding: 12px 18px;
+      border-bottom: 1px solid #30363D;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .diff-body {
+      max-height: 380px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      padding: 12px 0;
+    }
+
+    .diff-line {
+      padding: 2px 18px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .diff-add {
+      background-color: rgba(46, 160, 67, 0.18);
+      color: #7EE787;
+      border-left: 3px solid #3FB950;
+    }
+
+    .diff-del {
+      background-color: rgba(248, 81, 73, 0.18);
+      color: #FFA198;
+      border-left: 3px solid #F85149;
+    }
+
+    .diff-chunk {
+      background-color: rgba(56, 139, 253, 0.1);
+      color: #79C0FF;
+      font-weight: 600;
+    }
+
+    .diff-context {
+      color: #8B949E;
+    }
+
+    /* Action plan pills */
+    .plan-card {
+      background: var(--bg-card-sub);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .priority-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .p-green {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+
+    .p-yellow {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+
+    .p-red {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 30px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border-color);
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header Banner -->
+    <div class="header-banner">
+      <div class="badge-pill badge-alert">
+        <span>⚠</span> AUDITORÍA TÉCNICA DE FUSIÓN (MERGE AUDIT)
+      </div>
+      <h1>Auditoría Integral de Componentes React & TypeScript</h1>
+      <p class="header-subtitle">
+        Análisis comparativo exhaustivo entre el proyecto activo de producción (Workspace) y la entrega actualizada por el diseñador (Carpeta Externa). Evaluación de interfaces, firmas de props, alteraciones en jerarquía JSX, integridad de lógica de negocio y plan de acción para fusión controlada.
+      </p>
+
+      <div class="metadata-grid">
+        <div class="metadata-item">
+          <span class="metadata-label">Proyecto Base (Workspace):</span>
+          <span class="metadata-value">C:\Repositorios\SAMANYA\src (Rama dev)</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Proyecto Diseñador (Externo):</span>
+          <span class="metadata-value">C:\Repositorios\Personal\samanya_30-08-26\src</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Fecha de Auditoría:</span>
+          <span class="metadata-value">11 de Septiembre de 2026</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Evaluación de Riesgo de Sobrescritura:</span>
+          <span class="metadata-value" style="color: #F87171;">CRÍTICO (Riesgo de Regresión Severa)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Archivos Auditados</div>
+        <div class="kpi-number" style="color: #38BDF8;">38</div>
+        <div class="kpi-desc">Total componentes y módulos analizados</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Nuevos Componentes</div>
+        <div class="kpi-number" style="color: #34D399;">11</div>
+        <div class="kpi-desc">Módulo Admin, Modales, Formatters</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Archivos Modificados</div>
+        <div class="kpi-number" style="color: #FBBF24;">25</div>
+        <div class="kpi-desc">Requieren análisis de fusión (Merge)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Exclusivos Workspace</div>
+        <div class="kpi-number" style="color: #F87171;">2</div>
+        <div class="kpi-desc">api.ts (Oracle) & DarkModeToggle.tsx</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">100% Idénticos</div>
+        <div class="kpi-number" style="color: #A78BFA;">11</div>
+        <div class="kpi-desc">Sin diferencias de código ni diseño</div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1: MATRIZ DE ARCHIVOS Y COMPONENTES -->
+    <div class="section-card">
+      <h2 class="section-title">
+        <span>1.</span> Matriz de Archivos y Componentes
+      </h2>
+      <p class="section-desc">
+        Inventario exhaustivo de la totalidad del árbol de código fuente comparando ambas fuentes.
+      </p>
+
+      <h3 style="font-size: 16px; margin: 20px 0 12px; color: #34D399;">Componentes Nuevos Creados por el Diseñador (11)</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Componente / Archivo</th>
+              <th>Propósito / Rol</th>
+              <th>Dependencias Clave</th>
+              <th>Viabilidad de Copia Directa</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/RoleDropdownSelector.tsx</td>
+              <td>Selector desplegable para alternar roles (Cuidador, Familiar, Dueño, Admin)</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/TaskDetailModal.tsx</td>
+              <td>Modal de detalle específico para visualizar y gestionar una tarea individual</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/admin/AdminBottomNav.tsx</td>
+              <td>Barra de navegación inferior exclusiva para el rol Administrador/Dueño (4 pestañas)</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/admin/AdminHomeScreen.tsx</td>
+              <td>Dashboard de métricas, resumen de incidencias, turnos y personal para la administración</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/admin/AdminProfileScreen.tsx</td>
+              <td>Gestión de perfil administrativo, configuración de sede y cierre de sesión</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/admin/AdminShiftDetailModal.tsx</td>
+              <td>Modal para auditar y gestionar el personal asignado a un turno específico</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/admin/AdminShiftsScreen.tsx</td>
+              <td>Gestión de cuadrantes, turnos activos, personal de guardia y relevos</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/admin/AdminTaskDetailModal.tsx</td>
+              <td>Auditoría administrativa de tareas con trazabilidad y estado de cumplimiento</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/admin/AdminTasksScreen.tsx</td>
+              <td>Supervisión global de tareas de la residencia con filtros por estado, sede y fecha</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">components/admin/SedeSelectorChip.tsx</td>
+              <td>Selector interactivo de sede (Central, Norte, etc.) en el header de navegación</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #34D399; font-weight: 600;">utils/taskFormatters.ts</td>
+              <td>Utilidades de formateo de títulos, categorías visuales, estados de vencimiento y cálculo de horas</td>
+              <td class="mono">AppContext, types, lucide-react</td>
+              <td><span class="badge-pill badge-success">Segura (100%)</span></td>
+            </tr>
+    
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size: 16px; margin: 24px 0 12px; color: #F87171;">Componentes Exclusivos de SAMANYA (Ausentes en Diseñador) (2)</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Componente / Archivo</th>
+              <th>Impacto en el Negocio</th>
+              <th>Consecuencia si se Sobrescribe</th>
+              <th>Acción Requerida</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td class="mono" style="color: #F87171; font-weight: 600;">components/DarkModeToggle.tsx</td>
+              <td>Componente interactivo accesible para alternar modo claro/oscuro con persistencia y animación</td>
+              <td style="color: #FCA5A5;">Pérdida inmediata de integración con BD Oracle o pérdida de Dark Mode</td>
+              <td><span class="badge-pill badge-alert">Conservar Intacto</span></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="color: #F87171; font-weight: 600;">services/api.ts</td>
+              <td>Capa de comunicación REST con backend Node/Express y Base de Datos Oracle (Login, Tareas, Bitácora)</td>
+              <td style="color: #FCA5A5;">Pérdida inmediata de integración con BD Oracle o pérdida de Dark Mode</td>
+              <td><span class="badge-pill badge-alert">Conservar Intacto</span></td>
+            </tr>
+    
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size: 16px; margin: 24px 0 12px; color: #FBBF24;">Componentes con Modificaciones en Ambos Lados (25)</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Archivo</th>
+              <th>Nivel de Riesgo</th>
+              <th>Líneas (WS vs DES)</th>
+              <th>Resumen del Conflicto</th>
+              <th>Estrategia de Fusión</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td class="mono" style="font-weight: 600;">context/AppContext.tsx</td>
+              <td><span style="color: #EF4444; font-weight: 700;">Alto Riesgo (Crítico)</span></td>
+              <td class="mono">1282 vs 1336</td>
+              <td>El diseñador añadió todo el subsistema de estado para el Administrador (sedes, turnos, filtros administrativos, simulación de cierre de turno), pero ELIMINÓ las llamadas al API de Oracle (login real, getTareas) y el estado del Modo Oscuro (isDarkMode, toggleDarkMode).</td>
+              <td><small style="color: #94A3B8;">Fusión Quirúrgica: Mantener la integración API Oracle y Dark Mode de SAMANYA e incorporar las nuevas variables y acciones del módulo Admin.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">types.ts</td>
+              <td><span style="color: #EF4444; font-weight: 700;">Alto Riesgo (Estructural)</span></td>
+              <td class="mono">257 vs 307</td>
+              <td>El diseñador expandió UserRole para incluir &#x27;admin&#x27;, creó AdminSubrole (&#x27;dueno&#x27; | &#x27;administrador&#x27;), tipos Sede, Shift, ShiftStaff, ShiftFilterType, AdminTaskStatusFilter y extendió TaskItem. En SAMANYA se conservan tipos de integración DB.</td>
+              <td><small style="color: #94A3B8;">Fusión Manual: Unir las interfaces de Admin de la versión del diseñador con las interfaces de base de datos existentes.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/TasksScreen.tsx</td>
+              <td><span style="color: #EF4444; font-weight: 700;">Alto Riesgo (Lógica Crítica)</span></td>
+              <td class="mono">549 vs 1022</td>
+              <td>Reingeniería visual masiva por el diseñador (filtros por fecha dinámica, selector de residentes con dropdown, categorías en pills, banner de alerta de tareas vencidas, integración con TaskDetailModal). Sin embargo, eliminó la sincronización con el API Oracle (api.getTareas / api.completarTarea) y las clases de modo oscuro.</td>
+              <td><small style="color: #94A3B8;">Fusión Manual Compleja: Adoptar la excelente UI del diseñador reconectando las llamadas asíncronas a api.ts y restituyendo las clases dark:.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/LoginScreen.tsx</td>
+              <td><span style="color: #EF4444; font-weight: 700;">Alto Riesgo (Lógica Crítica)</span></td>
+              <td class="mono">261 vs 268</td>
+              <td>El diseñador rediseñó la tarjeta de cuentas demo añadiendo 4 perfiles (Elena, Javier, Fernando Dueño, Carlos Admin) pero revirtió la función handleLogin a un setTimeout ficticio, destruyendo la autenticación real con la base de datos Oracle.</td>
+              <td><small style="color: #94A3B8;">Fusión Manual: Conservar el flujo asíncrono handleLogin con api.login() soportando además los roles de Administrador y Dueño.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/VitalSignsModal.tsx</td>
+              <td><span style="color: #EF4444; font-weight: 700;">Alto Riesgo (Lógica de Negocio)</span></td>
+              <td class="mono">245 vs 210</td>
+              <td>El diseñador eliminó la capacidad de seleccionar un residente directamente en el modal y la lógica que completaba automáticamente la tarea asignada (markTaskCompleted(selectedTaskForMassRegistration.id)).</td>
+              <td><small style="color: #94A3B8;">Fusión Manual: Preservar la lógica de selección de residente y auto-completado de tareas existente en SAMANYA.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">index.css</td>
+              <td><span style="color: #EF4444; font-weight: 700;">Alto Riesgo (Estilos Globales)</span></td>
+              <td class="mono">252 vs 61</td>
+              <td>El diseñador redujo el archivo de 252 a 61 líneas, eliminando por completo la configuración @custom-variant dark, las variables CSS de html.dark, las paletas de alto contraste y los estilos de accesibilidad.</td>
+              <td><small style="color: #94A3B8;">Conservar Workspace: Mantener el index.css actual de SAMANYA para no romper el Modo Oscuro.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">App.tsx</td>
+              <td><span style="color: #EF4444; font-weight: 700;">Medio-Alto Riesgo</span></td>
+              <td class="mono">185 vs 209</td>
+              <td>El diseñador integró las 4 pantallas del rol Admin (AdminHomeScreen, AdminShiftsScreen, AdminTasksScreen, AdminProfileScreen), AdminBottomNav, SedeSelectorChip y AdminTaskDetailModal, pero retiró el botón DarkModeToggle del header.</td>
+              <td><small style="color: #94A3B8;">Fusión Manual: Integrar el enrutamiento de Admin respetando la presencia del DarkModeToggle en el header.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/BitacoraModal.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo (Mejora de Diseñador)</span></td>
+              <td class="mono">202 vs 350</td>
+              <td>El diseñador añadió un selector desplegable con buscador de residentes dentro del modal para poder registrar bitácora sin haber seleccionado un residente previamente.</td>
+              <td><small style="color: #94A3B8;">Adopción Recomendada: Copiar la versión del diseñador adaptándola si existen clases de modo oscuro.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/MassRegistrationModal.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo (Mejora de Diseñador)</span></td>
+              <td class="mono">384 vs 514</td>
+              <td>El diseñador mejoró el selector múltiple de residentes con buscador en tiempo real, selección masiva por planta y mejores notas predeterminadas.</td>
+              <td><small style="color: #94A3B8;">Adopción Recomendada: Incorporar la versión del diseñador conservando validaciones de tipos.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/RoleMenu.tsx</td>
+              <td><span style="color: #F59E0B; font-weight: 700;">Medio Riesgo</span></td>
+              <td class="mono">242 vs 296</td>
+              <td>El diseñador añadió un botón de alternancia rápida (Quick Switch Role) y soporte para el rol Admin, pero retiró el componente DarkModeToggle.</td>
+              <td><small style="color: #94A3B8;">Fusión Manual: Incluir el botón Quick Switch Role y el rol Admin sin eliminar el DarkModeToggle.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/NotificationsScreen.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo (Mejora UX)</span></td>
+              <td class="mono">201 vs 220</td>
+              <td>El diseñador transformó la bandeja de diálogo emergente a una pantalla completa mobile-first con botón de volver atrás (ArrowLeft), contador de no leídas y redirección para el rol Admin.</td>
+              <td><small style="color: #94A3B8;">Adopción Recomendada: Utilizar el maquetado del diseñador.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/HomeScreen.tsx</td>
+              <td><span style="color: #F59E0B; font-weight: 700;">Medio Riesgo</span></td>
+              <td class="mono">384 vs 398</td>
+              <td>El diseñador añadió barra de progreso de turno con métricas porcentuales de tareas completadas, celebración visual al finalizar y utilidades de taskFormatters.</td>
+              <td><small style="color: #94A3B8;">Fusión Manual: Incorporar las métricas de cumplimiento conservando los accesos rápidos a modales.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/NewConsentModal.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo</span></td>
+              <td class="mono">344 vs 359</td>
+              <td>El diseñador optimizó la barra de navegación superior con botón ChevronLeft, buscador con icono y botón de limpieza de búsqueda.</td>
+              <td><small style="color: #94A3B8;">Adopción Directa / Fusión Rápida.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/ConsentsScreen.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo</span></td>
+              <td class="mono">161 vs 178</td>
+              <td>Ajustes menores de padding y estilos en tabs de consentimientos.</td>
+              <td><small style="color: #94A3B8;">Adopción Directa.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/Header.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo</span></td>
+              <td class="mono">81 vs 79</td>
+              <td>Micro-ajustes en tipografía y espaciado.</td>
+              <td><small style="color: #94A3B8;">Fusión Rápida.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/IncidentReportScreen.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo</span></td>
+              <td class="mono">407 vs 407</td>
+              <td>Diferencias menores de texto y formato en botones.</td>
+              <td><small style="color: #94A3B8;">Adopción Directa.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/ProfileScreen.tsx</td>
+              <td><span style="color: #F59E0B; font-weight: 700;">Medio Riesgo</span></td>
+              <td class="mono">393 vs 375</td>
+              <td>El diseñador incorporó el componente RoleDropdownSelector para alternar perfiles pero omitió controles de DarkMode.</td>
+              <td><small style="color: #94A3B8;">Fusión Manual: Mantener la integración con Dark Mode junto con el nuevo selector.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/ResidentDetailModal.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo</span></td>
+              <td class="mono">614 vs 612</td>
+              <td>Cambio del texto &#x27;Consent.&#x27; a &#x27;Consentimientos&#x27; y efectos hover en botones secundarios.</td>
+              <td><small style="color: #94A3B8;">Adopción Directa.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/ResidentsScreen.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo</span></td>
+              <td class="mono">106 vs 117</td>
+              <td>Adición de botón &#x27;X&#x27; para limpiar el campo de búsqueda de residentes.</td>
+              <td><small style="color: #94A3B8;">Adopción Directa.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/common/ClinicalHistorySection.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo</span></td>
+              <td class="mono">838 vs 838</td>
+              <td>Ajuste de opacidades en hover de botones de edición y eliminación.</td>
+              <td><small style="color: #94A3B8;">Adopción Directa.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/familiar/FamiliarCalendarioScreen.tsx</td>
+              <td><span style="color: #10B981; font-weight: 700;">Bajo Riesgo</span></td>
+              <td class="mono">654 vs 654</td>
+              <td>Ajustes cosméticos menores en badges y títulos de eventos.</td>
+              <td><small style="color: #94A3B8;">Adopción Directa.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/familiar/FamiliarHomeScreen.tsx</td>
+              <td><span style="color: #F59E0B; font-weight: 700;">Medio Riesgo (Modo Oscuro)</span></td>
+              <td class="mono">123 vs 123</td>
+              <td>En SAMANYA se implementaron 32 clases dark: para legibilidad y contraste. La versión del diseñador carece de estas clases.</td>
+              <td><small style="color: #94A3B8;">Conservar Workspace: Mantener la versión de SAMANYA con soporte dark mode.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/familiar/FamiliarProfileScreen.tsx</td>
+              <td><span style="color: #F59E0B; font-weight: 700;">Medio Riesgo</span></td>
+              <td class="mono">344 vs 326</td>
+              <td>El diseñador añadió RoleDropdownSelector al inicio del perfil pero eliminó el interruptor de Modo Oscuro.</td>
+              <td><small style="color: #94A3B8;">Fusión Manual: Unir el RoleDropdownSelector preservando el DarkModeToggle.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">components/familiar/ResidentSelectorChip.tsx</td>
+              <td><span style="color: #F59E0B; font-weight: 700;">Medio Riesgo (Modo Oscuro)</span></td>
+              <td class="mono">123 vs 106</td>
+              <td>En SAMANYA se optimizó el contraste de habitación y cama para modo oscuro y se añadió icono de usuario. El diseñador simplificó la cabecera.</td>
+              <td><small style="color: #94A3B8;">Fusión Manual: Preservar las clases de contraste dark:.</small></td>
+            </tr>
+    
+            <tr>
+              <td class="mono" style="font-weight: 600;">data/mockData.ts</td>
+              <td><span style="color: #F59E0B; font-weight: 700;">Medio Riesgo</span></td>
+              <td class="mono">836 vs 1102</td>
+              <td>El diseñador agregó mockSedes, mockShifts y amplió residentes y tareas para dar soporte a la gestión del Administrador y Dueño.</td>
+              <td><small style="color: #94A3B8;">Adopción e Integración: Añadir las nuevas colecciones de mockData sin descartar datos previos.</small></td>
+            </tr>
+    
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size: 16px; margin: 24px 0 12px; color: #A78BFA;">Componentes 100% Idénticos (11)</h3>
+      <p style="color: #94A3B8; font-size: 13px; margin-bottom: 10px;">
+        Los siguientes archivos no presentan ninguna diferencia de sintaxis ni de diseño:
+      </p>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+<span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/BottomNav.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/ResidentQRPlaceholderScreen.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/TimelineDrawer.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/Toast.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/VoiceInputButton.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/familiar/FamiliarBitacoraScreen.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/familiar/FamiliarBottomNav.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/familiar/FamiliarConsentModal.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/familiar/FamiliarResidenteScreen.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">components/familiar/FamiliarVitalsModal.tsx</span> <span class="mono" style="background: var(--bg-card-sub); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #C4B5FD; border: 1px solid var(--border-color);">main.tsx</span> 
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: ANÁLISIS DE ESTRUCTURA E INTERFAZ -->
+    <div class="section-card">
+      <h2 class="section-title">
+        <span>2.</span> Análisis de Estructura e Interfaz (JSX y Props)
+      </h2>
+      <p class="section-desc">
+        Evaluación de cambios en las firmas de los componentes, tipados TypeScript, jerarquía del árbol DOM y clases de maquetación CSS/Tailwind.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">
+        <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px;">
+          <h4 style="color: #38BDF8; font-size: 15px; margin-bottom: 8px;">Firma de Componentes y Tipos (Props)</h4>
+          <ul style="padding-left: 18px; font-size: 13px; color: #CBD5E1; space-y: 6px;">
+            <li><strong>types.ts:</strong> El diseñador extendió el contrato global:
+              <br><code class="mono" style="color: #7DD3FC;">UserRole = 'cuidador' | 'familiar' | 'admin'</code>
+            </li>
+            <li>Nuevas entidades: <code class="mono" style="color: #7DD3FC;">AdminSubrole = 'dueno' | 'administrador'</code>, <code class="mono" style="color: #7DD3FC;">Sede</code>, <code class="mono" style="color: #7DD3FC;">Shift</code>, <code class="mono" style="color: #7DD3FC;">ShiftStaff</code>.</li>
+            <li>Ampliación de <code class="mono" style="color: #7DD3FC;">TaskItem</code> para soportar metadatos adicionales de asignación y cálculo de retardos.</li>
+            <li>Las interfaces de componentes existentes (<code class="mono">HeaderProps</code>, <code class="mono">ClinicalHistorySectionProps</code>) mantienen su firma, garantizando compatibilidad retroactiva.</li>
+          </ul>
+        </div>
+
+        <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px;">
+          <h4 style="color: #FBBF24; font-size: 15px; margin-bottom: 8px;">Alteraciones en la Jerarquía JSX</h4>
+          <ul style="padding-left: 18px; font-size: 13px; color: #CBD5E1; space-y: 6px;">
+            <li><strong>App.tsx:</strong> Incorporación de la rama de navegación para <code class="mono">isAdmin</code> con 4 pantallas (Inicio, Turnos, Tareas, Perfil) y barra <code class="mono">&lt;AdminBottomNav /&gt;</code>.</li>
+            <li><strong>Header:</strong> Se inserta dinámicamente <code class="mono">&lt;SedeSelectorChip /&gt;</code> cuando el usuario es Administrador.</li>
+            <li><strong>NotificationsScreen:</strong> Migró de ventana modal emergente flotante con overlay borroso a pantalla completa tipo móvil nativo con cabecera superior y botón de retroceso (<code class="mono">&lt;ArrowLeft /&gt;</code>).</li>
+            <li><strong>TasksScreen:</strong> Rediseño total: cabecera con selector de fecha, pills de categoría, barra de búsqueda, selector de residente y modal independiente <code class="mono">&lt;TaskDetailModal /&gt;</code>.</li>
+          </ul>
+        </div>
+
+        <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px;">
+          <h4 style="color: #F87171; font-size: 15px; margin-bottom: 8px;">Regresión en Clases CSS y Modo Oscuro</h4>
+          <ul style="padding-left: 18px; font-size: 13px; color: #CBD5E1; space-y: 6px;">
+            <li><strong>index.css mutilado:</strong> Reducido de 252 líneas a 61 líneas. El diseñador eliminó <code class="mono">@custom-variant dark</code> y las variables temáticas de <code class="mono">html.dark</code>.</li>
+            <li><strong>Eliminación de clases dark:*:</strong> En <code class="mono">FamiliarHomeScreen.tsx</code> y <code class="mono">ResidentSelectorChip.tsx</code> se suprimieron más de 40 variantes dark indispensables para la legibilidad en pantallas AMOLED.</li>
+            <li><strong>Header & RoleMenu:</strong> Se removió la invocación a <code class="mono">&lt;DarkModeToggle /&gt;</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 3: EVALUACIÓN DE RIESGOS EN LA LÓGICA DE NEGOCIO -->
+    <div class="section-card">
+      <h2 class="section-title">
+        <span>3.</span> Evaluación de Riesgos en la Lógica de Negocio
+      </h2>
+      <p class="section-desc">
+        Identificación de regresiones funcionales, destrucción de APIs y pérdida de control de estados en caso de reemplazo ciego.
+      </p>
+
+      <!-- Riesgo 1 -->
+      <div class="risk-box">
+        <div class="risk-title">
+          <span>🚨 RIESGO CRÍTICO 1:</span> Pérdida Total de la Integración con Base de Datos Oracle
+        </div>
+        <div class="risk-desc">
+          En el workspace actual de SAMANYA (commit <code class="mono">82030b0</code>), se implementó la arquitectura de integración con backend Node/Express y procedimientos PL/SQL Oracle a través de <code class="mono">src/services/api.ts</code>. El diseñador no incluyó la carpeta <code class="mono">services/</code> ni ninguna llamada asíncrona. Si se sustituye <code class="mono">AppContext.tsx</code> o <code class="mono">LoginScreen.tsx</code> con la versión del diseñador, la aplicación quedará desconectada de la base de datos y volverá a datos ficticios estáticos.
+        </div>
+        <div class="risk-mitigation">
+          <strong>Mitigación Obligatoria:</strong> Aislar la llamada asíncrona <code class="mono">api.login()</code> y la carga de tareas de Oracle en <code class="mono">AppContext.tsx</code> e inyectarle en paralelo las nuevas funcionalidades administrativas.
+        </div>
+      </div>
+
+      <!-- Riesgo 2 -->
+      <div class="risk-box">
+        <div class="risk-title">
+          <span>🚨 RIESGO CRÍTICO 2:</span> Destrucción del Sistema de Modo Oscuro
+        </div>
+        <div class="risk-desc">
+          El diseñador trabajó sobre una base antigua que no contaba con el Modo Oscuro (implementado en el commit <code class="mono">c7bd2b9</code>). En consecuencia, eliminó el componente <code class="mono">DarkModeToggle.tsx</code>, las funciones de contexto <code class="mono">isDarkMode</code>, <code class="mono">toggleDarkMode</code>, la persistencia en <code class="mono">localStorage</code> y las variables CSS de <code class="mono">index.css</code>.
+        </div>
+        <div class="risk-mitigation">
+          <strong>Mitigación Obligatoria:</strong> Mantener intacto <code class="mono">index.css</code> y <code class="mono">DarkModeToggle.tsx</code> del Workspace, e integrar el botón en el nuevo diseño del header y menús.
+        </div>
+      </div>
+
+      <!-- Riesgo 3 -->
+      <div class="risk-box">
+        <div class="risk-title">
+          <span>⚠️ RIESGO ALTO 3:</span> Regresión en VitalSignsModal.tsx (Auto-completado de Tarea)
+        </div>
+        <div class="risk-desc">
+          En SAMANYA, registrar signos vitales desde una tarea invocaba <code class="mono">markTaskCompleted(selectedTaskForMassRegistration.id)</code> y permitía cambiar el residente activo dentro del modal. El diseñador borró tanto el selector de residente como el disparo del completado de la tarea.
+        </div>
+        <div class="risk-mitigation">
+          <strong>Mitigación Obligatoria:</strong> Reincorporar la llamada a <code class="mono">markTaskCompleted</code> y la selección dinámica de residente en el JSX final del modal.
+        </div>
+      </div>
+
+      <!-- Riesgo 4 -->
+      <div class="risk-box">
+        <div class="risk-title">
+          <span>⚠️ RIESGO ALTO 4:</span> Desincronización en TasksScreen.tsx
+        </div>
+        <div class="risk-desc">
+          El nuevo <code class="mono">TasksScreen.tsx</code> del diseñador (1022 líneas) es muy superior en UX (filtros por fecha dinámica, pills, buscador), pero maneja el completado de tareas únicamente en memoria sin notificar al backend ni respetar los estados reales de las órdenes médicas.
+        </div>
+        <div class="risk-mitigation">
+          <strong>Mitigación Obligatoria:</strong> Adaptar los controladores de evento (<code class="mono">onClick</code>) de las tarjetas de tareas para que invoquen los métodos transaccionales asíncronos del contexto.
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 4: PLAN DE ACCIÓN RECOMENDADO -->
+    <div class="section-card">
+      <h2 class="section-title">
+        <span>4.</span> Plan de Acción Recomendado (Estrategia de Fusión)
+      </h2>
+      <p class="section-desc">
+        Clasificación de componentes por fases de ejecución para fusionar el nuevo diseño sin provocar fallos en producción.
+      </p>
+
+      <!-- Fase 1 -->
+      <div class="plan-card">
+        <span class="priority-badge p-green">Fase 1: Copia Directa Inmediata (Riesgo Cero)</span>
+        <h4 style="font-size: 15px; color: #34D399; margin-bottom: 6px;">Nuevos Componentes y Utilidades Autocontenidas</h4>
+        <p style="font-size: 13px; color: #CBD5E1; margin-bottom: 10px;">
+          Estos archivos no existen en SAMANYA y pueden copiarse directamente sin generar conflictos de git ni de lógica:
+        </p>
+        <ul style="padding-left: 18px; font-size: 13px; color: #94A3B8;">
+          <li><code class="mono" style="color: #34D399;">src/utils/taskFormatters.ts</code> (Formateadores de tiempo y categorías).</li>
+          <li><code class="mono" style="color: #34D399;">src/components/TaskDetailModal.tsx</code> (Nuevo modal de detalle de tarea).</li>
+          <li><code class="mono" style="color: #34D399;">src/components/RoleDropdownSelector.tsx</code> (Selector de rol rápido).</li>
+          <li>Toda la carpeta <code class="mono" style="color: #34D399;">src/components/admin/*</code> (AdminBottomNav, AdminHomeScreen, AdminProfileScreen, AdminShiftDetailModal, AdminShiftsScreen, AdminTaskDetailModal, AdminTasksScreen, SedeSelectorChip).</li>
+        </ul>
+      </div>
+
+      <!-- Fase 2 -->
+      <div class="plan-card">
+        <span class="priority-badge p-yellow">Fase 2: Fusión Asistida de Bajo Impacto</span>
+        <h4 style="font-size: 15px; color: #FBBF24; margin-bottom: 6px;">Componentes Visuales con Mejoras de UI</h4>
+        <p style="font-size: 13px; color: #CBD5E1; margin-bottom: 10px;">
+          Reemplazar o fusionar rápidamente conservando la verificación de TypeScript:
+        </p>
+        <ul style="padding-left: 18px; font-size: 13px; color: #94A3B8;">
+          <li><code class="mono">components/BitacoraModal.tsx</code>: Integrar el nuevo selector de residentes del diseñador.</li>
+          <li><code class="mono">components/MassRegistrationModal.tsx</code>: Integrar el nuevo buscador y selector masivo.</li>
+          <li><code class="mono">components/NotificationsScreen.tsx</code>: Adoptar el nuevo diseño full-screen mobile.</li>
+          <li><code class="mono">components/NewConsentModal.tsx</code>, <code class="mono">ConsentsScreen.tsx</code>, <code class="mono">ResidentsScreen.tsx</code>, <code class="mono">ResidentDetailModal.tsx</code>.</li>
+        </ul>
+      </div>
+
+      <!-- Fase 3 -->
+      <div class="plan-card">
+        <span class="priority-badge p-red">Fase 3: Fusión Quirúrgica Manual (Núcleo de la Aplicación)</span>
+        <h4 style="font-size: 15px; color: #F87171; margin-bottom: 6px;">Estado Global, Conectividad BD y Seguridad</h4>
+        <p style="font-size: 13px; color: #CBD5E1; margin-bottom: 10px;">
+          Estos archivos NO deben sobrescribirse. Deben editarse mediante mezcla manual línea por línea:
+        </p>
+        <ol style="padding-left: 18px; font-size: 13px; color: #E2E8F0; space-y: 6px;">
+          <li><strong>src/types.ts:</strong> Añadir las interfaces de Admin, Sedes y Turnos sin alterar los tipos de base de datos.</li>
+          <li><strong>src/data/mockData.ts:</strong> Incorporar los arrays <code class="mono">mockSedes</code> y <code class="mono">mockShifts</code>.</li>
+          <li><strong>src/context/AppContext.tsx:</strong> Agregar los hooks y estados del Administrador manteniendo íntegros <code class="mono">api.login</code>, <code class="mono">isDarkMode</code> y la recarga de tareas Oracle.</li>
+          <li><strong>src/components/LoginScreen.tsx:</strong> Conservar la autenticación real con la BD agregando las nuevas tarjetas de acceso demo (Admin y Dueño).</li>
+          <li><strong>src/components/TasksScreen.tsx:</strong> Integrar la nueva interfaz gráfica de 1022 líneas vinculándola a las funciones asíncronas de base de datos y restituyendo las clases <code class="mono">dark:</code>.</li>
+          <li><strong>src/components/VitalSignsModal.tsx:</strong> Mantener el selector de residente y el auto-completado de tareas.</li>
+          <li><strong>src/App.tsx:</strong> Agregar las vistas de Admin en el enrutador respetando el componente <code class="mono">DarkModeToggle</code> en la cabecera.</li>
+          <li><strong>src/index.css:</strong> Conservar la versión de SAMANYA intacta (no sobrescribir con los 61 renglones del diseñador).</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 5: VISUALIZADOR DE DIFFS CRÍTICOS -->
+    <div class="section-card">
+      <h2 class="section-title">
+        <span>5.</span> Fragmentos de Código y Diffs Relevantes
+      </h2>
+      <p class="section-desc">
+        Inspección técnica de los fragmentos con mayor divergencia lógica y arquitectónica.
+      </p>
+
+      <div class="diff-container">
+        <div class="diff-header">
+          <span class="mono" style="color: #38BDF8;">TasksScreen.tsx (Diferencia Crítica de Lógica y UI)</span>
+          <span style="font-size: 11px; color: #8B949E;">Líneas rojas (-) Workspace actual | Líneas verdes (+) Diseñador</span>
+        </div>
+        <div class="diff-body">
+    <div class="diff-line diff-chunk">--- Workspace [Actual]: components/TasksScreen.tsx</div><div class="diff-line diff-chunk">+++ Diseñador [Externo]: components/TasksScreen.tsx</div><div class="diff-line diff-chunk">@@ -1,35 +1,45 @@</div><div class="diff-line diff-del">-import React, { useState } from &#x27;react&#x27;;</div><div class="diff-line diff-add">+import React, { useState, useRef, useMemo, useEffect } from &#x27;react&#x27;;</div><div class="diff-line diff-context"> import { useApp } from &#x27;../context/AppContext&#x27;;</div><div class="diff-line diff-context"> import {</div><div class="diff-line diff-context">   Pill,</div><div class="diff-line diff-context">   Utensils,</div><div class="diff-line diff-del">-  Activity,</div><div class="diff-line diff-add">+  Sparkles,</div><div class="diff-line diff-add">+  Droplets,</div><div class="diff-line diff-context">   Users,</div><div class="diff-line diff-del">-  User,</div><div class="diff-line diff-context">   CheckCircle2,</div><div class="diff-line diff-del">-  Clock,</div><div class="diff-line diff-context">   Camera,</div><div class="diff-line diff-context">   Check,</div><div class="diff-line diff-context">   ChevronRight,</div><div class="diff-line diff-del">-  Image as ImageIcon,</div><div class="diff-line diff-del">-  RotateCcw,</div><div class="diff-line diff-context">   AlertCircle,</div><div class="diff-line diff-context">   AlertTriangle,</div><div class="diff-line diff-del">-  X</div><div class="diff-line diff-add">+  Clock,</div><div class="diff-line diff-add">+  Activity,</div><div class="diff-line diff-add">+  X,</div><div class="diff-line diff-add">+  Filter,</div><div class="diff-line diff-add">+  Calendar,</div><div class="diff-line diff-add">+  Search,</div><div class="diff-line diff-add">+  ChevronDown,</div><div class="diff-line diff-add">+  ChevronLeft,</div><div class="diff-line diff-add">+  User,</div><div class="diff-line diff-add">+  RotateCcw</div><div class="diff-line diff-context"> } from &#x27;lucide-react&#x27;;</div><div class="diff-line diff-context"> import { TaskItem } from &#x27;../types&#x27;;</div><div class="diff-line diff-add">+import { TaskDetailModal } from &#x27;./TaskDetailModal&#x27;;</div><div class="diff-line diff-add">+import { getTaskRelativeTime, isTaskOverdue } from &#x27;../utils/taskFormatters&#x27;;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context"> export const TasksScreen: React.FC = () =&gt; {</div><div class="diff-line diff-context">   const {</div><div class="diff-line diff-context">     tasks,</div><div class="diff-line diff-context">     residents,</div><div class="diff-line diff-add">+    tasksDateFilter,</div><div class="diff-line diff-add">+    setTasksDateFilter,</div><div class="diff-line diff-add">+    selectedDate,</div><div class="diff-line diff-add">+    setSelectedDate,</div><div class="diff-line diff-context">     markMedicationAdministered,</div><div class="diff-line diff-context">     markTaskCompleted,</div><div class="diff-line diff-context">     unmarkTaskCompleted,</div><div class="diff-line diff-context">     setSelectedTaskForMassRegistration,</div><div class="diff-line diff-context">     setIsMassRegistrationModalOpen,</div><div class="diff-line diff-del">-    setSelectedResident,</div><div class="diff-line diff-del">-    setIsVitalSignsModalOpen,</div><div class="diff-line diff-context">     openResidentHub</div><div class="diff-line diff-context">   } = useApp();</div><div class="diff-line diff-context"> </div><div class="diff-line diff-chunk">@@ -37,15 +47,282 @@</div><div class="diff-line diff-context">   const [photoModalTaskId, setPhotoModalTaskId] = useState&lt;string | null&gt;(null);</div><div class="diff-line diff-context">   const [previewPhotoUrl, setPreviewPhotoUrl] = useState&lt;string | null&gt;(null);</div><div class="diff-line diff-context">   const [taskToUncomplete, setTaskToUncomplete] = useState&lt;TaskItem | null&gt;(null);</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-  const pendingCount = tasks.filter(t =&gt; t.status === &#x27;pendiente&#x27;).length;</div><div class="diff-line diff-del">-  const completedCount = tasks.filter(t =&gt; t.status === &#x27;completada&#x27;).length;</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-  const filteredTasks = tasks.filter((t) =&gt; {</div><div class="diff-line diff-del">-    if (filterStatus === &#x27;pendientes&#x27;) return t.status === &#x27;pendiente&#x27;;</div><div class="diff-line diff-del">-    if (filterStatus === &#x27;completadas&#x27;) return t.status === &#x27;completada&#x27;;</div><div class="diff-line diff-del">-    return true;</div><div class="diff-line diff-del">-  });</div><div class="diff-line diff-add">+  const [selectedTaskForDetail, setSelectedTaskForDetail] = useState&lt;TaskItem | null&gt;(null);</div><div class="diff-line diff-add">+  const [completingTaskIds, setCompletingTaskIds] = useState&lt;Set&lt;string&gt;&gt;(new Set());</div><div class="diff-line diff-add">+</div><div class="diff-line diff-add">+  // Search &amp; Date Filter states</div><div class="diff-line diff-add">+  const [searchQuery, setSearchQuery] = useState(&#x27;&#x27;);</div><div class="diff-line diff-add">+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);</div><div class="diff-line diff-add">+  const filterRef = useRef&lt;HTMLDivElement&gt;(null);</div><div class="diff-line diff-add">+</div><div class="diff-line diff-add">+  // Close dropdown on click outside</div><div class="diff-line diff-add">+  useEffect(() =&gt; {</div><div class="diff-line diff-add">+    const handleClickOutside = (e: MouseEvent) =&gt; {</div><div class="diff-line diff-add">+      if (filterRef.current &amp;&amp; !filterRef.current.contains(e.target as Node)) {</div><div class="diff-line diff-add">+        setIsFilterDropdownOpen(false);</div><div class="diff-line diff-add">+      }</div><div class="diff-line diff-add">+    };</div><div class="diff-line diff-add">+    if (isFilterDropdownOpen) {</div><div class="diff-line diff-add">+      document.addEventListener(&#x27;mousedown&#x27;, handleClickOutside);</div><div class="diff-line diff-add">+    }</div><div class="diff-line diff-add">+    return () =&gt; {</div><div class="diff-line diff-add">+      document.removeEventListener(&#x27;mousedown&#x27;, handleClickOutside);</div><div class="diff-line diff-add">+    };</div><div class="diff-line diff-add">+  }, [isFilterDropdownOpen]);</div><div class="diff-line diff-add">+</div><div class="diff-line diff-add">+  // Format date helper for human-readable labels</div><div class="diff-line diff-add">+  const getFormattedDateLabel = (dateStr: string) =&gt; {</div><div class="diff-line diff-add">+    if (dateStr === &#x27;2026-08-19&#x27;) return &#x27;Hoy (19 Ago)&#x27;;</div><div class="diff-line diff-add">+    if (dateStr === &#x27;2026-08-18&#x27;) return &#x27;18 Ago (Ayer)&#x27;;</div><div class="diff-line diff-add">+    if (dateStr === &#x27;todas&#x27;) return &#x27;Todas las fechas&#x27;;</div><div class="diff-line diff-add">+    try {</div><div class="diff-line diff-add">+      const [y, m, d] = dateStr.split(&#x27;-&#x27;);</div><div class="diff-line diff-add">+      const months = [&#x27;Ene&#x27;, &#x27;Feb&#x27;, &#x27;Mar&#x27;, &#x27;Abr&#x27;, &#x27;May&#x27;, &#x27;Jun&#x27;, &#x27;Jul&#x27;, &#x27;Ago&#x27;, &#x27;Sep&#x27;, &#x27;Oct&#x27;, &#x27;Nov&#x27;, &#x27;Dic&#x27;];</div><div class="diff-line diff-add">+      return `${d} ${months[parseInt(m, 10) - 1]}`;</div><div class="diff-line diff-add">+    } catch {</div><div class="diff-line diff-add">+      return dateStr;</div><div class="diff-line diff-add">+    }</div><div class="diff-line diff-add">+  };</div><div class="diff-line diff-add">+</div><div class="diff-line diff-add">+  // Active date filter label for the filter button</div><div class="diff-line diff-add">+  const activeFilterLabel = useMemo(() =&gt; {</div><div class="diff-line diff-add">+    return getFormattedDateLabel(tasksDateFilter);</div><div class="diff-line diff-add">+  }, [tasksDateFilter]);</div><div class="diff-line diff-add">+</div><div class="diff-line diff-add">+  const isFilterActive =</div><div class="diff-line diff-add">+    tasksDateFilter !== &#x27;2026-08-19&#x27; ||</div><div class="diff-line diff-add">+    searchQuery.trim() !== &#x27;&#x27;;</div><div class="diff-line diff-add">+</div><div class="diff-line diff-add">+  // Base tasks matching active date and search query</div><div class="diff-line diff-add">+  const baseFilteredTasks = useMemo(() =&gt; {</div><div class="diff-line diff-add">+    return tasks.filter((t) =&gt; {</div><div class="diff-line diff-add">+      // Date Filter</div>
+        </div>
+      </div>
+    
+      <div class="diff-container">
+        <div class="diff-header">
+          <span class="mono" style="color: #38BDF8;">AppContext.tsx (API Oracle vs Estado de Admin)</span>
+          <span style="font-size: 11px; color: #8B949E;">Líneas rojas (-) Workspace actual | Líneas verdes (+) Diseñador</span>
+        </div>
+        <div class="diff-body">
+    <div class="diff-line diff-chunk">--- Workspace [Actual]: context/AppContext.tsx</div><div class="diff-line diff-chunk">+++ Diseñador [Externo]: context/AppContext.tsx</div><div class="diff-line diff-chunk">@@ -10,12 +10,16 @@</div><div class="diff-line diff-context">   ConsentRecord,</div><div class="diff-line diff-context">   AppNotification,</div><div class="diff-line diff-context">   UserRole,</div><div class="diff-line diff-add">+  AdminSubrole,</div><div class="diff-line diff-context">   ConsentType,</div><div class="diff-line diff-context">   FamiliarTab,</div><div class="diff-line diff-add">+  AdminTab,</div><div class="diff-line diff-context">   ClinicalRecord,</div><div class="diff-line diff-context">   DeletedClinicalRecord,</div><div class="diff-line diff-context">   SupplyEntry,</div><div class="diff-line diff-del">-  StaffWorker</div><div class="diff-line diff-add">+  StaffWorker,</div><div class="diff-line diff-add">+  SedeInfo,</div><div class="diff-line diff-add">+  ShiftInfo</div><div class="diff-line diff-context"> } from &#x27;../types&#x27;;</div><div class="diff-line diff-context"> import {</div><div class="diff-line diff-context">   INITIAL_RESIDENTS,</div><div class="diff-line diff-chunk">@@ -29,9 +33,10 @@</div><div class="diff-line diff-context">   INITIAL_CLINICAL_RECORDS,</div><div class="diff-line diff-context">   INITIAL_DELETED_CLINICAL_RECORDS,</div><div class="diff-line diff-context">   INITIAL_SUPPLIES,</div><div class="diff-line diff-del">-  STAFF_WORKERS</div><div class="diff-line diff-add">+  STAFF_WORKERS,</div><div class="diff-line diff-add">+  INITIAL_SEDES,</div><div class="diff-line diff-add">+  INITIAL_SHIFTS</div><div class="diff-line diff-context"> } from &#x27;../data/mockData&#x27;;</div><div class="diff-line diff-del">-import { api, removeAuthToken } from &#x27;../services/api&#x27;;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context"> interface AppContextType {</div><div class="diff-line diff-context">   // Authentication &amp; Role</div><div class="diff-line diff-chunk">@@ -52,9 +57,9 @@</div><div class="diff-line diff-context">     unit: string;</div><div class="diff-line diff-context">     avatar: string;</div><div class="diff-line diff-context">   };</div><div class="diff-line diff-del">-  login: (email: string, pass: string) =&gt; Promise&lt;boolean&gt;;</div><div class="diff-line diff-add">+  login: (email: string, pass?: string) =&gt; boolean;</div><div class="diff-line diff-context">   logout: () =&gt; void;</div><div class="diff-line diff-del">-  switchRole: (newRole: UserRole) =&gt; void;</div><div class="diff-line diff-add">+  switchRole: (newRole: UserRole, subrole?: AdminSubrole) =&gt; void;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   // Navigation (Cuidador)</div><div class="diff-line diff-context">   activeTab: &#x27;inicio&#x27; | &#x27;tareas&#x27; | &#x27;residentes&#x27; | &#x27;consentimientos&#x27; | &#x27;perfil&#x27;;</div><div class="diff-line diff-chunk">@@ -69,6 +74,33 @@</div><div class="diff-line diff-context">   setSelectedFamiliarResidentId: (id: string) =&gt; void;</div><div class="diff-line diff-context">   selectedFamiliarResident: Resident;</div><div class="diff-line diff-context">   familiarResidents: Resident[];</div><div class="diff-line diff-add">+</div><div class="diff-line diff-add">+  // Navigation &amp; Management (Administrador / Dueño)</div><div class="diff-line diff-add">+  activeAdminTab: AdminTab;</div><div class="diff-line diff-add">+  setActiveAdminTab: (tab: AdminTab) =&gt; void;</div><div class="diff-line diff-add">+  adminSubrole: AdminSubrole;</div><div class="diff-line diff-add">+  setAdminSubrole: (subrole: AdminSubrole) =&gt; void;</div><div class="diff-line diff-add">+  selectedSedeId: string;</div><div class="diff-line diff-add">+  setSelectedSedeId: (id: string) =&gt; void;</div><div class="diff-line diff-add">+  selectedSede: SedeInfo;</div><div class="diff-line diff-add">+  sedes: SedeInfo[];</div><div class="diff-line diff-add">+  shifts: ShiftInfo[];</div><div class="diff-line diff-add">+  selectedShiftForDetail: ShiftInfo | null;</div><div class="diff-line diff-add">+  setSelectedShiftForDetail: (shift: ShiftInfo | null) =&gt; void;</div><div class="diff-line diff-add">+  isShiftDetailModalOpen: boolean;</div><div class="diff-line diff-add">+  setIsShiftDetailModalOpen: (open: boolean) =&gt; void;</div><div class="diff-line diff-add">+  isSedePickerModalOpen: boolean;</div><div class="diff-line diff-add">+  setIsSedePickerModalOpen: (open: boolean) =&gt; void;</div><div class="diff-line diff-add">+  highlightedShiftId: string | null;</div><div class="diff-line diff-add">+  setHighlightedShiftId: (id: string | null) =&gt; void;</div><div class="diff-line diff-add">+  isSimulatingFinishingShift: boolean;</div><div class="diff-line diff-add">+  setIsSimulatingFinishingShift: (val: boolean) =&gt; void;</div><div class="diff-line diff-add">+  selectedTaskForAdminDetail: TaskItem | null;</div><div class="diff-line diff-add">+  setSelectedTaskForAdminDetail: (task: TaskItem | null) =&gt; void;</div><div class="diff-line diff-add">+  adminTasksStatusFilter: &#x27;todas&#x27; | &#x27;pendientes&#x27; | &#x27;completadas&#x27;;</div><div class="diff-line diff-add">+  setAdminTasksStatusFilter: (status: &#x27;todas&#x27; | &#x27;pendientes&#x27; | &#x27;completadas&#x27;) =&gt; void;</div><div class="diff-line diff-add">+  tasksDateFilter: string;</div><div class="diff-line diff-add">+  setTasksDateFilter: (date: string) =&gt; void;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   // Core Data</div><div class="diff-line diff-context">   residents: Resident[];</div><div class="diff-line diff-chunk">@@ -173,25 +205,22 @@</div><div class="diff-line diff-context">   toastType: &#x27;success&#x27; | &#x27;info&#x27; | &#x27;alert&#x27;;</div><div class="diff-line diff-context">   showToast: (message: string, type?: &#x27;success&#x27; | &#x27;info&#x27; | &#x27;alert&#x27;) =&gt; void;</div><div class="diff-line diff-context">   openResidentHub: (resident: Resident, asModal?: boolean) =&gt; void;</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-  // Dark Mode Theme</div><div class="diff-line diff-del">-  isDarkMode: boolean;</div><div class="diff-line diff-del">-  toggleDarkMode: () =&gt; void;</div><div class="diff-line diff-del">-  setDarkMode: (val: boolean) =&gt; void;</div><div class="diff-line diff-context"> }</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context"> const AppContext = createContext&lt;AppContextType | undefined&gt;(undefined);</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context"> export const AppProvider: React.FC&lt;{ children: React.ReactNode }&gt; = ({ children }) =&gt; {</div><div class="diff-line diff-del">-  // Arrancar por la pantalla de login como requiere el usuario</div><div class="diff-line diff-del">-  const [isLoggedIn, setIsLoggedIn] = useState&lt;boolean&gt;(false);</div><div class="diff-line diff-add">+  const [isLoggedIn, setIsLoggedIn] = useState&lt;boolean&gt;(() =&gt; {</div><div class="diff-line diff-add">+    const saved = localStorage.getItem(&#x27;samanya_logged_in&#x27;);</div><div class="diff-line diff-add">+    return saved !== null ? JSON.parse(saved) : true;</div><div class="diff-line diff-add">+  });</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   const [currentUser, setCurrentUser] = useState({</div><div class="diff-line diff-del">-    name: &#x27;María Rodríguez&#x27;,</div><div class="diff-line diff-del">-    email: &#x27;mrodriguez@samanya.com.co&#x27;,</div><div class="diff-line diff-add">+    name: &#x27;Elena Morales&#x27;,</div><div class="diff-line diff-add">+    email: &#x27;elena.morales@samanya.es&#x27;,</div><div class="diff-line diff-context">     role: &#x27;cuidador&#x27; as UserRole,</div><div class="diff-line diff-context">     shift: &#x27;Turno Mañana (07:00 - 15:00)&#x27;,</div><div class="diff-line diff-del">-    unit: &#x27;Ala Norte — Cuidados Asistenciales&#x27;,</div><div class="diff-line diff-add">+    unit: &#x27;Planta 1 — Cuidados Asistenciales&#x27;,</div><div class="diff-line diff-context">     avatar: &#x27;https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&amp;fit=crop&amp;q=80&amp;w=250&#x27;</div><div class="diff-line diff-context">   });</div><div class="diff-line diff-context"> </div><div class="diff-line diff-chunk">@@ -200,33 +229,7 @@</div><div class="diff-line diff-context">   const [selectedFamiliarResidentId, setSelectedFamiliarResidentId] = useState&lt;string&gt;(&#x27;res-1&#x27;);</div><div class="diff-line diff-context">   const [currentScreen, setCurrentScreen] = useState&lt;string&gt;(&#x27;app&#x27;);</div><div class="diff-line diff-context">   const [selectedDate, setSelectedDate] = useState&lt;string&gt;(&#x27;2026-08-19&#x27;);</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-  // Dark Mode Theme State</div><div class="diff-line diff-del">-  const [isDarkMode, setIsDarkMode] = useState&lt;boolean&gt;(() =&gt; {</div><div class="diff-line diff-del">-    const saved = localStorage.getItem(&#x27;samanya_dark_mode&#x27;);</div>
+        </div>
+      </div>
+    
+      <div class="diff-container">
+        <div class="diff-header">
+          <span class="mono" style="color: #38BDF8;">LoginScreen.tsx (Autenticación Real vs Mock Demo)</span>
+          <span style="font-size: 11px; color: #8B949E;">Líneas rojas (-) Workspace actual | Líneas verdes (+) Diseñador</span>
+        </div>
+        <div class="diff-body">
+    <div class="diff-line diff-chunk">--- Workspace [Actual]: components/LoginScreen.tsx</div><div class="diff-line diff-chunk">+++ Diseñador [Externo]: components/LoginScreen.tsx</div><div class="diff-line diff-chunk">@@ -5,22 +5,19 @@</div><div class="diff-line diff-context"> export const LoginScreen: React.FC = () =&gt; {</div><div class="diff-line diff-context">   const { login } = useApp();</div><div class="diff-line diff-context">   const [view, setView] = useState&lt;&#x27;login&#x27; | &#x27;recover&#x27;&gt;(&#x27;login&#x27;);</div><div class="diff-line diff-del">-  const [email, setEmail] = useState(&#x27;mrodriguez&#x27;);</div><div class="diff-line diff-del">-  const [password, setPassword] = useState(&#x27;Samanya2026*&#x27;);</div><div class="diff-line diff-add">+  const [email, setEmail] = useState(&#x27;elena.morales@samanya.es&#x27;);</div><div class="diff-line diff-add">+  const [password, setPassword] = useState(&#x27;••••••••&#x27;);</div><div class="diff-line diff-context">   const [recoverEmail, setRecoverEmail] = useState(&#x27;&#x27;);</div><div class="diff-line diff-context">   const [recoverSuccess, setRecoverSuccess] = useState(false);</div><div class="diff-line diff-context">   const [isLoading, setIsLoading] = useState(false);</div><div class="diff-line diff-context"> </div><div class="diff-line diff-del">-  const handleLogin = async (e: React.FormEvent) =&gt; {</div><div class="diff-line diff-add">+  const handleLogin = (e: React.FormEvent) =&gt; {</div><div class="diff-line diff-context">     e.preventDefault();</div><div class="diff-line diff-context">     setIsLoading(true);</div><div class="diff-line diff-del">-    try {</div><div class="diff-line diff-del">-      await login(email, password);</div><div class="diff-line diff-del">-    } catch (_) {</div><div class="diff-line diff-del">-      // El error ya es capturado y mostrado como Toast en AppContext</div><div class="diff-line diff-del">-    } finally {</div><div class="diff-line diff-add">+    setTimeout(() =&gt; {</div><div class="diff-line diff-add">+      login(email, password);</div><div class="diff-line diff-context">       setIsLoading(false);</div><div class="diff-line diff-del">-    }</div><div class="diff-line diff-add">+    }, 400);</div><div class="diff-line diff-context">   };</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   const handleRecover = (e: React.FormEvent) =&gt; {</div><div class="diff-line diff-chunk">@@ -58,14 +55,14 @@</div><div class="diff-line diff-context">                 Iniciar sesión</div><div class="diff-line diff-context">               &lt;/h2&gt;</div><div class="diff-line diff-context">               &lt;p className=&quot;text-sm text-[#5C6058] mt-0.5&quot;&gt;</div><div class="diff-line diff-del">-                Ingresa con tu cuenta de trabajador o familiar de la BD</div><div class="diff-line diff-add">+                Ingresa con tu cuenta de trabajador o familiar</div><div class="diff-line diff-context">               &lt;/p&gt;</div><div class="diff-line diff-context">             &lt;/div&gt;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">             &lt;div className=&quot;space-y-3.5 pt-2&quot;&gt;</div><div class="diff-line diff-context">               &lt;div&gt;</div><div class="diff-line diff-context">                 &lt;label className=&quot;block text-sm font-bold text-[#292A24] mb-1.5&quot; htmlFor=&quot;email-input&quot;&gt;</div><div class="diff-line diff-del">-                  Usuario o Correo electrónico</div><div class="diff-line diff-add">+                  Correo electrónico o usuario</div><div class="diff-line diff-context">                 &lt;/label&gt;</div><div class="diff-line diff-context">                 &lt;div className=&quot;relative&quot;&gt;</div><div class="diff-line diff-context">                   &lt;div className=&quot;absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5C6058]&quot;&gt;</div><div class="diff-line diff-chunk">@@ -73,11 +70,11 @@</div><div class="diff-line diff-context">                   &lt;/div&gt;</div><div class="diff-line diff-context">                   &lt;input</div><div class="diff-line diff-context">                     id=&quot;email-input&quot;</div><div class="diff-line diff-del">-                    type=&quot;text&quot;</div><div class="diff-line diff-add">+                    type=&quot;email&quot;</div><div class="diff-line diff-context">                     required</div><div class="diff-line diff-context">                     value={email}</div><div class="diff-line diff-context">                     onChange={(e) =&gt; setEmail(e.target.value)}</div><div class="diff-line diff-del">-                    placeholder=&quot;Usuario o correo de la BD&quot;</div><div class="diff-line diff-add">+                    placeholder=&quot;ejemplo@samanya.es&quot;</div><div class="diff-line diff-context">                     className=&quot;w-full pl-11 pr-4 py-3 bg-[#F7F7F8] border border-[#DEDBD1] rounded-2xl text-base text-[#292A24] placeholder:text-[#5C6058]/60 focus:outline-none focus:border-[#068591] focus:ring-2 focus:ring-[#068591]/20 transition-all&quot;</div><div class="diff-line diff-context">                   /&gt;</div><div class="diff-line diff-context">                 &lt;/div&gt;</div><div class="diff-line diff-chunk">@@ -104,41 +101,51 @@</div><div class="diff-line diff-context">               &lt;/div&gt;</div><div class="diff-line diff-context">             &lt;/div&gt;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-del">-            {/* Quick pre-fill buttons from real Oracle DB */}</div><div class="diff-line diff-add">+            {/* Quick pre-fill buttons for demonstration */}</div><div class="diff-line diff-context">             &lt;div className=&quot;p-3 bg-[#D9F0F1]/60 rounded-2xl border border-[#068591]/20&quot;&gt;</div><div class="diff-line diff-context">               &lt;p className=&quot;text-xs font-bold text-[#075158] uppercase tracking-wide mb-1.5&quot;&gt;</div><div class="diff-line diff-del">-                Cuentas en Base de Datos Oracle</div><div class="diff-line diff-add">+                Cuentas de demostración</div><div class="diff-line diff-context">               &lt;/p&gt;</div><div class="diff-line diff-del">-              &lt;div className=&quot;flex flex-wrap gap-2&quot;&gt;</div><div class="diff-line diff-del">-                &lt;button</div><div class="diff-line diff-del">-                  type=&quot;button&quot;</div><div class="diff-line diff-del">-                  onClick={() =&gt; {</div><div class="diff-line diff-del">-                    setEmail(&#x27;mrodriguez&#x27;);</div><div class="diff-line diff-del">-                    setPassword(&#x27;Samanya2026*&#x27;);</div><div class="diff-line diff-del">-                  }}</div><div class="diff-line diff-del">-                  className=&quot;text-xs bg-white text-[#075158] font-semibold px-2.5 py-1.5 rounded-xl border border-[#068591]/30 hover:bg-[#D9F0F1] transition-colors&quot;</div><div class="diff-line diff-del">-                &gt;</div><div class="diff-line diff-del">-                  María (Cuidadora)</div><div class="diff-line diff-del">-                &lt;/button&gt;</div><div class="diff-line diff-del">-                &lt;button</div><div class="diff-line diff-del">-                  type=&quot;button&quot;</div><div class="diff-line diff-del">-                  onClick={() =&gt; {</div><div class="diff-line diff-del">-                    setEmail(&#x27;jperez&#x27;);</div><div class="diff-line diff-del">-                    setPassword(&#x27;Samanya2026*&#x27;);</div><div class="diff-line diff-del">-                  }}</div><div class="diff-line diff-del">-                  className=&quot;text-xs bg-white text-[#075158] font-semibold px-2.5 py-1.5 rounded-xl border border-[#068591]/30 hover:bg-[#D9F0F1] transition-colors&quot;</div><div class="diff-line diff-add">+              &lt;div className=&quot;grid grid-cols-2 gap-1.5&quot;&gt;</div><div class="diff-line diff-add">+                &lt;button</div><div class="diff-line diff-add">+                  type=&quot;button&quot;</div><div class="diff-line diff-add">+                  onClick={() =&gt; {</div><div class="diff-line diff-add">+                    setEmail(&#x27;elena.morales@samanya.es&#x27;);</div><div class="diff-line diff-add">+                    setPassword(&#x27;password123&#x27;);</div><div class="diff-line diff-add">+                  }}</div><div class="diff-line diff-add">+                  className=&quot;text-xs bg-white text-[#075158] font-semibold px-2 py-1.5 rounded-xl border border-[#068591]/30 hover:bg-[#D9F0F1] text-left truncate&quot;</div><div class="diff-line diff-add">+                &gt;</div><div class="diff-line diff-add">+                  Elena (Cuidadora)</div><div class="diff-line diff-add">+                &lt;/button&gt;</div><div class="diff-line diff-add">+                &lt;button</div><div class="diff-line diff-add">+                  type=&quot;button&quot;</div><div class="diff-line diff-add">+                  onClick={() =&gt; {</div><div class="diff-line diff-add">+                    setEmail(&#x27;javier.perez@familiar.es&#x27;);</div><div class="diff-line diff-add">+                    setPassword(&#x27;password123&#x27;);</div><div class="diff-line diff-add">+                  }}</div><div class="diff-line diff-add">+                  className=&quot;text-xs bg-white text-[#075158] font-semibold px-2 py-1.5 rounded-xl border border-[#068591]/30 hover:bg-[#D9F0F1] text-left truncate&quot;</div><div class="diff-line diff-context">                 &gt;</div><div class="diff-line diff-context">                   Javier (Familiar)</div><div class="diff-line diff-context">                 &lt;/button&gt;</div><div class="diff-line diff-context">                 &lt;button</div><div class="diff-line diff-context">                   type=&quot;button&quot;</div><div class="diff-line diff-context">                   onClick={() =&gt; {</div><div class="diff-line diff-del">-                    setEmail(&#x27;ldelgado&#x27;);</div><div class="diff-line diff-del">-                    setPassword(&#x27;Samanya2026*&#x27;);</div><div class="diff-line diff-del">-                  }}</div><div class="diff-line diff-del">-                  className=&quot;text-xs bg-white text-[#075158] font-semibold px-2.5 py-1.5 rounded-xl border border-[#068591]/30 hover:bg-[#D9F0F1] transition-colors&quot;</div><div class="diff-line diff-del">-                &gt;</div>
+        </div>
+      </div>
+    
+      <div class="diff-container">
+        <div class="diff-header">
+          <span class="mono" style="color: #38BDF8;">VitalSignsModal.tsx (Lógica de Tareas y Residente)</span>
+          <span style="font-size: 11px; color: #8B949E;">Líneas rojas (-) Workspace actual | Líneas verdes (+) Diseñador</span>
+        </div>
+        <div class="diff-body">
+    <div class="diff-line diff-chunk">--- Workspace [Actual]: components/VitalSignsModal.tsx</div><div class="diff-line diff-chunk">+++ Diseñador [Externo]: components/VitalSignsModal.tsx</div><div class="diff-line diff-chunk">@@ -7,10 +7,6 @@</div><div class="diff-line diff-context">     isVitalSignsModalOpen,</div><div class="diff-line diff-context">     setIsVitalSignsModalOpen,</div><div class="diff-line diff-context">     selectedResident,</div><div class="diff-line diff-del">-    setSelectedResident,</div><div class="diff-line diff-del">-    selectedTaskForMassRegistration,</div><div class="diff-line diff-del">-    markTaskCompleted,</div><div class="diff-line diff-del">-    residents,</div><div class="diff-line diff-context">     selectedDate,</div><div class="diff-line diff-context">     addVitalSigns</div><div class="diff-line diff-context">   } = useApp();</div><div class="diff-line diff-chunk">@@ -23,17 +19,14 @@</div><div class="diff-line diff-context">   const [glucose, setGlucose] = useState&lt;string&gt;(&#x27;&#x27;);</div><div class="diff-line diff-context">   const [notes, setNotes] = useState&lt;string&gt;(&#x27;&#x27;);</div><div class="diff-line diff-context"> </div><div class="diff-line diff-del">-  if (!isVitalSignsModalOpen) return null;</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-  const currentResident = selectedResident || residents[0];</div><div class="diff-line diff-del">-  if (!currentResident) return null;</div><div class="diff-line diff-add">+  if (!isVitalSignsModalOpen || !selectedResident) return null;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   const handleSubmit = (e: React.FormEvent) =&gt; {</div><div class="diff-line diff-context">     e.preventDefault();</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">     addVitalSigns({</div><div class="diff-line diff-del">-      residentId: currentResident.id,</div><div class="diff-line diff-del">-      residentName: currentResident.name,</div><div class="diff-line diff-add">+      residentId: selectedResident.id,</div><div class="diff-line diff-add">+      residentName: selectedResident.name,</div><div class="diff-line diff-context">       date: selectedDate,</div><div class="diff-line diff-context">       systolic: Number(systolic),</div><div class="diff-line diff-context">       diastolic: Number(diastolic),</div><div class="diff-line diff-chunk">@@ -43,11 +36,6 @@</div><div class="diff-line diff-context">       glucose: glucose ? Number(glucose) : undefined,</div><div class="diff-line diff-context">       notes: notes.trim() || undefined</div><div class="diff-line diff-context">     });</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-    if (selectedTaskForMassRegistration) {</div><div class="diff-line diff-del">-      markTaskCompleted(selectedTaskForMassRegistration.id);</div><div class="diff-line diff-del">-    }</div><div class="diff-line diff-del">-    setIsVitalSignsModalOpen(false);</div><div class="diff-line diff-context">   };</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   return (</div><div class="diff-line diff-chunk">@@ -69,9 +57,7 @@</div><div class="diff-line diff-context">                 Tomar signos vitales</div><div class="diff-line diff-context">               &lt;/h3&gt;</div><div class="diff-line diff-context">               &lt;p className=&quot;text-xs text-[#5C6058]&quot;&gt;</div><div class="diff-line diff-del">-                {selectedTaskForMassRegistration</div><div class="diff-line diff-del">-                  ? selectedTaskForMassRegistration.title</div><div class="diff-line diff-del">-                  : `${currentResident.name} (${currentResident.room})`}</div><div class="diff-line diff-add">+                {selectedResident.name} ({selectedResident.room})</div><div class="diff-line diff-context">               &lt;/p&gt;</div><div class="diff-line diff-context">             &lt;/div&gt;</div><div class="diff-line diff-context">           &lt;/div&gt;</div><div class="diff-line diff-chunk">@@ -84,27 +70,6 @@</div><div class="diff-line diff-context">           &gt;</div><div class="diff-line diff-context">             &lt;X className=&quot;w-6 h-6&quot; /&gt;</div><div class="diff-line diff-context">           &lt;/button&gt;</div><div class="diff-line diff-del">-        &lt;/div&gt;</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-        {/* Resident Selector */}</div><div class="diff-line diff-del">-        &lt;div className=&quot;bg-[#F7F7F8] p-3 rounded-2xl border border-[#DEDBD1]&quot;&gt;</div><div class="diff-line diff-del">-          &lt;label className=&quot;block text-xs font-bold text-[#292A24] mb-1.5&quot;&gt;</div><div class="diff-line diff-del">-            Residente a evaluar</div><div class="diff-line diff-del">-          &lt;/label&gt;</div><div class="diff-line diff-del">-          &lt;select</div><div class="diff-line diff-del">-            value={currentResident.id}</div><div class="diff-line diff-del">-            onChange={(e) =&gt; {</div><div class="diff-line diff-del">-              const found = residents.find((r) =&gt; r.id === e.target.value);</div><div class="diff-line diff-del">-              if (found) setSelectedResident(found);</div><div class="diff-line diff-del">-            }}</div><div class="diff-line diff-del">-            className=&quot;w-full p-2.5 bg-white border border-[#DEDBD1] rounded-xl text-sm font-bold text-[#292A24] focus:outline-none focus:border-[#068591]&quot;</div><div class="diff-line diff-del">-          &gt;</div><div class="diff-line diff-del">-            {residents.map((r) =&gt; (</div><div class="diff-line diff-del">-              &lt;option key={r.id} value={r.id}&gt;</div><div class="diff-line diff-del">-                {r.name} — Hab. {r.room}{r.bed ? ` (${r.bed})` : &#x27;&#x27;}</div><div class="diff-line diff-del">-              &lt;/option&gt;</div><div class="diff-line diff-del">-            ))}</div><div class="diff-line diff-del">-          &lt;/select&gt;</div><div class="diff-line diff-context">         &lt;/div&gt;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">         &lt;form onSubmit={handleSubmit} className=&quot;space-y-4&quot;&gt;</div>
+        </div>
+      </div>
+    
+      <div class="diff-container">
+        <div class="diff-header">
+          <span class="mono" style="color: #38BDF8;">index.css (Pérdida de Configuración Modo Oscuro)</span>
+          <span style="font-size: 11px; color: #8B949E;">Líneas rojas (-) Workspace actual | Líneas verdes (+) Diseñador</span>
+        </div>
+        <div class="diff-body">
+    <div class="diff-line diff-chunk">--- Workspace [Actual]: index.css</div><div class="diff-line diff-chunk">+++ Diseñador [Externo]: index.css</div><div class="diff-line diff-chunk">@@ -1,6 +1,4 @@</div><div class="diff-line diff-context"> @import &quot;tailwindcss&quot;;</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-@custom-variant dark (&amp;:where(.dark, .dark *));</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context"> @layer base {</div><div class="diff-line diff-context">   :root {</div><div class="diff-line diff-chunk">@@ -19,206 +17,19 @@</div><div class="diff-line diff-context">     --color-text-main: #292A24;</div><div class="diff-line diff-context">     --color-text-sec: #5C6058;</div><div class="diff-line diff-context">     --color-border: #DEDBD1;</div><div class="diff-line diff-del">-    --color-input-bg: #F7F7F8;</div><div class="diff-line diff-del">-    color-scheme: light;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-  html.dark {</div><div class="diff-line diff-del">-    --color-primary: #14B8C7;</div><div class="diff-line diff-del">-    --color-accent: #E5A853;</div><div class="diff-line diff-del">-    --color-success-bg: rgba(30, 122, 76, 0.22);</div><div class="diff-line diff-del">-    --color-success-text: #4ADE80;</div><div class="diff-line diff-del">-    --color-pending-bg: rgba(198, 138, 61, 0.22);</div><div class="diff-line diff-del">-    --color-pending-text: #FBBF24;</div><div class="diff-line diff-del">-    --color-alert-bg: rgba(140, 46, 46, 0.22);</div><div class="diff-line diff-del">-    --color-alert-text: #F87171;</div><div class="diff-line diff-del">-    --color-special-bg: rgba(20, 184, 199, 0.16);</div><div class="diff-line diff-del">-    --color-special-text: #38D9E8;</div><div class="diff-line diff-del">-    --color-page-bg: #101413;</div><div class="diff-line diff-del">-    --color-card-bg: #181D1B;</div><div class="diff-line diff-del">-    --color-text-main: #F0F3F1;</div><div class="diff-line diff-del">-    --color-text-sec: #9EA8A2;</div><div class="diff-line diff-del">-    --color-border: #2B3430;</div><div class="diff-line diff-del">-    --color-input-bg: #1B211E;</div><div class="diff-line diff-del">-    color-scheme: dark;</div><div class="diff-line diff-context">   }</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   body {</div><div class="diff-line diff-context">     font-family: &#x27;Work Sans&#x27;, -apple-system, BlinkMacSystemFont, sans-serif;</div><div class="diff-line diff-del">-    color: var(--color-text-main);</div><div class="diff-line diff-del">-    background-color: var(--color-page-bg);</div><div class="diff-line diff-add">+    color: #292A24;</div><div class="diff-line diff-add">+    background-color: #F7F7F8;</div><div class="diff-line diff-context">     font-size: 16px;</div><div class="diff-line diff-context">     line-height: 1.5;</div><div class="diff-line diff-del">-    transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s cubic-bezier(0.4, 0, 0.2, 1);</div><div class="diff-line diff-context">   }</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   h1, h2, h3, h4, h5, h6 {</div><div class="diff-line diff-context">     font-family: &#x27;Plus Jakarta Sans&#x27;, -apple-system, BlinkMacSystemFont, sans-serif;</div><div class="diff-line diff-del">-    color: var(--color-text-main);</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-}</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-/* ==========================================================================</div><div class="diff-line diff-del">-   Comprehensive Dark Mode Surface &amp; Contrast Overrides (WCAG AAA Optimized)</div><div class="diff-line diff-del">-   ========================================================================== */</div><div class="diff-line diff-del">-html.dark {</div><div class="diff-line diff-del">-  /* Surface elevations */</div><div class="diff-line diff-del">-  .bg-white {</div><div class="diff-line diff-del">-    background-color: #181D1B !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-  .bg-white\/95,</div><div class="diff-line diff-del">-  .bg-white\/90 {</div><div class="diff-line diff-del">-    background-color: rgba(24, 29, 27, 0.95) !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-  .bg-white\/80 {</div><div class="diff-line diff-del">-    background-color: rgba(24, 29, 27, 0.85) !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-  .bg-white\/50 {</div><div class="diff-line diff-del">-    background-color: rgba(24, 29, 27, 0.50) !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-  .bg-\[\#F7F7F8\] {</div><div class="diff-line diff-del">-    background-color: #101413 !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-  .bg-\[\#EFECE6\] {</div><div class="diff-line diff-del">-    background-color: #212824 !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-  /* Status and badge backgrounds with opacity modifiers */</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\],</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\]\/90,</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\]\/80,</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\]\/70,</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\]\/60,</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\]\/50,</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\]\/40,</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\]\/30,</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\]\/20,</div><div class="diff-line diff-del">-  .bg-\[\#D9F0F1\]\/10,</div><div class="diff-line diff-del">-  [class*=&quot;bg-[#D9F0F1]&quot;] {</div><div class="diff-line diff-del">-    background-color: rgba(20, 184, 199, 0.18) !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-  .bg-\[\#DFF3E7\],</div><div class="diff-line diff-del">-  [class*=&quot;bg-[#DFF3E7]&quot;] {</div><div class="diff-line diff-del">-    background-color: rgba(34, 197, 94, 0.18) !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-  .bg-\[\#FBE9D2\],</div><div class="diff-line diff-del">-  [class*=&quot;bg-[#FBE9D2]&quot;] {</div><div class="diff-line diff-del">-    background-color: rgba(245, 158, 11, 0.18) !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-  .bg-\[\#FBEAEA\],</div><div class="diff-line diff-del">-  .bg-\[\#FBEAEA\]\/60,</div><div class="diff-line diff-del">-  [class*=&quot;bg-[#FBEAEA]&quot;] {</div><div class="diff-line diff-del">-    background-color: rgba(239, 68, 68, 0.18) !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-</div><div class="diff-line diff-del">-  /* Amber Alert cards (Autorización pendiente, etc.) */</div><div class="diff-line diff-del">-  .bg-\[\#FEF3EB\],</div><div class="diff-line diff-del">-  [class*=&quot;bg-[#FEF3EB]&quot;] {</div><div class="diff-line diff-del">-    background-color: #241A10 !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-  .border-\[\#FAD7BC\],</div><div class="diff-line diff-del">-  [class*=&quot;border-[#FAD7BC]&quot;] {</div><div class="diff-line diff-del">-    border-color: #5C3D1B !important;</div><div class="diff-line diff-del">-  }</div><div class="diff-line diff-del">-  .text-\[\#7A3600\],</div><div class="diff-line diff-del">-  [class*=&quot;text-[#7A3600]&quot;] {</div><div class="diff-line diff-del">-    color: #FBBF24 !important;</div>
+        </div>
+      </div>
+    
+      <div class="diff-container">
+        <div class="diff-header">
+          <span class="mono" style="color: #38BDF8;">App.tsx (Enrutamiento Admin vs Header Controls)</span>
+          <span style="font-size: 11px; color: #8B949E;">Líneas rojas (-) Workspace actual | Líneas verdes (+) Diseñador</span>
+        </div>
+        <div class="diff-body">
+    <div class="diff-line diff-chunk">--- Workspace [Actual]: App.tsx</div><div class="diff-line diff-chunk">+++ Diseñador [Externo]: App.tsx</div><div class="diff-line diff-chunk">@@ -27,14 +27,23 @@</div><div class="diff-line diff-context"> import { FamiliarConsentModal } from &#x27;./components/familiar/FamiliarConsentModal&#x27;;</div><div class="diff-line diff-context"> import { FamiliarVitalsModal } from &#x27;./components/familiar/FamiliarVitalsModal&#x27;;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-add">+// Admin / Dueño Role Components</div><div class="diff-line diff-add">+import { SedeSelectorChip } from &#x27;./components/admin/SedeSelectorChip&#x27;;</div><div class="diff-line diff-add">+import { AdminBottomNav } from &#x27;./components/admin/AdminBottomNav&#x27;;</div><div class="diff-line diff-add">+import { AdminHomeScreen } from &#x27;./components/admin/AdminHomeScreen&#x27;;</div><div class="diff-line diff-add">+import { AdminShiftsScreen } from &#x27;./components/admin/AdminShiftsScreen&#x27;;</div><div class="diff-line diff-add">+import { AdminTasksScreen } from &#x27;./components/admin/AdminTasksScreen&#x27;;</div><div class="diff-line diff-add">+import { AdminProfileScreen } from &#x27;./components/admin/AdminProfileScreen&#x27;;</div><div class="diff-line diff-add">+import { AdminTaskDetailModal } from &#x27;./components/admin/AdminTaskDetailModal&#x27;;</div><div class="diff-line diff-add">+</div><div class="diff-line diff-context"> import { Smartphone, Monitor, Bell } from &#x27;lucide-react&#x27;;</div><div class="diff-line diff-del">-import { DarkModeToggle } from &#x27;./components/DarkModeToggle&#x27;;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context"> const MainLayout: React.FC = () =&gt; {</div><div class="diff-line diff-context">   const {</div><div class="diff-line diff-context">     isLoggedIn,</div><div class="diff-line diff-context">     activeTab,</div><div class="diff-line diff-context">     activeFamiliarTab,</div><div class="diff-line diff-add">+    activeAdminTab,</div><div class="diff-line diff-context">     currentUser,</div><div class="diff-line diff-context">     user,</div><div class="diff-line diff-context">     notifications,</div><div class="diff-line diff-chunk">@@ -44,6 +53,7 @@</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   const activeRole = user?.role || currentUser?.role;</div><div class="diff-line diff-context">   const isFamiliar = activeRole === &#x27;familiar&#x27;;</div><div class="diff-line diff-add">+  const isAdmin = activeRole === &#x27;admin&#x27;;</div><div class="diff-line diff-context">   const unreadNotificationsCount = (notifications || []).filter((n) =&gt; !n.isRead).length;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   if (!isLoggedIn) {</div><div class="diff-line diff-chunk">@@ -55,7 +65,7 @@</div><div class="diff-line diff-context">     );</div><div class="diff-line diff-context">   }</div><div class="diff-line diff-context"> </div><div class="diff-line diff-del">-  // Header visibility rules: Always visible for Worker and Familiar with notification bell</div><div class="diff-line diff-add">+  // Header visibility rules: Always visible for Worker, Familiar and Admin with notification bell</div><div class="diff-line diff-context">   const showHeader = true;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">   return (</div><div class="diff-line diff-chunk">@@ -94,8 +104,12 @@</div><div class="diff-line diff-context">         {/* Dedicated Top App Bar with Messages and Notification Bell */}</div><div class="diff-line diff-context">         {showHeader &amp;&amp; (</div><div class="diff-line diff-context">           &lt;header className=&quot;w-full bg-[#F7F7F8] px-4 pt-3 pb-2 flex items-center justify-between border-b border-[#DEDBD1]/60&quot;&gt;</div><div class="diff-line diff-del">-            {/* Left side: If Familiar -&gt; Resident Selector. If Worker -&gt; Brand &amp; Role Badge */}</div><div class="diff-line diff-del">-            {isFamiliar ? (</div><div class="diff-line diff-add">+            {/* Left side: If Admin -&gt; Sede Selector Chip. If Familiar -&gt; Resident Selector. If Worker -&gt; Brand &amp; Role Badge */}</div><div class="diff-line diff-add">+            {isAdmin ? (</div><div class="diff-line diff-add">+              &lt;div className=&quot;flex items-center&quot;&gt;</div><div class="diff-line diff-add">+                &lt;SedeSelectorChip /&gt;</div><div class="diff-line diff-add">+              &lt;/div&gt;</div><div class="diff-line diff-add">+            ) : isFamiliar ? (</div><div class="diff-line diff-context">               &lt;div className=&quot;flex items-center&quot;&gt;</div><div class="diff-line diff-context">                 &lt;ResidentSelectorChip /&gt;</div><div class="diff-line diff-context">               &lt;/div&gt;</div><div class="diff-line diff-chunk">@@ -109,7 +123,6 @@</div><div class="diff-line diff-context">             )}</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">             &lt;div className=&quot;flex items-center gap-2&quot;&gt;</div><div class="diff-line diff-del">-              &lt;DarkModeToggle id=&quot;btn-top-dark-mode&quot; /&gt;</div><div class="diff-line diff-context">               &lt;button</div><div class="diff-line diff-context">                 id=&quot;btn-top-notifications&quot;</div><div class="diff-line diff-context">                 type=&quot;button&quot;</div><div class="diff-line diff-chunk">@@ -131,7 +144,15 @@</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">         {/* Active Tab View */}</div><div class="diff-line diff-context">         &lt;main className=&quot;flex-1 w-full pt-2&quot;&gt;</div><div class="diff-line diff-del">-          {isFamiliar ? (</div><div class="diff-line diff-add">+          {isAdmin ? (</div><div class="diff-line diff-add">+            /* Administrador / Dueño Role Screens (4 tabs: Perfil, Turnos, Inicio, Tareas) */</div><div class="diff-line diff-add">+            &lt;&gt;</div><div class="diff-line diff-add">+              {activeAdminTab === &#x27;inicio&#x27; &amp;&amp; &lt;AdminHomeScreen /&gt;}</div><div class="diff-line diff-add">+              {activeAdminTab === &#x27;turnos&#x27; &amp;&amp; &lt;AdminShiftsScreen /&gt;}</div><div class="diff-line diff-add">+              {activeAdminTab === &#x27;tareas&#x27; &amp;&amp; &lt;AdminTasksScreen /&gt;}</div><div class="diff-line diff-add">+              {activeAdminTab === &#x27;perfil&#x27; &amp;&amp; &lt;AdminProfileScreen /&gt;}</div><div class="diff-line diff-add">+            &lt;/&gt;</div><div class="diff-line diff-add">+          ) : isFamiliar ? (</div><div class="diff-line diff-context">             /* Familiar Role Screens (4 distinct views) */</div><div class="diff-line diff-context">             &lt;&gt;</div><div class="diff-line diff-context">               {activeFamiliarTab === &#x27;inicio&#x27; &amp;&amp; &lt;FamiliarHomeScreen /&gt;}</div><div class="diff-line diff-chunk">@@ -152,7 +173,7 @@</div><div class="diff-line diff-context">         &lt;/main&gt;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">         {/* Fixed Bottom Navigation (Role-specific) */}</div><div class="diff-line diff-del">-        {isFamiliar ? &lt;FamiliarBottomNav /&gt; : &lt;BottomNav /&gt;}</div><div class="diff-line diff-add">+        {isAdmin ? &lt;AdminBottomNav /&gt; : isFamiliar ? &lt;FamiliarBottomNav /&gt; : &lt;BottomNav /&gt;}</div><div class="diff-line diff-context"> </div><div class="diff-line diff-context">         {/* Worker Modals &amp; Overlays */}</div><div class="diff-line diff-context">         &lt;TimelineDrawer /&gt;</div><div class="diff-line diff-chunk">@@ -168,6 +189,9 @@</div><div class="diff-line diff-context">         &lt;FamiliarConsentModal /&gt;</div><div class="diff-line diff-context">         &lt;FamiliarVitalsModal /&gt;</div><div class="diff-line diff-context"> </div><div class="diff-line diff-add">+        {/* Admin Modals */}</div><div class="diff-line diff-add">+        &lt;AdminTaskDetailModal /&gt;</div><div class="diff-line diff-add">+</div><div class="diff-line diff-context">         &lt;Toast /&gt;</div><div class="diff-line diff-context">       &lt;/div&gt;</div><div class="diff-line diff-context">     &lt;/div&gt;</div>
+        </div>
+      </div>
+    
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Auditoría generada por el Arquitecto Frontend Senior &bull; Proyecto SAMANYA Asistencia Geriátrica &bull; Archivo confidencial local (No versionado en repositorio)
+    </div>
+  </div>
+
+</body>
+</html>

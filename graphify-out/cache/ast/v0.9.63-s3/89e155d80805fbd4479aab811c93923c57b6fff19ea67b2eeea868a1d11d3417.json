@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_backend_db_scripts_uti_ge_excepciones_pkg_sql", "label": "uti_ge_excepciones_pkg.sql", "file_type": "code", "source_file": "backend/db/scripts/uti_ge_excepciones_pkg.sql", "source_location": null}], "edges": []}

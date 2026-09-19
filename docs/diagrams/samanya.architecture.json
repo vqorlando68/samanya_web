@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Arquitectura Corporativa Samanya OS",
+    "output": "public/diagrams/samanya-architecture.html",
+    "quality_profile": "standard",
+    "views": [
+      {
+        "id": "full-flow",
+        "label": "Flujo Principal",
+        "focus": ["browser", "api_server", "pool", "pkgln", "oracle_db"],
+        "note": "Ruta de invocación de servicios desde el Superadmin Portal a la base de datos Oracle."
+      },
+      {
+        "id": "plsql-layers",
+        "label": "Capas PL/SQL",
+        "focus": ["pkgln", "pkgcn", "daos", "oracle_db"],
+        "note": "Aislamiento: PKGLN (0 SQL), PKGCN (multi-tabla sin JOIN) y DAOs (mono-tabla)."
+      },
+      {
+        "id": "security-audit",
+        "label": "Seguridad y Auditoría",
+        "focus": ["browser", "auth_guard", "api_server", "logger", "audit"],
+        "note": "Aislamiento de Superusuario (ID=1), logs autónomos y trazabilidad."
+      }
+    ]
+  },
+  "components": [
+    { "id": "browser", "type": "frontend", "label": "Superadmin Web", "sublabel": "HTML5 / CSS / Vanilla JS", "pos": [30, 260], "size": [130, 60] },
+    { "id": "auth_guard", "type": "security", "label": "Auth & JWT Guard", "sublabel": "ID_TIPO_USUARIO = 1", "pos": [210, 90], "size": [130, 60], "tag": "Validación" },
+    { "id": "api_server", "type": "backend", "label": "Express REST API", "sublabel": "Node.js / TypeScript", "pos": [210, 260], "size": [130, 60] },
+    { "id": "pool", "type": "cloud", "label": "Oracle Connection Pool", "sublabel": "node-oracledb + Wallet", "pos": [390, 260], "size": [140, 60], "tag": "mTLS" },
+    { "id": "pkgcn", "type": "backend", "label": "PKGCN_SUPERADMIN", "sublabel": "Multi-Tabla (Sin JOIN)", "pos": [590, 90], "size": [150, 60], "tag": "JSON Nativo" },
+    { "id": "pkgln", "type": "backend", "label": "PKGLN_SUPERADMIN", "sublabel": "Lógica Negocio (0 SQL)", "pos": [590, 260], "size": [150, 60], "tag": "CLOB JSON" },
+    { "id": "daos", "type": "database", "label": "PKGSMY_*_DAO", "sublabel": "Mono-Tabla PK/ROWID", "pos": [590, 430], "size": [150, 60], "tag": "15 Tablas" },
+    { "id": "logger", "type": "security", "label": "UTI_GE_EXCEPCIONES", "sublabel": "SMY_ERRORES Log", "pos": [830, 90], "size": [150, 60] },
+    { "id": "oracle_db", "type": "database", "label": "Oracle Autonomous DB", "sublabel": "SAMANYA@samanya_high", "pos": [830, 260], "size": [150, 60], "tag": "Cloud ATP" },
+    { "id": "audit", "type": "database", "label": "SMY_AUDITORIA_ACCESOS", "sublabel": "Trazabilidad Superadmin", "pos": [830, 430], "size": [150, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Servidor Node.js / Express (:5000)", "wraps": ["auth_guard", "api_server", "pool"] },
+    { "kind": "security-group", "label": "Oracle Autonomous Database Cloud (Esquema SAMANYA)", "wraps": ["pkgcn", "pkgln", "daos", "logger", "oracle_db", "audit"] }
+  ],
+  "connections": [
+    { "id": "c1", "from": "browser", "to": "api_server", "label": "HTTPS :5000", "variant": "emphasis", "labelDy": -24 },
+    { "id": "c2", "from": "api_server", "to": "auth_guard", "label": "JWT Verify", "variant": "security", "fromSide": "top", "toSide": "bottom" },
+    { "id": "c3", "from": "api_server", "to": "pool", "label": "Pool Conn" },
+    { "id": "c4", "from": "pool", "to": "pkgln", "label": "RPC CLOB", "variant": "emphasis" },
+    { "id": "c5", "from": "pkgln", "to": "pkgcn", "label": "Multi-Tabla", "fromSide": "top", "toSide": "bottom" },
+    { "id": "c6", "from": "pkgln", "to": "daos", "label": "DAO CRUD", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "id": "c7", "from": "pkgln", "to": "oracle_db", "label": "p_do_commit", "variant": "emphasis" },
+    { "id": "c8", "from": "pkgcn", "to": "logger", "label": "Auditoría Log", "fromSide": "right", "toSide": "left" },
+    { "id": "c9", "from": "oracle_db", "to": "logger", "label": "WHEN OTHERS", "variant": "security", "fromSide": "top", "toSide": "bottom" },
+    { "id": "c10", "from": "oracle_db", "to": "audit", "label": "Trazabilidad", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "id": "c11", "from": "daos", "to": "audit", "label": "Ref Integrity", "fromSide": "right", "toSide": "left" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Estándar PL/SQL", "items": ["Capa PKGLN con cero SQL directo", "Capa PKGCN con consultas multi-tabla y JSON nativo sin JOIN", "Capa DAO con 18 métodos oficiales mono-tabla"] },
+    { "dot": "amber", "title": "Control Transaccional", "items": ["p_do_commit centralizado con contexto", "ROLLBACK inmediato en WHEN OTHERS", "Registro autónomo en SMY_ERRORES"] },
+    { "dot": "cyan", "title": "Seguridad y Conectividad", "items": ["Restricción obligatoria ID_TIPO_USUARIO = 1", "Conexión segura por Oracle Cloud Wallet mTLS", "Sesión JWT con expiración controlada"] }
+  ]
+}

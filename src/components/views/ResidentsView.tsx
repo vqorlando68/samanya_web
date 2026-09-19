@@ -1,0 +1,280 @@
+import React, { useState } from 'react';
+import { useAdmin } from '../../context/AdminContext';
+import { Residente } from '../../types';
+import {
+  Users,
+  UserPlus,
+  Filter,
+  Eye,
+  Edit3,
+  ShieldAlert,
+  Phone,
+  Bed,
+  Utensils,
+  Activity
+} from 'lucide-react';
+
+export const ResidentsView: React.FC = () => {
+  const {
+    residentes,
+    familiares,
+    activeSede,
+    searchQuery,
+    setIsRegisterResidentOpen,
+    setSelectedResidente,
+    setIsResidenteDetailOpen,
+    setEditingResidente,
+    setIsEditResidenteOpen,
+    setEditingFamiliar,
+    setIsEditFamiliarOpen
+  } = useAdmin();
+
+  const [filterStatus, setFilterStatus] = useState<string>('TODOS');
+  const [filterMobility, setFilterMobility] = useState<string>('TODOS');
+
+  // Filtrado
+  const filtered = residentes.filter((r) => {
+    if (r.idCentro !== activeSede.id) return false;
+
+    // Filtro por búsqueda
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        r.nombreCompleto.toLowerCase().includes(q) ||
+        r.identificacion.includes(q) ||
+        r.habitacion.toLowerCase().includes(q) ||
+        r.codigoExpediente.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+
+    // Filtro por estado
+    if (filterStatus !== 'TODOS' && r.estado !== filterStatus) {
+      return false;
+    }
+
+    // Filtro por movilidad
+    if (filterMobility !== 'TODOS' && r.nivelMovilidad !== filterMobility) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const handleOpenDetail = (res: Residente) => {
+    setSelectedResidente(res);
+    setIsResidenteDetailOpen(true);
+  };
+
+  const handleEditResident = (res: Residente) => {
+    setEditingResidente(res);
+    setIsEditResidenteOpen(true);
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Header Sección */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="font-serif text-2xl font-bold text-[#182F28]">
+            Directorio y Admisión de Residentes
+          </h2>
+          <p className="text-xs text-[#5C6058] mt-0.5">
+            Gestión de expedientes, asignación de habitaciones y seguimiento clínico de {activeSede.nombre}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsRegisterResidentOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#B3803F] hover:bg-[#9a6c32] text-white font-bold rounded-xl text-sm shadow-xs transition-all cursor-pointer"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span>Admitir Nuevo Residente</span>
+        </button>
+      </div>
+
+      {/* Barra de Filtros */}
+      <div className="flex flex-wrap items-center gap-3 p-4 bg-white rounded-2xl border border-[#DEDBD1]">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#182F28] font-mono">
+          <Filter className="w-4 h-4 text-[#B3803F]" />
+          <span>FILTROS:</span>
+        </div>
+
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="px-3 py-1.5 rounded-lg border border-[#DEDBD1] bg-[#F7F6F2] text-xs font-semibold text-[#26241F] focus:outline-none"
+        >
+          <option value="TODOS">Todos los Estados</option>
+          <option value="Activo">Activos</option>
+          <option value="En Observación">En Observación</option>
+          <option value="Hospitalizado">Hospitalizados</option>
+          <option value="Egresado">Egresados</option>
+        </select>
+
+        <select
+          value={filterMobility}
+          onChange={(e) => setFilterMobility(e.target.value)}
+          className="px-3 py-1.5 rounded-lg border border-[#DEDBD1] bg-[#F7F6F2] text-xs font-semibold text-[#26241F] focus:outline-none"
+        >
+          <option value="TODOS">Toda Movilidad</option>
+          <option value="Independiente">Independiente</option>
+          <option value="Asistencia Leve">Asistencia Leve</option>
+          <option value="Asistencia Moderada">Asistencia Moderada</option>
+          <option value="Dependiente Total">Dependiente Total</option>
+        </select>
+
+        <span className="ml-auto text-xs text-[#7A745F] font-mono">
+          Mostrando {filtered.length} de {residentes.filter((r) => r.idCentro === activeSede.id).length} residentes
+        </span>
+      </div>
+
+      {/* Grid de Tarjetas de Residentes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((res) => {
+          const mainAcudiente = res.acudientes.find((a) => a.esPrincipal) || res.acudientes[0];
+
+          return (
+            <div
+              key={res.id}
+              className="admin-card p-5 space-y-4 hover:border-[#B3803F] transition-all flex flex-col justify-between"
+            >
+              <div>
+                {/* Cabecera Tarjeta */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={
+                        res.fotoUrl ||
+                        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80'
+                      }
+                      alt={res.nombreCompleto}
+                      className="w-12 h-12 rounded-xl object-cover border border-[#DEDBD1] shrink-0"
+                    />
+                    <div>
+                      <h4 className="font-serif font-bold text-base text-[#182F28] leading-snug">
+                        {res.nombreCompleto}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-[#7A745F] font-mono">
+                          {res.codigoExpediente}
+                        </span>
+                        <span className="text-xs text-[#5C6058]">
+                          • {res.edad} años
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                      res.estado === 'Activo'
+                        ? 'bg-[#DFF3E7] text-[#1E7A4C]'
+                        : res.estado === 'En Observación'
+                        ? 'bg-[#FEF7EE] text-[#9A5B12]'
+                        : 'bg-[#FBE8E6] text-[#A4453A]'
+                    }`}
+                  >
+                    {res.estado}
+                  </span>
+                </div>
+
+                {/* Info Cuidado */}
+                <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-[#DEDBD1]/60 text-xs text-[#4B4636]">
+                  <div className="flex items-center gap-1.5">
+                    <Bed className="w-3.5 h-3.5 text-[#B3803F]" />
+                    <span>Hab. <strong>{res.habitacion}</strong> ({res.cama})</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-[#068591]" />
+                    <span className="truncate">{res.nivelMovilidad}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 col-span-2">
+                    <Utensils className="w-3.5 h-3.5 text-[#7A4F9E]" />
+                    <span>Dieta: <strong>{res.tipoDieta}</strong></span>
+                  </div>
+                </div>
+
+                {/* Alertas Clínicas */}
+                {res.alertasClinicas && (
+                  <div className="mt-3 p-2 bg-[#FEF7EE] rounded-lg border border-[#DCB87F] text-[11px] text-[#9A5B12] flex items-center gap-1.5">
+                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{res.alertasClinicas}</span>
+                  </div>
+                )}
+
+                {/* Familiar Responsable */}
+                {mainAcudiente && (
+                  <div className="mt-3 p-2.5 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1] text-xs space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <div className="text-[10px] font-mono uppercase text-[#7A745F] font-bold">
+                        Familiar Contacto ({mainAcudiente.parentesco})
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const fam = familiares.find((f) => f.id === mainAcudiente.id);
+                          if (fam) {
+                            setEditingFamiliar(fam);
+                            setIsEditFamiliarOpen(true);
+                          }
+                        }}
+                        className="text-[11px] font-bold text-[#9A5B12] hover:text-[#7d480a] flex items-center gap-1 hover:underline cursor-pointer"
+                        title="Editar información del familiar"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        <span>Editar</span>
+                      </button>
+                    </div>
+                    <div className="font-bold text-[#182F28]">
+                      {mainAcudiente.nombreCompleto}
+                    </div>
+                    <div className="text-[11px] text-[#5C6058] flex items-center gap-1">
+                      <Phone className="w-3 h-3 text-[#068591]" />
+                      {mainAcudiente.telefono}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Botones Ficha y Editar */}
+              <div className="pt-3 border-t border-[#DEDBD1]/60 mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenDetail(res)}
+                  className="flex-1 py-2 px-3 bg-[#F7F6F2] hover:bg-[#ECE7DB] text-[#182F28] font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-[#DEDBD1]"
+                >
+                  <Eye className="w-3.5 h-3.5 text-[#B3803F]" />
+                  <span>Ver Ficha</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleEditResident(res)}
+                  className="py-2 px-3 bg-[#FEF7EE] hover:bg-[#fcecd7] text-[#9A5B12] font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-[#DCB87F]"
+                  title="Editar información del residente"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Editar</span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="p-12 text-center bg-white rounded-3xl border border-[#DEDBD1] space-y-2">
+          <Users className="w-8 h-8 text-[#9A917A] mx-auto" />
+          <h4 className="font-serif font-bold text-base text-[#182F28]">
+            No se encontraron residentes con los filtros aplicados
+          </h4>
+          <p className="text-xs text-[#7A745F]">
+            Ajusta los parámetros de búsqueda o registra una nueva admisión.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
