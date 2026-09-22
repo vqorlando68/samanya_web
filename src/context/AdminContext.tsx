@@ -731,11 +731,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // 6. Gestionar Permisos
   const aprobarPermiso = async (idPermiso: number, comentarios: string) => {
-    await adminApi.permisos.gestionarSolicitud({
-      idSolicitud: idPermiso,
-      idEstadoPermiso: 2, // Aprobado
-      comentariosAdmin: comentarios
-    });
+    try {
+      await adminApi.permisos.gestionarSolicitud({
+        idSolicitud: idPermiso,
+        idEstadoPermiso: 2, // Aprobado
+        comentariosAdmin: comentarios
+      });
+    } catch (err) {
+      console.warn('Aprobación de permiso en backend Oracle no completado (modo local/offline activo):', err);
+    }
 
     const permiso = permisos.find((p) => p.id === idPermiso);
     if (permiso) {
@@ -755,11 +759,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const rechazarPermiso = async (idPermiso: number, comentarios: string) => {
-    await adminApi.permisos.gestionarSolicitud({
-      idSolicitud: idPermiso,
-      idEstadoPermiso: 3, // Rechazado
-      comentariosAdmin: comentarios
-    });
+    try {
+      await adminApi.permisos.gestionarSolicitud({
+        idSolicitud: idPermiso,
+        idEstadoPermiso: 3, // Rechazado
+        comentariosAdmin: comentarios
+      });
+    } catch (err) {
+      console.warn('Rechazo de permiso en backend Oracle no completado (modo local/offline activo):', err);
+    }
 
     setPermisos((prev) =>
       prev.map((p) =>

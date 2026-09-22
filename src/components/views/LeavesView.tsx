@@ -54,19 +54,23 @@ export const LeavesView: React.FC = () => {
   const handleAction = async () => {
     if (!selectedPermisoId || !actionType) return;
 
-    if (actionType === 'aprobar') {
-      await aprobarPermiso(selectedPermisoId, comentario || 'Aprobado por administración.');
-    } else {
-      if (!comentario) {
-        alert('Por favor especifique el motivo del rechazo.');
-        return;
+    try {
+      if (actionType === 'aprobar') {
+        await aprobarPermiso(selectedPermisoId, comentario || 'Aprobado por administración.');
+      } else {
+        if (!comentario.trim()) {
+          alert('Por favor especifique el motivo del rechazo.');
+          return;
+        }
+        await rechazarPermiso(selectedPermisoId, comentario.trim());
       }
-      await rechazarPermiso(selectedPermisoId, comentario);
+    } catch (err) {
+      console.error('Error al procesar acción de permiso:', err);
+    } finally {
+      setSelectedPermisoId(null);
+      setActionType(null);
+      setComentario('');
     }
-
-    setSelectedPermisoId(null);
-    setActionType(null);
-    setComentario('');
   };
 
   return (
