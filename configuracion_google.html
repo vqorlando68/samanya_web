@@ -731,13 +731,8 @@
       </div>
 
       <div class="nav-group-title">Fases de Configuración</div>
-      <nav class="toc">
-        <a href="#arquitectura" class="active"><span class="step-num">0</span> Arquitectura y Flujo</a>
-        <a href="#paso1"><span class="step-num">1</span> Cuenta Google y Cuota</a>
-        <a href="#paso2"><span class="step-num">2</span> Proyecto en Cloud Console</a>
-        <a href="#paso3"><span class="step-num">3</span> Consentimiento OAuth 2.0</a>
-        <a href="#paso4"><span class="step-num">4</span> Credenciales Client Secret</a>
         <a href="#paso5"><span class="step-num">5</span> Handshake y Refresh Token</a>
+        <a href="#paso-definitivo"><span class="step-num">★</span> Token Definitivo (Sin Expiración)</a>
         <a href="#paso6"><span class="step-num">6</span> Persistencia en Oracle</a>
         <a href="#paso7"><span class="step-num">7</span> Jerarquía de Archivos</a>
         <a href="#paso8"><span class="step-num">8</span> Resolución de Errores</a>
@@ -1029,7 +1024,7 @@
             <ul style="margin-left: 20px; margin-top: 6px; color: var(--text-muted);">
               <li><strong>Nombre:</strong> <code>SAMANYA Drive Sync</code></li>
               <li>Si selecciona Aplicación web, en <em>URIs de redireccionamiento autorizados</em> agregue:
-                <code>http://localhost:5123</code> y <code>http://localhost</code>.</li>
+                <code>http://localhost:5123</code>, <code>http://localhost:5123/oauth2callback</code> y <code>http://localhost</code>.</li>
             </ul>
           </li>
           <li>
@@ -1044,7 +1039,7 @@
             Copie y guarde el archivo descargado en la carpeta <code>backend/</code> del repositorio con el nombre:
             <br>
             <code
-              style="background: var(--bg-surface-elevated); padding: 4px 10px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 6px;">backend/oauth_credentials.json</code>
+              style="background: var(--bg-surface-elevated); padding: 4px 10px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 6px;">backend/gdrive_credentials.json</code>
           </li>
         </ol>
       </section>
@@ -1060,9 +1055,9 @@
         </div>
 
         <p>
-          El backend de SAMANYA incluye un script automatizado que levanta un servidor temporal, abre la URL de
+          El backend de SAMANYA incluye un script automatizado en Python que levanta un servidor temporal, abre la URL de
           autorización de Google con el parámetro <code>access_type=offline</code> (vital para obtener el
-          <strong>Refresh Token</strong> permanente) y valida la conexión:
+          <strong>Refresh Token</strong>) y valida la conexión:
         </p>
 
         <div class="code-container">
@@ -1070,8 +1065,7 @@
             <span>TERMINAL (POWERSHELL / CMD)</span>
             <button class="copy-btn" onclick="copyCode('run-oauth-code')">Copiar</button>
           </div>
-          <pre class="code-block" id="run-oauth-code"><code>cd c:\Repositorios\SAMANYA\backend
-npm run oauth:setup</code></pre>
+          <pre class="code-block" id="run-oauth-code"><code>python backend/oauth_setup.py</code></pre>
         </div>
 
         <p style="margin-top: 14px;">
@@ -1113,11 +1107,227 @@ npm run oauth:setup</code></pre>
         </div>
 
         <p>
-          Al finalizar, el navegador mostrará el mensaje de éxito y en la consola del backend se generará el archivo:
+          Al finalizar, el navegador mostrará el mensaje de éxito y en la carpeta <code>backend/</code> se actualizará:
           <br>
           <code
-            style="background: var(--bg-surface-elevated); padding: 4px 10px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 6px;">backend/google_user_tokens.json</code>
+            style="background: var(--bg-surface-elevated); padding: 4px 10px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 6px;">backend/gdrive_credentials.json</code>
         </p>
+      </section>
+
+      <!-- PASO ESPECIAL: TOKEN DEFINITIVO (SIN EXPIRACIÓN DE 7 DÍAS) -->
+      <section id="paso-definitivo" class="doc-step" style="border: 2px solid var(--gold-ochre);">
+        <div class="step-header">
+          <div class="step-badge-large" style="background: var(--gold-ochre); color: var(--forest-dark);">★</div>
+          <div class="step-info">
+            <h2>Token Definitivo: Publicación en Producción</h2>
+            <p class="step-subtitle">Cómo eliminar para siempre la expiración de 7 días del Refresh Token en Google Cloud Console.</p>
+          </div>
+        </div>
+
+        <div class="callout danger">
+          <div class="callout-title">🚨 ¿Por qué el token deja de funcionar a los 7 días en Modo Testing?</div>
+          Por política estricta de seguridad de Google Cloud, cualquier aplicación cuya pantalla de consentimiento se encuentre en estado <strong>"En prueba" (Testing)</strong> emite Refresh Tokens con una vida útil máxima de <strong>7 días calendario (604.800 segundos)</strong>. Al cumplirse ese plazo, Google revoca el token y el sistema arroja el error <code>invalid_grant: Token has been expired or revoked</code>.
+          <br><br>
+          Para que el token sea <strong>permanente y no expire nunca</strong>, el proyecto debe pasar su estado de publicación a <strong>"En producción" (In production)</strong>.
+        </div>
+
+        <!-- DIAGRAMA MERMAID COMPARATIVO -->
+        <div style="background: var(--bg-surface-elevated); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-soft); margin: 24px 0;">
+          <h4 style="margin-bottom: 14px; font-size: 1.1rem; color: var(--forest-main);">Ciclo de Vida: Modo Prueba vs. Modo Producción</h4>
+          <div class="mermaid">
+            flowchart TD
+              subgraph ModoTesting["🟡 Modo Prueba (Testing) - Límite de 7 Días"]
+                direction TB
+                T1["Consentimiento: 'En prueba'"] --> T2["python backend/oauth_setup.py"]
+                T2 --> T3["Token emitido con expiración fija de 7 días"]
+                T3 --> T4["Día 7: Google revoca el Refresh Token"]
+                T4 --> T5["❌ Error 'invalid_grant' al subir archivos"]
+              end
+
+              subgraph ModoProd["🟢 Modo Producción (In Production) - Definitivo"]
+                direction TB
+                P1["Clic en 'PUBLICAR LA APLICACIÓN'"] --> P2["Estado: 'En producción'"]
+                P2 --> P3["python backend/oauth_setup.py"]
+                P3 --> P4["Bypass de advertencia 'Ir a SAMANYA (no seguro)'"]
+                P4 --> P5["✅ Token PERMANENTE (Vigencia Indefinida)"]
+              end
+
+              ModoTesting -.->|"Solución Definitiva"| ModoProd
+          </div>
+        </div>
+
+        <h3 style="margin: 28px 0 16px; font-size: 1.35rem; color: var(--forest-dark);">Guía Paso a Paso con Gráficas para Dejar el Token Definitivo</h3>
+
+        <!-- SUB-PASO 1 -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <span style="background: var(--forest-main); color: white; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;">1</span>
+            <h4 style="font-size: 1.15rem; color: var(--forest-dark); margin: 0;">Localizar el Estado de Publicación en Google Cloud Console</h4>
+          </div>
+          <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 16px;">
+            Ingrese a <a href="https://console.cloud.google.com/" target="_blank" style="color: var(--forest-main); font-weight: 600;">console.cloud.google.com</a>, verifique que se encuentre en el proyecto <strong>samanya-drive</strong> y diríjase a <strong>APIs y servicios &gt; Pantalla de consentimiento de OAuth</strong> (o en la nueva interfaz <em>Google Auth Platform &gt; Información general / Audiencia</em>).
+          </p>
+
+          <!-- GRÁFICA MOCKUP PASO 1 -->
+          <div class="screenshot-card" style="margin: 10px 0;">
+            <div class="screenshot-header">
+              <div class="window-dots">
+                <span class="window-dot dot-red"></span>
+                <span class="window-dot dot-yellow"></span>
+                <span class="window-dot dot-green"></span>
+              </div>
+              <span>Google Cloud Console — Pantalla de Consentimiento OAuth</span>
+            </div>
+            <div style="padding: 24px; background: #0f1715; color: #f7f5f0; font-family: 'Source Sans 3', sans-serif;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #283b35; padding-bottom: 14px; margin-bottom: 18px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="color: #4ade80; font-weight: 700; font-size: 1.1rem;">Google Cloud</span>
+                  <span style="background: #1f302c; border: 1px solid #375349; padding: 2px 10px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; color: #a4dfc8;">samanya-drive-508702</span>
+                </div>
+                <span style="font-size: 0.85rem; color: #abb8b2;">vqorlando@gmail.com</span>
+              </div>
+
+              <div style="background: #172421; border: 1px solid #283b35; border-radius: 10px; padding: 20px;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #788a83; margin-bottom: 8px;">Estado de publicación (Publishing status)</div>
+                <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="background: #ffbd2e; color: #12241f; font-weight: 700; font-size: 0.8rem; padding: 3px 10px; border-radius: 20px;">🟡 En prueba (Testing)</span>
+                    <span style="color: #abb8b2; font-size: 0.9rem;">Los tokens expiran automáticamente cada 7 días</span>
+                  </div>
+                  <div style="background: #274a3f; color: #f7f5f0; font-weight: 700; font-size: 0.85rem; padding: 8px 16px; border-radius: 8px; border: 1px dashed #b3803f;">
+                    👉 Paso a realizar: Clic en "PUBLICAR LA APLICACIÓN"
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="screenshot-caption">
+              <strong>Gráfica 1:</strong> Ubicación del panel de Estado de Publicación en la Pantalla de Consentimiento OAuth.
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-PASO 2 -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <span style="background: var(--forest-main); color: white; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;">2</span>
+            <h4 style="font-size: 1.15rem; color: var(--forest-dark); margin: 0;">Pulsar "PUBLICAR LA APLICACIÓN" y Confirmar</h4>
+          </div>
+          <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 16px;">
+            Haga clic en el botón <strong>"PUBLICAR LA APLICACIÓN"</strong> (<em>PUBLISH APP</em>). Aparecerá un cuadro de diálogo solicitando confirmación. Pulse el botón azul <strong>Confirmar</strong> (<em>Confirm</em>).
+          </p>
+
+          <!-- GRÁFICA MOCKUP PASO 2 -->
+          <div class="screenshot-card" style="margin: 10px 0;">
+            <div class="screenshot-header">
+              <div class="window-dots">
+                <span class="window-dot dot-red"></span>
+                <span class="window-dot dot-yellow"></span>
+                <span class="window-dot dot-green"></span>
+              </div>
+              <span>Google Cloud — Cuadro de Diálogo de Confirmación</span>
+            </div>
+            <div style="padding: 26px; background: #172421; color: #f7f5f0; display: flex; flex-direction: column; align-items: center;">
+              <div style="background: #1f302c; border: 1px solid #375349; border-radius: 12px; max-width: 580px; width: 100%; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.4);">
+                <h5 style="color: #ffffff; font-size: 1.15rem; margin-bottom: 10px; font-family: 'Fraunces', serif;">¿Deseas enviar la aplicación a producción?</h5>
+                <p style="color: #abb8b2; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px;">
+                  Tu aplicación estará disponible para cualquier usuario que tenga una Cuenta de Google. Dado que la aplicación utiliza permisos confidenciales (Google Drive API), los usuarios verán una pantalla de advertencia hasta que se verifique la aplicación.
+                </p>
+                <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                  <span style="padding: 8px 16px; border-radius: 6px; border: 1px solid #375349; color: #abb8b2; font-size: 0.85rem; font-weight: 600;">Cancelar</span>
+                  <span style="background: #2563eb; color: #ffffff; padding: 8px 20px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; box-shadow: 0 2px 8px rgba(37,99,235,0.4);">CONFIRMAR</span>
+                </div>
+              </div>
+
+              <div style="margin-top: 18px; display: inline-flex; align-items: center; gap: 8px; background: #122d1f; border: 1px solid #22c55e; color: #4ade80; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;">
+                <span>🟢 NUEVO ESTADO: En producción (In production) — El límite de 7 días ha sido eliminado</span>
+              </div>
+            </div>
+            <div class="screenshot-caption">
+              <strong>Gráfica 2:</strong> Cuadro modal oficial de confirmación para pasar la aplicación a estado de Producción.
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-PASO 3 -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <span style="background: var(--forest-main); color: white; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;">3</span>
+            <h4 style="font-size: 1.15rem; color: var(--forest-dark); margin: 0;">Autorización sin Auditoría de Google (Bypass de Seguridad Seguro)</h4>
+          </div>
+          <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 16px;">
+            Google mostrará un botón de <em>"Iniciar verificación"</em>. <strong>NO es necesario iniciar ni pagar la auditoría de Google</strong>. La auditoría solo se exige para apps masivas públicas. Para su cuenta personal/organizacional, basta con realizar el bypass en la pantalla de autorización:
+          </p>
+
+          <!-- GRÁFICA DE FLUJO DE BYPASS -->
+          <div style="background: var(--bg-surface-elevated); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-soft); margin: 12px 0;">
+            <div class="mermaid">
+              graph LR
+                A["1. Pantalla de Google:<br><b>'Google no ha verificado esta app'</b>"] --> B["2. Clic en enlace inferior:<br><b>'Configuración avanzada' (Advanced)</b>"]
+                B --> C["3. Clic en enlace:<br><b>'Ir a SAMANYA OS (no seguro)'</b>"]
+                C --> D["4. Marcar casillas:<br><b>'Ver, editar y crear archivos en Drive'</b>"]
+                D --> E["5. Clic en:<br><b>'Continuar' / 'Permitir'</b>"]
+            </div>
+          </div>
+          <div class="screenshot-caption" style="border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--bg-surface);">
+            <strong>Gráfica 3:</strong> Secuencia de 5 pasos para autorizar la aplicación de forma segura con su cuenta de Google.
+          </div>
+        </div>
+
+        <!-- SUB-PASO 4 -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 24px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <span style="background: var(--forest-main); color: white; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;">4</span>
+            <h4 style="font-size: 1.15rem; color: var(--forest-dark); margin: 0;">Generar el Token Definitivo y Probar Conexión</h4>
+          </div>
+          <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 14px;">
+            Una vez que la aplicación esté en producción en Google Cloud Console, ejecute el asistente interactivo en la terminal de su equipo:
+          </p>
+
+          <div class="code-container">
+            <div class="code-header">
+              <span>TERMINAL (POWERSHELL / CMD)</span>
+              <button class="copy-btn" onclick="copyCode('run-oauth-definitivo')">Copiar</button>
+            </div>
+            <pre class="code-block" id="run-oauth-definitivo"><code>python backend/oauth_setup.py</code></pre>
+          </div>
+
+          <!-- GRÁFICA MOCKUP PASO 4 (TERMINAL SALIDA) -->
+          <div class="screenshot-card" style="margin: 16px 0 0;">
+            <div class="screenshot-header">
+              <div class="window-dots">
+                <span class="window-dot dot-red"></span>
+                <span class="window-dot dot-yellow"></span>
+                <span class="window-dot dot-green"></span>
+              </div>
+              <span>Terminal — Salida Exitosa del Asistente (Token Permanente)</span>
+            </div>
+            <pre class="code-block" style="background: #0b1411; color: #a4dfc8; margin: 0; padding: 20px;">
+================================================================
+🔐 ASISTENTE DE AUTORIZACIÓN GOOGLE DRIVE (SAMANYA OS)
+================================================================
+Client ID: 942716853572-v9fu9qlk3u8q...
+Redirect URI: http://localhost:5123/oauth2callback
+
+Abriendo automáticamente su navegador para autorizar la cuenta Google...
+⏳ Esperando autorización en http://localhost:5123/oauth2callback ...
+
+✅ Código de autorización recibido de Google.
+🔄 Canjeando código por nuevo Refresh Token...
+✅ Credenciales actualizadas exitosamente en: backend/gdrive_credentials.json
+🔑 Refresh Token nuevo: 1//01RYNr06xi_uXCgYIARAAG... (VIGENCIA PERMANENTE)
+
+🔍 Verificando acceso a Google Drive y creando directorios...
+📁 Directorio raíz 'Samanya': ID 1lbB1dQu9PtqFWvgkIflCaWzOIYUE0-iK
+📁 Directorio 'Samanya/Talento_humano': ID 1rO16zBgDz1KIJ6Ylh1cMARepHUYXOa9s
+
+================================================================
+🎉 ¡CONEXIÓN CON GOOGLE DRIVE 100% OPERATIVA Y DEFINITIVA!
+================================================================</pre>
+            <div class="screenshot-caption">
+              <strong>Gráfica 4:</strong> Confirmación en terminal de credenciales actualizadas con creación de directorios en cascada.
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- PASO 6: PERSISTENCIA EN ORACLE -->
@@ -1312,16 +1522,13 @@ ORDER BY ID;</code></pre>
 
         <div class="faq-item">
           <div class="faq-question" onclick="toggleFaq(this)">
-            <span>❌ Error: "invalid_grant" (Token expirado o revocado)</span>
+            <span>❌ Error: "invalid_grant" (Token expirado o revocado tras 7 días)</span>
             <span class="faq-icon">▼</span>
           </div>
           <div class="faq-answer">
-            <strong>Causa:</strong> El usuario cambió la contraseña de su cuenta de Google o revocó los permisos de la
-            aplicación en la configuración de seguridad de su cuenta Google.
+            <strong>Causa:</strong> Si el proyecto en Google Cloud Console se encuentra en estado <em>"En prueba" (Testing)</em>, las políticas de seguridad de Google revocan obligatoriamente los Refresh Tokens cada <strong>7 días calendario</strong>. También se produce si el usuario cambia la contraseña de su cuenta Google.
             <br><br>
-            <strong>Solución:</strong> Vuelva a ejecutar <code>npm run oauth:setup</code> en la carpeta
-            <code>backend/</code> para generar un nuevo Refresh Token y actualice el registro correspondiente en la
-            tabla <code>SMY_PARAMETROS</code>.
+            <strong>Solución Definitiva:</strong> Cambie el estado de publicación del proyecto a <strong>"En producción" (In production)</strong> siguiendo la guía con gráficas de la sección <a href="#paso-definitivo" style="color: var(--forest-main); font-weight: 700;">★ Token Definitivo: Publicación en Producción</a> y ejecute <code>python backend/oauth_setup.py</code> para generar el Refresh Token permanente.
           </div>
         </div>
 
