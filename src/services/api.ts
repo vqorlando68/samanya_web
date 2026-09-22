@@ -1,3 +1,5 @@
+import { MedicamentoPrescrito } from '../types';
+
 /**
  * Capa de Servicios API para el Portal de Administradores
  * 
@@ -23,45 +25,63 @@ async function postToPackage<T>(endpoint: string, jsonPayload: Record<string, an
     });
 
     if (response.ok) {
-      return await response.json();
+      const data = await response.json();
+      if (data && data.success === false) {
+        console.error(`[Samanya Oracle API Error] en ${endpoint}:`, data.error);
+        throw new Error(data.error || 'Error en base de datos Oracle');
+      }
+      return data;
+    } else {
+      let errorMsg = `Error HTTP ${response.status}`;
+      try {
+        const errJson = await response.json();
+        errorMsg = errJson.error || errorMsg;
+      } catch {
+        const errText = await response.text();
+        if (errText) errorMsg = errText;
+      }
+      console.error(`[Samanya Oracle API HTTP Error ${response.status}] en ${endpoint}:`, errorMsg);
+      throw new Error(errorMsg);
     }
-  } catch (err) {
-    // Si no hay backend conectado (ej. preview en Vercel sin microservicio local),
-    // se mantiene la ejecución autónoma en el frontend usando el estado reactivo.
-    console.info(`Modo autónomo/offline para ${endpoint}:`, err);
+  } catch (error) {
+    console.warn(`[Samanya Oracle API] Despacho a ${endpoint}:`, error);
+    throw error;
   }
-
-  return { success: true, mockMode: true } as unknown as T;
 }
 
 export const adminApi = {
-  // 1. Dashboard General (PKGLN_DASHBOARD_ADMINISTRADOR)
+  // 1. Métricas e Incidentes (PKGLN_DASHBOARD_ADMINISTRADOR)
   dashboard: {
-    async obtenerResumen(idCentro: number) {
-      return postToPackage('/pkgln_dashboard_administrador/pr_obtener_resumen_dashboard', {
-        idCentro
-      });
+    async obtenerMetricas(idCentro: number) {
+      return postToPackage('/pkgln_dashboard_administrador/pr_obtener_metricas', { idCentro });
     }
   },
 
-  // 2. Admisión y Ficha de Residente (PKGLN_ADMISION_RESIDENTE)
+  // 2. Admisión y Ficha de Residentes (PKGLN_ADMISION_RESIDENTE)
   residentes: {
     async registrarResidente(payload: {
       idCentro: number;
-      tipoIdentificacion: string;
+      tipoIdentificacion?: string;
+      idTipoIdentificacion?: number;
       identificacion: string;
       nombres: string;
       apellidos: string;
       fechaNacimiento: string;
-      genero: string;
+      genero?: string;
+      idGenero?: number;
       habitacion: string;
       cama: string;
       eps: string;
       planComplementario?: string;
       tipoSangre: string;
-      nivelMovilidad: string;
-      tipoDieta: string;
+      nivelMovilidad?: string;
+      idNivelMovilidad?: number;
+      tipoDieta?: string;
+      idTipoDieta?: number;
+      idEstadoResidente?: number;
+      fechaIngreso?: string;
       alertasClinicas?: string;
+      medicamentos?: MedicamentoPrescrito[];
       acudienteAsociado?: {
         nombres: string;
         apellidos: string;
@@ -91,15 +111,22 @@ export const adminApi = {
       idNivelMovilidad?: number;
       idTipoDieta?: number;
       alertasClinicas?: string;
+      medicamentos?: MedicamentoPrescrito[];
       idEstadoResidente?: number;
+      fechaIngreso?: string;
     }) {
       return postToPackage('/pkgln_admision_residente/pr_actualizar_residente', payload);
+    },
+
+    async consultarCenso(idCentro?: number): Promise<{ success: boolean; data?: any[]; count?: number }> {
+      return postToPackage('/pkgca_residentes/p_consultar_censo', { idCentro });
     }
   },
 
   // 3. Gestión de Familiares y Acudientes (PKGLN_GESTION_FAMILIARES)
   familiares: {
     async registrarFamiliar(payload: {
+      idTipoIdentificacion?: number;
       tipoIdentificacion: string;
       identificacion: string;
       nombres: string;
@@ -109,12 +136,14 @@ export const adminApi = {
       email: string;
       direccion: string;
       ciudad: string;
+      idCanalNotifPref?: number;
       canalNotificacionPref: string;
       idResidente?: number;
+      idParentesco?: number;
       parentesco?: string;
-      esPrincipal?: boolean;
-      autorizadoSalidas?: boolean;
-      responsablePago?: boolean;
+      esPrincipal?: boolean | number;
+      autorizadoSalidas?: boolean | number;
+      responsablePago?: boolean | number;
     }) {
       return postToPackage('/pkgln_gestion_familiares/pr_registrar_familiar', payload);
     },

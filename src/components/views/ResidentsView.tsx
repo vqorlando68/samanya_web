@@ -4,6 +4,7 @@ import { Residente } from '../../types';
 import {
   Users,
   UserPlus,
+  RefreshCw,
   Filter,
   Eye,
   Edit3,
@@ -11,8 +12,10 @@ import {
   Phone,
   Bed,
   Utensils,
-  Activity
+  Activity,
+  Pill
 } from 'lucide-react';
+import { ResidentAvatar } from '../common/ResidentAvatar';
 
 export const ResidentsView: React.FC = () => {
   const {
@@ -26,9 +29,11 @@ export const ResidentsView: React.FC = () => {
     setEditingResidente,
     setIsEditResidenteOpen,
     setEditingFamiliar,
-    setIsEditFamiliarOpen
+    setIsEditFamiliarOpen,
+    sincronizarResidentes
   } = useAdmin();
 
+  const [isSyncing, setIsSyncing] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('TODOS');
   const [filterMobility, setFilterMobility] = useState<string>('TODOS');
 
@@ -83,14 +88,34 @@ export const ResidentsView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsRegisterResidentOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#B3803F] hover:bg-[#9a6c32] text-white font-bold rounded-xl text-sm shadow-xs transition-all cursor-pointer"
-        >
-          <UserPlus className="w-4 h-4" />
-          <span>Admitir Nuevo Residente</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={isSyncing}
+            onClick={async () => {
+              setIsSyncing(true);
+              try {
+                await sincronizarResidentes();
+              } finally {
+                setIsSyncing(false);
+              }
+            }}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-[#F2EFE9] text-[#182F28] border border-[#DEDBD1] font-semibold rounded-xl text-sm shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+            title="Consultar y sincronizar censo real desde la base de datos Oracle"
+          >
+            <RefreshCw className={`w-4 h-4 text-[#274A3F] ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar con Oracle'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsRegisterResidentOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#B3803F] hover:bg-[#9a6c32] text-white font-bold rounded-xl text-sm shadow-xs transition-all cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Admitir Nuevo Residente</span>
+          </button>
+        </div>
       </div>
 
       {/* Barra de Filtros */}
@@ -143,13 +168,14 @@ export const ResidentsView: React.FC = () => {
                 {/* Cabecera Tarjeta */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={
-                        res.fotoUrl ||
-                        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80'
-                      }
-                      alt={res.nombreCompleto}
-                      className="w-12 h-12 rounded-xl object-cover border border-[#DEDBD1] shrink-0"
+                    <ResidentAvatar
+                      fotoUrl={res.fotoUrl}
+                      nombres={res.nombres}
+                      apellidos={res.apellidos}
+                      nombreCompleto={res.nombreCompleto}
+                      sizeClass="w-12 h-12"
+                      roundedClass="rounded-xl"
+                      textClass="text-base"
                     />
                     <div>
                       <h4 className="font-serif font-bold text-base text-[#182F28] leading-snug">
@@ -200,6 +226,23 @@ export const ResidentsView: React.FC = () => {
                   <div className="mt-3 p-2 bg-[#FEF7EE] rounded-lg border border-[#DCB87F] text-[11px] text-[#9A5B12] flex items-center gap-1.5">
                     <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
                     <span className="truncate">{res.alertasClinicas}</span>
+                  </div>
+                )}
+
+                {/* Medicamentos Prescritos */}
+                {res.medicamentos && res.medicamentos.length > 0 && (
+                  <div className="mt-2.5 p-2 bg-[#F2F8F5] rounded-lg border border-[#BDE0D0] text-[11px] text-[#1E7A4C] flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Pill className="w-3.5 h-3.5 shrink-0 text-[#1E7A4C]" />
+                      <span className="font-medium truncate">
+                        {res.medicamentos.length === 1
+                          ? `${res.medicamentos[0].medicamento} (${res.medicamentos[0].cantidad})`
+                          : `${res.medicamentos.length} medicamentos prescritos`}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold font-mono uppercase bg-[#DFF3E7] px-1.5 py-0.5 rounded text-[#185A37] shrink-0 ml-1">
+                      {res.medicamentos.length} Rx
+                    </span>
                   </div>
                 )}
 

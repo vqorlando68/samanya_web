@@ -2208,9 +2208,9 @@
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_admision_residente.sql": {
-    "mtime": 1790042366.4843044,
-    "seen": 1790042530.3613474,
-    "ast_hash": "5e344ec86cb1b87d78d59229875e8ead",
+    "mtime": 1789776079.2561975,
+    "seen": 1789776598.3603203,
+    "ast_hash": "287fcb110811b6b12bfc6d0a89767216",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_cuadrantes_turnos.sql": {
@@ -2226,9 +2226,9 @@
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_gestion_familiares.sql": {
-    "mtime": 1790044227.271755,
-    "seen": 1790044894.4238524,
-    "ast_hash": "db8a3df06dbbe842e58db00390490b75",
+    "mtime": 1789777303.2311523,
+    "seen": 1789777778.2128325,
+    "ast_hash": "e3148e27910659c17ad7d23fdd6c3369",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_permisos_ausencias.sql": {
@@ -2256,9 +2256,9 @@
     "semantic_hash": ""
   },
   "src/components/layout/AdminHeader.tsx": {
-    "mtime": 1790040965.3668478,
-    "seen": 1790041339.9559317,
-    "ast_hash": "881ac848a21dc401c6c77d8890d2e723",
+    "mtime": 1789777695.9615495,
+    "seen": 1789777778.2131357,
+    "ast_hash": "e78e89074da5454788ccb17bc20fbb1b",
     "semantic_hash": ""
   },
   "src/components/layout/AdminSidebar.tsx": {
@@ -2268,15 +2268,15 @@
     "semantic_hash": ""
   },
   "src/components/modals/RegisterFamilyModal.tsx": {
-    "mtime": 1790044422.8496847,
-    "seen": 1790044894.4241078,
-    "ast_hash": "05792c6343db264ee30214ed0d87eb94",
+    "mtime": 1789777502.687833,
+    "seen": 1789777778.2131495,
+    "ast_hash": "92af4ac0124d9a72f2c1dda5c15a60dc",
     "semantic_hash": ""
   },
   "src/components/modals/RegisterResidentModal.tsx": {
-    "mtime": 1790043267.0653317,
-    "seen": 1790043390.572665,
-    "ast_hash": "b83501315408584b89b02c3fa211f203",
+    "mtime": 1789777575.8617432,
+    "seen": 1789777778.2131517,
+    "ast_hash": "77e4349465ae14f98135db704082dced",
     "semantic_hash": ""
   },
   "src/components/modals/RegisterWorkerModal.tsx": {
@@ -2286,9 +2286,9 @@
     "semantic_hash": ""
   },
   "src/components/modals/ResidentDetailModal.tsx": {
-    "mtime": 1790040932.179239,
-    "seen": 1790041339.956005,
-    "ast_hash": "442298d3f0e3ff166cae286a7e00e34c",
+    "mtime": 1789777546.9621701,
+    "seen": 1789777778.213156,
+    "ast_hash": "3c01250b6254e27996f03305c7e0afaa",
     "semantic_hash": ""
   },
   "src/components/views/ClinicalSupervisionView.tsx": {
@@ -2298,9 +2298,9 @@
     "semantic_hash": ""
   },
   "src/components/views/DashboardView.tsx": {
-    "mtime": 1790040949.0135665,
-    "seen": 1790041339.956019,
-    "ast_hash": "04df18cddadebec2a20877c3e793b8a6",
+    "mtime": 1789951904.4892793,
+    "seen": 1789951991.7911785,
+    "ast_hash": "3695b19ed6559309fdb4e4598ac4ccd2",
     "semantic_hash": ""
   },
   "src/components/views/FamilyMembersView.tsx": {
@@ -2316,9 +2316,9 @@
     "semantic_hash": ""
   },
   "src/components/views/ResidentsView.tsx": {
-    "mtime": 1790043253.5500224,
-    "seen": 1790043390.5727153,
-    "ast_hash": "a4961beba10a01681c0acff4cdc87eb0",
+    "mtime": 1789777527.3426962,
+    "seen": 1789777778.2131717,
+    "ast_hash": "659fa48bac1211512d05089aeac69449",
     "semantic_hash": ""
   },
   "src/components/views/ShiftsView.tsx": {
@@ -2334,15 +2334,15 @@
     "semantic_hash": ""
   },
   "src/context/AdminContext.tsx": {
-    "mtime": 1790044961.4389431,
-    "seen": 1790045028.8609748,
-    "ast_hash": "ad21eaca9e6cd5b42b24733b49a612c5",
+    "mtime": 1789951884.80847,
+    "seen": 1789951991.7912436,
+    "ast_hash": "d6693951263281d001453e8a294ba05c",
     "semantic_hash": ""
   },
   "src/data/seedData.ts": {
-    "mtime": 1790041241.6474032,
-    "seen": 1790041339.9560962,
-    "ast_hash": "eeca96cdd5f0e50e7ab2ea4aee1df2ab",
+    "mtime": 1789951863.171854,
+    "seen": 1789951991.7912552,
+    "ast_hash": "1aa42c901b1e9e1245b8300b7f22eda5",
     "semantic_hash": ""
   },
   "src/main.tsx": {
@@ -2352,15 +2352,15 @@
     "semantic_hash": ""
   },
   "src/services/api.ts": {
-    "mtime": 1790044955.1625519,
-    "seen": 1790045028.860982,
-    "ast_hash": "ac869f87c34201b39ae0d1350da9fa74",
+    "mtime": 1789787417.8496618,
+    "seen": 1789787771.5893347,
+    "ast_hash": "07600f4d0e37dced66065420464aa3c0",
     "semantic_hash": ""
   },
   "src/types/index.ts": {
-    "mtime": 1790040854.228537,
-    "seen": 1790041339.9561222,
-    "ast_hash": "f226acb2c5d75d539f64cc912b1dc3d8",
+    "mtime": 1789777353.536885,
+    "seen": 1789777778.2132235,
+    "ast_hash": "d932a105fee8f3bb6c3fabd33b4b1355",
     "semantic_hash": ""
   },
   "src/vite-env.d.ts": {
@@ -2376,9 +2376,9 @@
     "semantic_hash": ""
   },
   "vite.config.ts": {
-    "mtime": 1790043081.282856,
-    "seen": 1790043390.5727959,
-    "ast_hash": "36d7ece29020f8ca4b212a49200c9478",
+    "mtime": 1789790725.3276217,
+    "seen": 1789791050.0877898,
+    "ast_hash": "31b8a3eb7857e54a843c697e81bed27c",
     "semantic_hash": ""
   },
   "index.html": {
@@ -2406,9 +2406,9 @@
     "semantic_hash": ""
   },
   "src/components/modals/EditResidentModal.tsx": {
-    "mtime": 1790042440.3249176,
-    "seen": 1790042530.361672,
-    "ast_hash": "72852802d38e34cfb2f01ee0d5957c34",
+    "mtime": 1789777599.245067,
+    "seen": 1789777778.2131426,
+    "ast_hash": "1de5c3a50260b5ae918c15319df9157e",
     "semantic_hash": ""
   },
   "src/components/modals/EditWorkerModal.tsx": {
@@ -2442,9 +2442,9 @@
     "semantic_hash": ""
   },
   "src/utils/avatarUtils.ts": {
-    "mtime": 1790040865.4442482,
-    "seen": 1790041339.9561276,
-    "ast_hash": "2ca078078b6b85dfdc424ecc37e1ef04",
+    "mtime": 1789951843.6400251,
+    "seen": 1789951991.7913277,
+    "ast_hash": "7cf14174047a5ab4abcdcdb6d4d20a95",
     "semantic_hash": ""
   },
   "public/uploads/talento_humano/27842950a090dfd62caa00788cab283a3a112305bde3599d8282036a02b2feba.jpg": {
@@ -2463,18 +2463,6 @@
     "mtime": 1789791613.1131096,
     "seen": 1789951991.7919312,
     "ast_hash": "9a8670db6c4395c3325673829bdd3a37",
-    "semantic_hash": ""
-  },
-  "src/components/common/ResidentAvatar.tsx": {
-    "mtime": 1790040872.9803464,
-    "seen": 1790041339.9559174,
-    "ast_hash": "4e3b563dc9ce64d1a452b0b5e2305679",
-    "semantic_hash": ""
-  },
-  "backend/oracle_bridge.py": {
-    "mtime": 1790044992.421443,
-    "seen": 1790045028.8608952,
-    "ast_hash": "2de49bfde2b6fa21debc9b5f2d6bf7a3",
     "semantic_hash": ""
   }
 }

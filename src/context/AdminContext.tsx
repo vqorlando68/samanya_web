@@ -82,7 +82,8 @@ interface AdminContextType {
   setIsEditSedeOpen: (open: boolean) => void;
 
   // Acciones de Negocio (sin DML en el front)
-  registrarResidente: (data: Omit<Residente, 'id' | 'codigoExpediente' | 'edad' | 'fechaIngreso'> & {
+  registrarResidente: (data: Omit<Residente, 'id' | 'codigoExpediente' | 'edad'> & {
+    fechaIngreso?: string;
     familiarContacto?: {
       nombres: string;
       apellidos: string;
@@ -94,6 +95,7 @@ interface AdminContextType {
   }) => Promise<void>;
 
   actualizarResidente: (idResidente: number, data: Partial<Residente>) => Promise<void>;
+  sincronizarResidentes: () => Promise<void>;
 
   registrarFamiliar: (data: Omit<FamiliarAcudiente, 'id' | 'nombreCompleto'> & {
     idResidenteVinculado?: number;
@@ -208,6 +210,111 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('samanya_admin_incidentes', JSON.stringify(incidentes));
   }, [incidentes]);
 
+  // Sincronizar en caliente los trabajadores asignados en turnos con la lista maestra de trabajadores
+  useEffect(() => {
+    setTurnos((prevTurnos) => {
+      let changed = false;
+      const synced = prevTurnos.map((turno) => {
+        let turnoChanged = false;
+        const updatedWorkers = turno.trabajadoresAsignados.map((w) => {
+          const master = trabajadores.find((t) => t.id === w.idTrabajador);
+          if (!master) return w;
+          const masterName = master.nombreCompleto || `${master.nombres} ${master.apellidos}`.trim();
+          if (
+            w.nombre !== masterName ||
+            (master.avatarUrl && w.avatarUrl !== master.avatarUrl) ||
+            (master.cargo && w.cargo !== master.cargo) ||
+            (master.area && w.area !== master.area)
+          ) {
+            turnoChanged = true;
+            return {
+              ...w,
+              nombre: masterName,
+              avatarUrl: master.avatarUrl || w.avatarUrl,
+              cargo: master.cargo || w.cargo,
+              area: master.area || w.area
+            };
+          }
+          return w;
+        });
+
+        if (turnoChanged) {
+          changed = true;
+          return { ...turno, trabajadoresAsignados: updatedWorkers };
+        }
+        return turno;
+      });
+
+      return changed ? synced : prevTurnos;
+    });
+  }, [trabajadores]);
+
+  // Sincronización en tiempo real con la base de datos Oracle
+  const sincronizarResidentes = async (silencioso = false) => {
+    try {
+      const resp = await adminApi.residentes.consultarCenso(activeSede.id);
+      if (resp && resp.success && Array.isArray(resp.data)) {
+        const rows = resp.data;
+        const mapped: Residente[] = rows.map((r: any) => {
+          let estadoVal: Residente['estado'] = 'Activo';
+          const est = String(r.estado || '').toUpperCase();
+          if (est.includes('OBSERVACION') || est.includes('OBSERVACIÓN')) estadoVal = 'En Observación';
+          else if (est.includes('HOSPITAL')) estadoVal = 'Hospitalizado';
+          else if (est.includes('EGRESADO')) estadoVal = 'Egresado';
+
+          let movVal: Residente['nivelMovilidad'] = 'Independiente';
+          const mov = String(r.nivel_movilidad || '').toLowerCase();
+          if (mov.includes('leve') || mov.includes('asistida')) movVal = 'Asistencia Leve';
+          else if (mov.includes('moderada') || mov.includes('silla')) movVal = 'Asistencia Moderada';
+          else if (mov.includes('dependiente') || mov.includes('encamado')) movVal = 'Dependiente Total';
+
+          return {
+            id: Number(r.id),
+            idCentro: Number(r.id_centro) || activeSede.id,
+            codigoExpediente: r.codigo_expediente || `RES-${r.id}`,
+            tipoIdentificacion: 'CC',
+            identificacion: String(r.identificacion || ''),
+            nombres: r.nombres || '',
+            apellidos: r.apellidos || '',
+            nombreCompleto: r.nombre_completo || `${r.nombres || ''} ${r.apellidos || ''}`.trim(),
+            fechaNacimiento: r.fecha_nacimiento ? String(r.fecha_nacimiento).slice(0, 10) : '1945-01-01',
+            edad: Number(r.edad) || 75,
+            genero: 'M',
+            fotoUrl: r.foto_url,
+            habitacion: String(r.habitacion || '101'),
+            cama: String(r.cama || 'A'),
+            eps: 'Sanitas EPS',
+            planComplementario: '',
+            tipoSangre: 'O+',
+            nivelMovilidad: movVal,
+            tipoDieta: (r.tipo_dieta as any) || 'Normal / General',
+            alertasClinicas: r.alertas_clinicas || '',
+            estado: estadoVal,
+            fechaIngreso: r.fecha_ingreso ? String(r.fecha_ingreso).slice(0, 10) : '2024-01-10',
+            medicamentos: [],
+            acudientes: []
+          };
+        });
+
+        setResidentes(mapped);
+        localStorage.setItem('samanya_admin_residentes', JSON.stringify(mapped));
+        if (!silencioso) {
+          showToast(`✅ Sincronizados ${mapped.length} residentes desde la base de datos Oracle`, 'success');
+        }
+      }
+    } catch (err: any) {
+      console.error('[AdminContext] Error al sincronizar residentes con Oracle:', err);
+      if (!silencioso) {
+        showToast(`❌ Error al conectar con Oracle: ${err.message || 'Error de conexión'}`, 'alert');
+      }
+    }
+  };
+
+  // Sincronizar automáticamente con Oracle al cargar o cambiar sede
+  useEffect(() => {
+    sincronizarResidentes(true);
+  }, [activeSede.id]);
+
   // Búsqueda
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -265,7 +372,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // 1. Registrar Residente (Flujo de Admisión)
   const registrarResidente = async (
-    data: Omit<Residente, 'id' | 'codigoExpediente' | 'edad' | 'fechaIngreso'> & {
+    data: Omit<Residente, 'id' | 'codigoExpediente' | 'edad'> & {
+      fechaIngreso?: string;
       familiarContacto?: {
         nombres: string;
         apellidos: string;
@@ -287,25 +395,49 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const newId = Date.now();
     const codigoExpediente = `RES-2025-${String(residentes.length + 1).padStart(3, '0')}`;
-    const fechaIngreso = new Date().toISOString().split('T')[0];
+    const fechaIngreso = data.fechaIngreso || new Date().toISOString().split('T')[0];
+
+    // Mapeo a IDs de catálogo requeridos por Oracle
+    const idTipoIdentificacion = data.tipoIdentificacion === 'CC' ? 1 : data.tipoIdentificacion === 'CE' ? 2 : 3;
+    const idGenero = data.genero === 'M' ? 1 : data.genero === 'F' ? 2 : 3;
+    const idNivelMovilidad =
+      data.nivelMovilidad === 'Independiente' ? 1 :
+      data.nivelMovilidad === 'Asistencia Leve' ? 2 :
+      data.nivelMovilidad === 'Asistencia Moderada' ? 3 : 4;
+    const idTipoDieta =
+      data.tipoDieta === 'Normal / General' ? 1 :
+      data.tipoDieta === 'Blanda' ? 2 :
+      data.tipoDieta === 'Hiposódica' ? 3 :
+      data.tipoDieta === 'Diabética' ? 4 : 5;
+    const idEstadoResidente =
+      data.estado === 'Activo' ? 1 :
+      data.estado === 'En Observación' ? 2 :
+      data.estado === 'Hospitalizado' ? 3 : 4;
 
     // Payload para el paquete Oracle PKGLN_ADMISION_RESIDENTE
     const payload = {
       idCentro: data.idCentro || activeSedeId,
+      idTipoIdentificacion,
       tipoIdentificacion: data.tipoIdentificacion,
       identificacion: data.identificacion,
       nombres: data.nombres,
       apellidos: data.apellidos,
       fechaNacimiento: data.fechaNacimiento,
+      idGenero,
       genero: data.genero,
       habitacion: data.habitacion,
       cama: data.cama,
       eps: data.eps,
       planComplementario: data.planComplementario,
       tipoSangre: data.tipoSangre,
+      idNivelMovilidad,
       nivelMovilidad: data.nivelMovilidad,
+      idTipoDieta,
       tipoDieta: data.tipoDieta,
+      idEstadoResidente,
+      fechaIngreso,
       alertasClinicas: data.alertasClinicas,
+      medicamentos: data.medicamentos,
       acudienteAsociado: data.familiarContacto
         ? {
             ...data.familiarContacto,
@@ -314,60 +446,67 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         : undefined
     };
 
-    // Despacho a API
-    await adminApi.residentes.registrarResidente(payload);
+    try {
+      // Despacho a API Oracle
+      await adminApi.residentes.registrarResidente(payload);
 
-    // Si se incluyó acudiente en el formulario, registrarlo en la lista de familiares
-    let acudientesAsociados = [...data.acudientes];
-    if (data.familiarContacto && data.familiarContacto.nombres.trim()) {
-      const nuevoFamiliarId = Date.now() + 1;
-      const nuevoFamiliar: FamiliarAcudiente = {
-        id: nuevoFamiliarId,
-        tipoIdentificacion: 'CC',
-        identificacion: data.familiarContacto.identificacion,
-        nombres: data.familiarContacto.nombres,
-        apellidos: data.familiarContacto.apellidos,
-        nombreCompleto: `${data.familiarContacto.nombres} ${data.familiarContacto.apellidos}`.trim(),
-        telefonoPrincipal: data.familiarContacto.telefono,
-        email: data.familiarContacto.email,
-        direccion: activeSede.direccion,
-        ciudad: activeSede.ciudad,
-        canalNotificacionPref: 'WhatsApp',
-        residentesAsociados: [
-          {
-            idResidente: newId,
-            nombreResidente: `${data.nombres} ${data.apellidos}`.trim(),
-            parentesco: data.familiarContacto.parentesco,
-            esPrincipal: true,
-            autorizadoSalidas: true,
-            responsablePago: true
-          }
-        ]
+      // Si se incluyó acudiente en el formulario, registrarlo en la lista de familiares
+      let acudientesAsociados = [...data.acudientes];
+      if (data.familiarContacto && data.familiarContacto.nombres.trim()) {
+        const nuevoFamiliarId = Date.now() + 1;
+        const nuevoFamiliar: FamiliarAcudiente = {
+          id: nuevoFamiliarId,
+          tipoIdentificacion: 'CC',
+          identificacion: data.familiarContacto.identificacion,
+          nombres: data.familiarContacto.nombres,
+          apellidos: data.familiarContacto.apellidos,
+          nombreCompleto: `${data.familiarContacto.nombres} ${data.familiarContacto.apellidos}`.trim(),
+          telefonoPrincipal: data.familiarContacto.telefono,
+          email: data.familiarContacto.email,
+          direccion: activeSede.direccion,
+          ciudad: activeSede.ciudad,
+          canalNotificacionPref: 'WhatsApp',
+          residentesAsociados: [
+            {
+              idResidente: newId,
+              nombreResidente: `${data.nombres} ${data.apellidos}`.trim(),
+              parentesco: data.familiarContacto.parentesco,
+              esPrincipal: true,
+              autorizadoSalidas: true,
+              responsablePago: true
+            }
+          ]
+        };
+
+        setFamiliares((prev) => [nuevoFamiliar, ...prev]);
+
+        acudientesAsociados.push({
+          id: nuevoFamiliarId,
+          nombreCompleto: nuevoFamiliar.nombreCompleto,
+          parentesco: data.familiarContacto.parentesco,
+          telefono: data.familiarContacto.telefono,
+          email: data.familiarContacto.email,
+          esPrincipal: true
+        });
+      }
+
+      const nuevoResidente: Residente = {
+        ...data,
+        id: newId,
+        codigoExpediente,
+        edad,
+        fechaIngreso,
+        estado: data.estado || 'Activo',
+        acudientes: acudientesAsociados
       };
 
-      setFamiliares((prev) => [nuevoFamiliar, ...prev]);
-
-      acudientesAsociados.push({
-        id: nuevoFamiliarId,
-        nombreCompleto: nuevoFamiliar.nombreCompleto,
-        parentesco: data.familiarContacto.parentesco,
-        telefono: data.familiarContacto.telefono,
-        email: data.familiarContacto.email,
-        esPrincipal: true
-      });
+      setResidentes((prev) => [nuevoResidente, ...prev]);
+      showToast(`✅ Residente ${nuevoResidente.nombreCompleto} guardado exitosamente en la base de datos Oracle`, 'success');
+    } catch (err: any) {
+      console.error('[Error registrarResidente Oracle]:', err);
+      showToast(`❌ Error al guardar en base de datos Oracle: ${err.message || 'No se pudo completar la operación'}`, 'alert');
+      throw err;
     }
-
-    const nuevoResidente: Residente = {
-      ...data,
-      id: newId,
-      codigoExpediente,
-      edad,
-      fechaIngreso,
-      acudientes: acudientesAsociados
-    };
-
-    setResidentes((prev) => [nuevoResidente, ...prev]);
-    showToast(`Residente ${nuevoResidente.nombreCompleto} admitido exitosamente`, 'success');
   };
 
   // 2. Registrar Familiar / Acudiente
@@ -420,8 +559,31 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }
 
+    // Mapeo de catálogos requeridos por Oracle PKGLN_GESTION_FAMILIARES
+    const idTipoIdentificacion = data.tipoIdentificacion === 'CC' ? 1 : data.tipoIdentificacion === 'CE' ? 2 : 3;
+    const idCanalNotifPref =
+      data.canalNotificacionPref === 'Correo' ? 2 :
+      data.canalNotificacionPref === 'Push App' ? 3 :
+      data.canalNotificacionPref === 'Llamada' ? 4 : 1;
+
+    let idParentesco = 1;
+    const par = (data.parentesco || '').toLowerCase();
+    if (par.includes('cónyuge') || par.includes('conyuge')) idParentesco = 2;
+    else if (par.includes('herman')) idParentesco = 3;
+    else if (par.includes('tutor')) idParentesco = 4;
+    else if (par.includes('sobrin')) idParentesco = 5;
+    else if (par.includes('otro')) idParentesco = 6;
+    else idParentesco = 1;
+
+    // Solo enviar idResidente si es un ID válido de la base de datos (< 1000000)
+    const validIdResidente =
+      data.idResidenteVinculado && Number(data.idResidenteVinculado) < 1000000
+        ? Number(data.idResidenteVinculado)
+        : undefined;
+
     // Payload para el paquete Oracle PKGLN_GESTION_FAMILIARES
     const payload = {
+      idTipoIdentificacion,
       tipoIdentificacion: data.tipoIdentificacion,
       identificacion: data.identificacion,
       nombres: data.nombres,
@@ -431,26 +593,34 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       email: data.email,
       direccion: data.direccion,
       ciudad: data.ciudad,
+      idCanalNotifPref,
       canalNotificacionPref: data.canalNotificacionPref,
-      idResidente: data.idResidenteVinculado,
+      idResidente: validIdResidente,
+      idParentesco,
       parentesco: data.parentesco,
-      esPrincipal,
-      autorizadoSalidas: true,
-      responsablePago: true
+      esPrincipal: esPrincipal ? 1 : 0,
+      autorizadoSalidas: 1,
+      responsablePago: 1
     };
 
-    await adminApi.familiares.registrarFamiliar(payload);
+    try {
+      await adminApi.familiares.registrarFamiliar(payload);
 
-    const nuevoFamiliar: FamiliarAcudiente = {
-      ...data,
-      id: newId,
-      nombreCompleto,
-      residentesAsociados,
-      fotoUrl: data.fotoUrl
-    };
+      const nuevoFamiliar: FamiliarAcudiente = {
+        ...data,
+        id: newId,
+        nombreCompleto,
+        residentesAsociados,
+        fotoUrl: data.fotoUrl
+      };
 
-    setFamiliares((prev) => [nuevoFamiliar, ...prev]);
-    showToast(`Familiar ${nombreCompleto} registrado en el directorio`, 'success');
+      setFamiliares((prev) => [nuevoFamiliar, ...prev]);
+      showToast(`✅ Familiar ${nombreCompleto} registrado exitosamente en la base de datos Oracle`, 'success');
+    } catch (err: any) {
+      console.error('[Error registrarFamiliar Oracle]:', err);
+      showToast(`❌ Error al registrar familiar en Oracle: ${err.message || 'Fallo de inserción'}`, 'alert');
+      throw err;
+    }
   };
 
   // 3. Registrar Trabajador / Empleado
@@ -632,6 +802,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           : 5
         : undefined,
       alertasClinicas: data.alertasClinicas,
+      fechaIngreso: data.fechaIngreso,
       idEstadoResidente: data.estado
         ? data.estado === 'Activo'
           ? 1
@@ -640,51 +811,61 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           : data.estado === 'Hospitalizado'
           ? 3
           : 4
-        : undefined
+        : undefined,
+      medicamentos: data.medicamentos
     };
 
-    await adminApi.residentes.actualizarResidente(payload);
+    try {
+      await adminApi.residentes.actualizarResidente(payload);
 
-    setResidentes((prev) =>
-      prev.map((r) => {
-        if (r.id !== idResidente) return r;
+      setResidentes((prev) =>
+        prev.map((r) => {
+          if (r.id !== idResidente) return r;
+          const nombreCompleto =
+            data.nombres && data.apellidos
+              ? `${data.nombres} ${data.apellidos}`.trim()
+              : data.nombres || data.apellidos
+              ? `${data.nombres || r.nombres} ${data.apellidos || r.apellidos}`.trim()
+              : r.nombreCompleto;
+
+          let edad = r.edad;
+          if (data.fechaNacimiento) {
+            const birth = new Date(data.fechaNacimiento);
+            const today = new Date();
+            edad = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+              edad--;
+            }
+          }
+
+          return {
+            ...r,
+            ...data,
+            nombreCompleto,
+            edad,
+            fechaIngreso: data.fechaIngreso || r.fechaIngreso,
+            estado: data.estado || r.estado,
+            medicamentos: data.medicamentos !== undefined ? data.medicamentos : r.medicamentos
+          };
+        })
+      );
+
+      setSelectedResidente((prev) => {
+        if (!prev || prev.id !== idResidente) return prev;
         const nombreCompleto =
           data.nombres && data.apellidos
             ? `${data.nombres} ${data.apellidos}`.trim()
-            : data.nombres || data.apellidos
-            ? `${data.nombres || r.nombres} ${data.apellidos || r.apellidos}`.trim()
-            : r.nombreCompleto;
+            : prev.nombreCompleto;
+        return { ...prev, ...data, nombreCompleto };
+      });
 
-        let edad = r.edad;
-        if (data.fechaNacimiento) {
-          const birth = new Date(data.fechaNacimiento);
-          const today = new Date();
-          edad = today.getFullYear() - birth.getFullYear();
-          const m = today.getMonth() - birth.getMonth();
-          if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-            edad--;
-          }
-        }
-
-        return {
-          ...r,
-          ...data,
-          nombreCompleto,
-          edad
-        };
-      })
-    );
-
-    setSelectedResidente((prev) => {
-      if (!prev || prev.id !== idResidente) return prev;
-      const nombreCompleto =
-        data.nombres && data.apellidos
-          ? `${data.nombres} ${data.apellidos}`.trim()
-          : prev.nombreCompleto;
-      return { ...prev, ...data, nombreCompleto };
-    });
-
-    showToast('Información del residente actualizada exitosamente', 'success');
+      showToast('✅ Cambios del residente guardados exitosamente en Oracle', 'success');
+    } catch (err: any) {
+      console.error('[Error actualizarResidente Oracle]:', err);
+      showToast(`❌ Error al actualizar en base de datos Oracle: ${err.message || 'Fallo de actualización'}`, 'alert');
+      throw err;
+    }
   };
 
   // 8. Actualizar Trabajador
@@ -705,6 +886,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     await adminApi.trabajadores.actualizarTrabajador(payload);
 
+    let updatedNombreCompleto = '';
+
     setTrabajadores((prev) =>
       prev.map((t) => {
         if (t.id !== idTrabajador) return t;
@@ -714,12 +897,30 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             : data.nombres || data.apellidos
             ? `${data.nombres || t.nombres} ${data.apellidos || t.apellidos}`.trim()
             : t.nombreCompleto;
+        updatedNombreCompleto = nombreCompleto;
         return {
           ...t,
           ...data,
           nombreCompleto
         };
       })
+    );
+
+    // Sincronizar de inmediato los turnos donde este trabajador esté asignado
+    setTurnos((prevTurnos) =>
+      prevTurnos.map((turno) => ({
+        ...turno,
+        trabajadoresAsignados: turno.trabajadoresAsignados.map((w) => {
+          if (w.idTrabajador !== idTrabajador) return w;
+          return {
+            ...w,
+            nombre: updatedNombreCompleto || (data.nombres ? `${data.nombres} ${data.apellidos || ''}`.trim() : w.nombre),
+            cargo: data.cargo || w.cargo,
+            area: data.area || w.area,
+            avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : w.avatarUrl
+          };
+        })
+      }))
     );
 
     showToast('Información del colaborador actualizada exitosamente', 'success');
@@ -878,6 +1079,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsEditSedeOpen,
         registrarResidente,
         actualizarResidente,
+        sincronizarResidentes,
         registrarFamiliar,
         actualizarFamiliar,
         eliminarFamiliar,

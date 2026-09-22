@@ -174,6 +174,25 @@ export const SEED_RESIDENTES: Residente[] = [
     alertasClinicas: 'Alérgica a la Penicilina. Riesgo leve de caídas nocturnas.',
     estado: 'Activo',
     fechaIngreso: '2024-02-10',
+    medicamentos: [
+      {
+        id: 1,
+        idResidente: 1,
+        medicamento: 'Losartán Potásico 50mg',
+        cantidad: '1 tableta',
+        frecuencia: 'Cada 12 horas',
+        fechaFin: '2026-12-31',
+        indicaciones: 'Administrar con agua después del desayuno y cena.'
+      },
+      {
+        id: 2,
+        idResidente: 1,
+        medicamento: 'Omeprazol 20mg',
+        cantidad: '1 cápsula',
+        frecuencia: 'Cada 24 horas (Mañana)',
+        indicaciones: 'En ayunas, 30 minutos antes del desayuno.'
+      }
+    ],
     acudientes: [
       {
         id: 101,
@@ -215,6 +234,17 @@ export const SEED_RESIDENTES: Residente[] = [
     alertasClinicas: 'Diabetes Mellitus Tipo II. Control glucometría preprandial.',
     estado: 'Activo',
     fechaIngreso: '2024-05-18',
+    medicamentos: [
+      {
+        id: 3,
+        idResidente: 2,
+        medicamento: 'Metformina 850mg',
+        cantidad: '1 tableta',
+        frecuencia: 'Cada 12 horas',
+        fechaFin: '2026-12-31',
+        indicaciones: 'Con las comidas principales para control glucémico.'
+      }
+    ],
     acudientes: [
       {
         id: 103,
@@ -383,7 +413,7 @@ export const SEED_TRABAJADORES: TrabajadorEmpleado[] = [
     eps: 'Sanitas EPS',
     arl: 'Positiva ARL',
     estado: 'Activo',
-    avatarUrl: 'https://images.unsplash.com/photo-1594824813590-7815d9b68c2d?w=150&auto=format&fit=crop&q=80',
+    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
     turnoHabitual: 'Mañana (07:00 - 15:00)'
   },
   {
@@ -495,7 +525,7 @@ export const SEED_TURNOS: TurnoAsignado[] = [
         nombre: 'Laura Viviana Mora Peña',
         cargo: 'Auxiliar de Enfermería',
         area: 'Enfermería',
-        avatarUrl: 'https://images.unsplash.com/photo-1594824813590-7815d9b68c2d?w=150&auto=format&fit=crop&q=80'
+        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80'
       },
       {
         idTrabajador: 206,
@@ -541,7 +571,7 @@ export const SEED_TURNOS: TurnoAsignado[] = [
         nombre: 'Laura Viviana Mora Peña',
         cargo: 'Auxiliar de Enfermería',
         area: 'Enfermería',
-        avatarUrl: 'https://images.unsplash.com/photo-1594824813590-7815d9b68c2d?w=150&auto=format&fit=crop&q=80'
+        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80'
       }
     ]
   }

@@ -9,6 +9,17 @@ export type SedeCentro = {
   esSedePrincipal?: boolean;
 };
 
+export type MedicamentoPrescrito = {
+  id?: number;
+  idResidente?: number;
+  medicamento: string;
+  cantidad: string; // Ej: '1 tableta', '10 ml', '500 mg'
+  frecuencia: string; // Ej: 'Cada 8 horas', 'Cada 12 horas', 'En el desayuno'
+  fechaFin?: string; // Ej: '2026-12-31' o vacío para continuo
+  indicaciones?: string;
+  activo?: boolean;
+};
+
 export type Residente = {
   id: number;
   idCentro: number;
@@ -32,6 +43,7 @@ export type Residente = {
   alertasClinicas?: string;
   estado: 'Activo' | 'En Observación' | 'Hospitalizado' | 'Egresado';
   fechaIngreso: string;
+  medicamentos?: MedicamentoPrescrito[];
   acudientes: Array<{
     id: number;
     nombreCompleto: string;

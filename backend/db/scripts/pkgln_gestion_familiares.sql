@@ -147,9 +147,25 @@ AS
             vro_res_acu.id_residente       := v_id_residente;
             vro_res_acu.id_acudiente       := vro_acudiente.id;
             vro_res_acu.id_parentesco      := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.idParentesco')), 1);
-            vro_res_acu.es_principal       := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.esPrincipal')), 1);
-            vro_res_acu.es_responsable_pago:= NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.responsablePago')), 0);
-            vro_res_acu.autorizado_salidas := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.autorizadoSalidas')), 1);
+
+            IF UPPER(NVL(JSON_VALUE(pcl_json, '$.esPrincipal'), 'S')) IN ('S', '1', 'TRUE') THEN
+                vro_res_acu.es_principal   := 'S';
+            ELSE
+                vro_res_acu.es_principal   := 'N';
+            END IF;
+
+            IF UPPER(NVL(JSON_VALUE(pcl_json, '$.responsablePago'), 'N')) IN ('S', '1', 'TRUE') THEN
+                vro_res_acu.es_responsable_pago := 'S';
+            ELSE
+                vro_res_acu.es_responsable_pago := 'N';
+            END IF;
+
+            IF UPPER(NVL(JSON_VALUE(pcl_json, '$.autorizadoSalidas'), 'S')) IN ('S', '1', 'TRUE') THEN
+                vro_res_acu.autorizado_salidas  := 'S';
+            ELSE
+                vro_res_acu.autorizado_salidas  := 'N';
+            END IF;
+
             vro_res_acu.fecha_creacion     := f_fecha_actual;
 
             PKGSMY_RESIDENTE_ACUDIENTE_DAO.p_insertar(vro_res_acu);
@@ -197,9 +213,25 @@ AS
         vro_res_acu.id_residente       := v_id_residente;
         vro_res_acu.id_acudiente       := v_id_acudiente;
         vro_res_acu.id_parentesco      := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.idParentesco')), 1);
-        vro_res_acu.es_principal       := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.esPrincipal')), 0);
-        vro_res_acu.es_responsable_pago:= NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.responsablePago')), 0);
-        vro_res_acu.autorizado_salidas := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.autorizadoSalidas')), 1);
+
+        IF UPPER(NVL(JSON_VALUE(pcl_json, '$.esPrincipal'), 'N')) IN ('S', '1', 'TRUE') THEN
+            vro_res_acu.es_principal   := 'S';
+        ELSE
+            vro_res_acu.es_principal   := 'N';
+        END IF;
+
+        IF UPPER(NVL(JSON_VALUE(pcl_json, '$.responsablePago'), 'N')) IN ('S', '1', 'TRUE') THEN
+            vro_res_acu.es_responsable_pago := 'S';
+        ELSE
+            vro_res_acu.es_responsable_pago := 'N';
+        END IF;
+
+        IF UPPER(NVL(JSON_VALUE(pcl_json, '$.autorizadoSalidas'), 'S')) IN ('S', '1', 'TRUE') THEN
+            vro_res_acu.autorizado_salidas  := 'S';
+        ELSE
+            vro_res_acu.autorizado_salidas  := 'N';
+        END IF;
+
         vro_res_acu.fecha_creacion     := f_fecha_actual;
 
         PKGSMY_RESIDENTE_ACUDIENTE_DAO.p_insertar(vro_res_acu);

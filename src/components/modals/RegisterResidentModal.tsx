@@ -1,13 +1,37 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
-import { X, UserPlus, HeartHandshake, Stethoscope, AlertTriangle, Camera } from 'lucide-react';
+import {
+  X,
+  UserPlus,
+  HeartHandshake,
+  Stethoscope,
+  AlertTriangle,
+  Camera,
+  Pill,
+  Plus,
+  Trash2,
+  Clock,
+  Calendar
+} from 'lucide-react';
+import { MedicamentoPrescrito } from '../../types';
+import { obtenerIniciales } from '../../utils/avatarUtils';
 
 export const RegisterResidentModal: React.FC = () => {
   const { isRegisterResidentOpen, setIsRegisterResidentOpen, registrarResidente, activeSede } = useAdmin();
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fotoPreview, setFotoPreview] = useState<string | undefined>(undefined);
+
+  // Lista de Medicamentos Prescritos
+  const [medicamentos, setMedicamentos] = useState<MedicamentoPrescrito[]>([]);
+  const [nuevoMed, setNuevoMed] = useState<MedicamentoPrescrito>({
+    medicamento: '',
+    cantidad: '',
+    frecuencia: '',
+    fechaFin: '',
+    indicaciones: ''
+  });
 
   // Form State
   const [formData, setFormData] = useState({
@@ -22,6 +46,8 @@ export const RegisterResidentModal: React.FC = () => {
     tipoSangre: 'O+',
     habitacion: '',
     cama: '',
+    fechaIngreso: new Date().toISOString().split('T')[0],
+    estado: 'Activo' as 'Activo' | 'En Observación' | 'Hospitalizado' | 'Egresado',
     nivelMovilidad: 'Independiente' as const,
     tipoDieta: 'Normal / General' as const,
     alertasClinicas: '',
@@ -36,6 +62,25 @@ export const RegisterResidentModal: React.FC = () => {
   });
 
   if (!isRegisterResidentOpen) return null;
+
+  const handleAgregarMedicamento = () => {
+    if (!nuevoMed.medicamento.trim() || !nuevoMed.cantidad.trim() || !nuevoMed.frecuencia.trim()) {
+      alert('Por favor ingrese el nombre del medicamento, la cantidad/dosis y la frecuencia.');
+      return;
+    }
+    setMedicamentos((prev) => [...prev, { ...nuevoMed }]);
+    setNuevoMed({
+      medicamento: '',
+      cantidad: '',
+      frecuencia: '',
+      fechaFin: '',
+      indicaciones: ''
+    });
+  };
+
+  const handleEliminarMedicamento = (index: number) => {
+    setMedicamentos((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,8 +108,10 @@ export const RegisterResidentModal: React.FC = () => {
         nivelMovilidad: formData.nivelMovilidad,
         tipoDieta: formData.tipoDieta,
         alertasClinicas: formData.alertasClinicas,
-        estado: 'Activo',
+        fechaIngreso: formData.fechaIngreso,
+        estado: formData.estado,
         fotoUrl: fotoPreview,
+        medicamentos: medicamentos.length > 0 ? medicamentos : undefined,
         acudientes: [],
         familiarContacto: formData.incluirAcudiente && formData.acudienteNombres ? {
           nombres: formData.acudienteNombres,
@@ -78,6 +125,14 @@ export const RegisterResidentModal: React.FC = () => {
 
       setIsRegisterResidentOpen(false);
       setFotoPreview(undefined);
+      setMedicamentos([]);
+      setNuevoMed({
+        medicamento: '',
+        cantidad: '',
+        frecuencia: '',
+        fechaFin: '',
+        indicaciones: ''
+      });
       // Reset form
       setFormData({
         tipoIdentificacion: 'CC',
@@ -91,6 +146,8 @@ export const RegisterResidentModal: React.FC = () => {
         tipoSangre: 'O+',
         habitacion: '',
         cama: '',
+        fechaIngreso: new Date().toISOString().split('T')[0],
+        estado: 'Activo' as const,
         nivelMovilidad: 'Independiente',
         tipoDieta: 'Normal / General',
         alertasClinicas: '',
@@ -103,6 +160,8 @@ export const RegisterResidentModal: React.FC = () => {
         acudienteEmail: ''
       });
       setStep(1);
+    } catch (err: any) {
+      console.warn('[RegisterResidentModal] El registro no pudo completarse en Oracle:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -147,11 +206,11 @@ export const RegisterResidentModal: React.FC = () => {
         </div>
 
         {/* Stepper Indicator */}
-        <div className="flex border-b border-[#DEDBD1] bg-[#F7F6F2] px-6 py-2.5 text-xs font-semibold text-[#5C6058]">
+        <div className="flex border-b border-[#DEDBD1] bg-[#F7F6F2] px-6 py-2.5 text-xs font-semibold text-[#5C6058] overflow-x-auto gap-2">
           <button
             type="button"
             onClick={() => setStep(1)}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
               step === 1 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
             }`}
           >
@@ -160,7 +219,7 @@ export const RegisterResidentModal: React.FC = () => {
           <button
             type="button"
             onClick={() => setStep(2)}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
               step === 2 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
             }`}
           >
@@ -169,11 +228,25 @@ export const RegisterResidentModal: React.FC = () => {
           <button
             type="button"
             onClick={() => setStep(3)}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
               step === 3 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
             }`}
           >
-            <span>3. Acudiente Responsable</span>
+            <span>3. Medicamentos (Opcional)</span>
+            {medicamentos.length > 0 && (
+              <span className="text-[10px] bg-[#DCB87F] text-[#182F28] px-1.5 py-0.2 rounded-full font-bold">
+                {medicamentos.length}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setStep(4)}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
+              step === 4 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
+            }`}
+          >
+            <span>4. Acudiente Responsable</span>
           </button>
         </div>
 
@@ -192,9 +265,21 @@ export const RegisterResidentModal: React.FC = () => {
                       className="w-16 h-16 rounded-2xl object-cover border-2 border-[#274A3F] shadow-xs"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-[#E8E4D9] flex items-center justify-center text-[#7A745F] border border-[#DEDBD1]">
-                      <Camera className="w-7 h-7 text-[#9A917A]" />
-                    </div>
+                    (() => {
+                      const ini = obtenerIniciales(formData.nombres, formData.apellidos);
+                      if (formData.nombres.trim() || formData.apellidos.trim()) {
+                        return (
+                          <div className="w-16 h-16 rounded-2xl bg-[#182F28] text-[#DCB87F] border border-[#DCB87F]/40 font-serif font-bold text-xl flex items-center justify-center shrink-0 shadow-inner">
+                            {ini}
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="w-16 h-16 rounded-2xl bg-[#E8E4D9] flex items-center justify-center text-[#7A745F] border border-[#DEDBD1]">
+                          <Camera className="w-7 h-7 text-[#9A917A]" />
+                        </div>
+                      );
+                    })()
                   )}
                 </div>
 
@@ -397,6 +482,37 @@ export const RegisterResidentModal: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <label className="block text-xs font-bold text-[#182F28] mb-1 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-[#274A3F]" />
+                    <span>Fecha de Ingreso *</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.fechaIngreso}
+                    onChange={(e) => setFormData({ ...formData, fechaIngreso: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#DEDBD1] bg-[#F7F6F2] text-sm focus:outline-none focus:border-[#B3803F] focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#182F28] mb-1">
+                    Estado del Residente *
+                  </label>
+                  <select
+                    value={formData.estado}
+                    onChange={(e) => setFormData({ ...formData, estado: e.target.value as any })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#DEDBD1] bg-[#F7F6F2] text-sm focus:outline-none focus:border-[#B3803F]"
+                  >
+                    <option value="Activo">Activo (En sede)</option>
+                    <option value="En Observación">En Observación</option>
+                    <option value="Hospitalizado">Hospitalizado (Externo)</option>
+                    <option value="Egresado">Egresado / Alta</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <label className="block text-xs font-bold text-[#182F28] mb-1">
                     Nivel de Movilidad
                   </label>
@@ -445,8 +561,187 @@ export const RegisterResidentModal: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 3: VINCULACIÓN DE ACUDIENTE */}
+          {/* STEP 3: MEDICAMENTOS Y FARMACOTERAPIA (OPCIONAL) */}
           {step === 3 && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              <div className="p-4 bg-[#F2F8F5] rounded-2xl border border-[#BDE0D0] flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#DFF3E7] text-[#1E7A4C] flex items-center justify-center shrink-0 mt-0.5">
+                  <Pill className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-[#182F28]">
+                    Plan Farmacoterapéutico Inicial <span className="text-[#5C6058] font-normal">(Opcional)</span>
+                  </h4>
+                  <p className="text-xs text-[#5C6058] mt-0.5">
+                    Puede registrar los medicamentos, dosis, frecuencia y fecha límite prescritos si dispone de ellos en la admisión.
+                  </p>
+                </div>
+              </div>
+
+              {/* Formulario para agregar medicamento */}
+              <div className="p-4 bg-[#F7F6F2] rounded-2xl border border-[#DEDBD1] space-y-3">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-xs font-mono font-bold uppercase text-[#7A745F]">
+                    Agregar Medicamento
+                  </h5>
+                  <span className="text-[11px] text-[#7A745F]">
+                    Todos los campos con (*) son requeridos para agregar
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#182F28] mb-1">
+                      Medicamento *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej. Losartán 50mg, Enoxaparina..."
+                      value={nuevoMed.medicamento}
+                      onChange={(e) => setNuevoMed({ ...nuevoMed, medicamento: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#182F28] mb-1">
+                      Cantidad / Dosis *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej. 1 tableta, 10 ml, 500 mg..."
+                      value={nuevoMed.cantidad}
+                      onChange={(e) => setNuevoMed({ ...nuevoMed, cantidad: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#182F28] mb-1">
+                      Frecuencia *
+                    </label>
+                    <input
+                      type="text"
+                      list="frecuencias-sugeridas-reg"
+                      placeholder="Ej. Cada 8 horas, En el desayuno..."
+                      value={nuevoMed.frecuencia}
+                      onChange={(e) => setNuevoMed({ ...nuevoMed, frecuencia: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                    />
+                    <datalist id="frecuencias-sugeridas-reg">
+                      <option value="Cada 8 horas" />
+                      <option value="Cada 12 horas" />
+                      <option value="Cada 24 horas (Mañana)" />
+                      <option value="Cada 24 horas (Noche)" />
+                      <option value="Con el desayuno" />
+                      <option value="Antes de dormir" />
+                      <option value="Según necesidad / SOS" />
+                    </datalist>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#182F28] mb-1">
+                      Hasta qué fecha <span className="text-[#7A745F] font-normal">(Vacío = Continuo)</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={nuevoMed.fechaFin}
+                      onChange={(e) => setNuevoMed({ ...nuevoMed, fechaFin: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#182F28] mb-1">
+                    Indicaciones Especiales <span className="text-[#7A745F] font-normal">(Opcional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Tomar en ayunas con abundante agua..."
+                    value={nuevoMed.indicaciones}
+                    onChange={(e) => setNuevoMed({ ...nuevoMed, indicaciones: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={handleAgregarMedicamento}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-[#274A3F] hover:bg-[#182F28] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Agregar Medicamento</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Lista de Medicamentos Agregados */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono font-bold uppercase text-[#7A745F]">
+                    Medicamentos Agregados ({medicamentos.length})
+                  </span>
+                  {medicamentos.length === 0 && (
+                    <span className="text-[11px] text-[#7A745F] italic">
+                      Ninguno agregado aún. Puedes continuar sin ingresar medicamentos.
+                    </span>
+                  )}
+                </div>
+
+                {medicamentos.map((m, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 bg-white rounded-xl border border-[#DEDBD1] flex items-center justify-between gap-3 shadow-2xs hover:border-[#1E7A4C]/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-[#DFF3E7] text-[#1E7A4C] flex items-center justify-center shrink-0">
+                        <Pill className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-[#182F28] flex items-center gap-2">
+                          <span>{m.medicamento}</span>
+                          <span className="text-[10px] bg-[#FEF7EE] text-[#9A5B12] px-1.5 py-0.5 rounded font-medium border border-[#DCB87F]/30">
+                            Dosis: {m.cantidad}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-[#5C6058] flex items-center gap-3 mt-0.5">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-[#068591]" />
+                            {m.frecuencia}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-[#B3803F]" />
+                            Hasta: {m.fechaFin ? m.fechaFin : 'Continuo'}
+                          </span>
+                        </div>
+                        {m.indicaciones && (
+                          <div className="text-[10px] text-[#7A745F] italic mt-0.5">
+                            {m.indicaciones}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleEliminarMedicamento(idx)}
+                      className="w-7 h-7 rounded-lg bg-[#FBE8E6] text-[#A4453A] hover:bg-[#f7d6d3] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                      title="Eliminar medicamento"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: VINCULACIÓN DE ACUDIENTE */}
+          {step === 4 && (
             <div className="space-y-4 animate-in fade-in duration-150">
               <div className="p-3 bg-[#FEF7EE] border border-[#DCB87F] rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -578,7 +873,7 @@ export const RegisterResidentModal: React.FC = () => {
                 Cancelar
               </button>
 
-              {step < 3 ? (
+              {step < 4 ? (
                 <button
                   type="button"
                   onClick={() => setStep((step + 1) as any)}

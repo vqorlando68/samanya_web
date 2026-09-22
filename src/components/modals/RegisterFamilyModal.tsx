@@ -64,7 +64,7 @@ export const RegisterFamilyModal: React.FC = () => {
         direccion: formData.direccion || activeSede.direccion,
         ciudad: formData.ciudad || activeSede.ciudad,
         canalNotificacionPref: formData.canalNotificacionPref,
-        idResidenteVinculado: formData.idResidenteVinculado ? Number(formData.idResidenteVinculado) : undefined,
+        idResidenteVinculado: formData.idResidenteVinculado && Number(formData.idResidenteVinculado) > 0 ? Number(formData.idResidenteVinculado) : undefined,
         parentesco: formData.parentesco,
         esPrincipal: formData.esPrincipal,
         fotoUrl: fotoPreview,
@@ -90,6 +90,8 @@ export const RegisterFamilyModal: React.FC = () => {
         responsablePago: true
       });
       setFotoPreview(undefined);
+    } catch (err: any) {
+      console.warn('[RegisterFamilyModal] No se pudo completar el registro del familiar:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -123,7 +125,13 @@ export const RegisterFamilyModal: React.FC = () => {
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto flex-1 space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          autoComplete="off"
+          data-lpignore="true"
+          data-form-type="other"
+          className="p-6 overflow-y-auto flex-1 space-y-4"
+        >
           {/* Foto del Familiar (Opcional) */}
           <div className="p-4 bg-[#F7F6F2] rounded-2xl border border-[#DEDBD1] flex items-center gap-4">
             <div className="relative">

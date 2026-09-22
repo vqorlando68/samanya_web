@@ -13,18 +13,24 @@ import {
   FileCheck2,
   ArrowRight,
   ShieldAlert,
-  Edit3
+  Edit3,
+  Search,
+  X
 } from 'lucide-react';
 import { resolverAvatarUrl, DEFAULT_AVATAR } from '../../utils/avatarUtils';
+import { ResidentAvatar } from '../common/ResidentAvatar';
 
 export const DashboardView: React.FC = () => {
   const {
     activeSede,
     metrics,
     turnos,
+    trabajadores,
     residentes,
     incidentes,
     permisos,
+    searchQuery,
+    setSearchQuery,
     setActiveTab,
     setIsRegisterResidentOpen,
     setIsRegisterFamilyOpen,
@@ -83,6 +89,155 @@ export const DashboardView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* 1.5. Sección Activa de Resultados si se busca desde la cabecera */}
+      {searchQuery.trim() && (
+        <div className="bg-[#FAF8F5] border-2 border-[#B3803F] rounded-3xl p-6 shadow-md space-y-4 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="flex items-center justify-between flex-wrap gap-3 border-b border-[#DEDBD1] pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#B3803F]/15 text-[#B3803F] flex items-center justify-center">
+                <Search className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-serif font-bold text-lg text-[#182F28]">
+                  Resultados para: <span className="text-[#B3803F]">"{searchQuery}"</span>
+                </h3>
+                <p className="text-xs text-[#7A745F]">
+                  Coincidencias en residentes, habitaciones y personal asistencial de {activeSede.nombre}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-[#7A745F] hover:text-[#182F28] bg-white border border-[#DEDBD1] rounded-xl hover:bg-[#F7F6F2] transition-colors cursor-pointer shadow-2xs"
+            >
+              <X className="w-4 h-4" />
+              <span>Limpiar búsqueda</span>
+            </button>
+          </div>
+
+          {/* Tarjetas de resultados filtrados */}
+          {(() => {
+            const q = searchQuery.toLowerCase().trim();
+            const matchedRes = sedeResidentes.filter(
+              (r) =>
+                r.nombreCompleto.toLowerCase().includes(q) ||
+                r.identificacion.toLowerCase().includes(q) ||
+                r.habitacion.toLowerCase().includes(q) ||
+                r.codigoExpediente.toLowerCase().includes(q)
+            );
+            const matchedWork = trabajadores.filter(
+              (t) =>
+                t.nombreCompleto.toLowerCase().includes(q) ||
+                t.identificacion.toLowerCase().includes(q) ||
+                t.cargo.toLowerCase().includes(q) ||
+                t.area.toLowerCase().includes(q)
+            );
+
+            if (matchedRes.length === 0 && matchedWork.length === 0) {
+              return (
+                <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-[#DEDBD1] space-y-1">
+                  <p className="font-semibold text-sm text-[#182F28]">
+                    No se encontraron coincidencias para "{searchQuery}"
+                  </p>
+                  <p className="text-xs text-[#7A745F]">
+                    Prueba buscando por nombre, número de documento, habitación o especialidad.
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {matchedRes.map((res) => (
+                  <div
+                    key={res.id}
+                    onClick={() => {
+                      setSelectedResidente(res);
+                      setIsResidenteDetailOpen(true);
+                    }}
+                    className="p-4 bg-white rounded-2xl border border-[#DEDBD1] hover:border-[#B3803F] shadow-2xs cursor-pointer transition-all flex flex-col justify-between space-y-3 group"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <ResidentAvatar
+                          fotoUrl={res.fotoUrl}
+                          nombres={res.nombres}
+                          apellidos={res.apellidos}
+                          nombreCompleto={res.nombreCompleto}
+                          sizeClass="w-11 h-11"
+                          roundedClass="rounded-full"
+                          textClass="text-sm"
+                        />
+                        <div>
+                          <h4 className="font-serif font-bold text-sm text-[#182F28] group-hover:text-[#B3803F] transition-colors">
+                            {res.nombreCompleto}
+                          </h4>
+                          <div className="text-xs text-[#7A745F] font-mono">
+                            {res.codigoExpediente} • CC {res.identificacion}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#1E7A4C] bg-[#DFF3E7] px-2 py-0.5 rounded-md">
+                        {res.estado}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-[#DEDBD1]/60 text-[#5C6058]">
+                      <span className="font-semibold text-[#182F28]">
+                        Hab. {res.habitacion} • Cama {res.cama}
+                      </span>
+                      <span className="text-[#B3803F] font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                        Ver Expediente →
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                {matchedWork.map((w) => (
+                  <div
+                    key={w.id}
+                    onClick={() => setActiveTab('trabajadores')}
+                    className="p-4 bg-white rounded-2xl border border-[#DEDBD1] hover:border-[#274A3F] shadow-2xs cursor-pointer transition-all flex flex-col justify-between space-y-3 group"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={resolverAvatarUrl(w.avatarUrl)}
+                          alt={w.nombreCompleto}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = DEFAULT_AVATAR;
+                          }}
+                          className="w-11 h-11 rounded-xl object-cover border border-[#274A3F]/20 shrink-0"
+                        />
+                        <div>
+                          <h4 className="font-serif font-bold text-sm text-[#182F28] group-hover:text-[#274A3F] transition-colors">
+                            {w.nombreCompleto}
+                          </h4>
+                          <div className="text-xs text-[#B3803F] font-semibold">{w.cargo}</div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#075158] bg-[#D9F0F1] px-2 py-0.5 rounded-md">
+                        {w.estado}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-[#DEDBD1]/60 text-[#5C6058]">
+                      <span>Área: <strong className="text-[#274A3F]">{w.area}</strong></span>
+                      <span className="text-[#274A3F] font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                        Ver en Personal →
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       {/* 2. Tarjetas de Indicadores (KPIs) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -231,31 +386,39 @@ export const DashboardView: React.FC = () => {
           )}
 
           <div className="space-y-2.5">
-            {activeShift.trabajadoresAsignados.map((worker) => (
-              <div
-                key={worker.idTrabajador}
-                className="flex items-center justify-between p-3 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1]"
-              >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={resolverAvatarUrl(worker.avatarUrl)}
-                    alt={worker.nombre}
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = DEFAULT_AVATAR;
-                    }}
-                    className="w-10 h-10 rounded-full object-cover border border-[#274A3F]/20"
-                  />
-                  <div>
-                    <div className="text-sm font-bold text-[#182F28]">{worker.nombre}</div>
-                    <div className="text-xs text-[#5C6058]">{worker.cargo} • <span className="text-[#274A3F] font-semibold">{worker.area}</span></div>
+            {activeShift.trabajadoresAsignados.map((worker) => {
+              const master = trabajadores.find((t) => t.id === worker.idTrabajador);
+              const nombre = master?.nombreCompleto || worker.nombre;
+              const cargo = master?.cargo || worker.cargo;
+              const area = master?.area || worker.area;
+              const avatar = master?.avatarUrl || worker.avatarUrl;
+
+              return (
+                <div
+                  key={worker.idTrabajador}
+                  className="flex items-center justify-between p-3 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1]"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={resolverAvatarUrl(avatar)}
+                      alt={nombre}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = DEFAULT_AVATAR;
+                      }}
+                      className="w-10 h-10 rounded-full object-cover border border-[#274A3F]/20"
+                    />
+                    <div>
+                      <div className="text-sm font-bold text-[#182F28]">{nombre}</div>
+                      <div className="text-xs text-[#5C6058]">{cargo} • <span className="text-[#274A3F] font-semibold">{area}</span></div>
+                    </div>
                   </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-[#DEDBD1] text-[#1E7A4C]">
+                    En servicio activo
+                  </span>
                 </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-[#DEDBD1] text-[#1E7A4C]">
-                  En servicio activo
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

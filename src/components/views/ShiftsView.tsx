@@ -109,31 +109,39 @@ export const ShiftsView: React.FC = () => {
                   </span>
                 </div>
 
-                {turno.trabajadoresAsignados.map((worker) => (
-                  <div
-                    key={worker.idTrabajador}
-                    className="p-2.5 bg-white rounded-xl border border-[#DEDBD1] flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <img
-                        src={resolverAvatarUrl(worker.avatarUrl)}
-                        alt={worker.nombre}
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = DEFAULT_AVATAR;
-                        }}
-                        className="w-8 h-8 rounded-full object-cover border border-[#DEDBD1]"
-                      />
-                      <div>
-                        <div className="text-xs font-bold text-[#182F28]">{worker.nombre}</div>
-                        <div className="text-[11px] text-[#5C6058]">{worker.cargo}</div>
+                {turno.trabajadoresAsignados.map((worker) => {
+                  const master = trabajadores.find((t) => t.id === worker.idTrabajador);
+                  const nombre = master?.nombreCompleto || worker.nombre;
+                  const cargo = master?.cargo || worker.cargo;
+                  const area = master?.area || worker.area;
+                  const avatar = master?.avatarUrl || worker.avatarUrl;
+
+                  return (
+                    <div
+                      key={worker.idTrabajador}
+                      className="p-2.5 bg-white rounded-xl border border-[#DEDBD1] flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <img
+                          src={resolverAvatarUrl(avatar)}
+                          alt={nombre}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = DEFAULT_AVATAR;
+                          }}
+                          className="w-8 h-8 rounded-full object-cover border border-[#DEDBD1]"
+                        />
+                        <div>
+                          <div className="text-xs font-bold text-[#182F28]">{nombre}</div>
+                          <div className="text-[11px] text-[#5C6058]">{cargo}</div>
+                        </div>
                       </div>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#F7F6F2] text-[#274A3F]">
+                        {area}
+                      </span>
                     </div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#F7F6F2] text-[#274A3F]">
-                      {worker.area}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Asignar Personal Adicional */}

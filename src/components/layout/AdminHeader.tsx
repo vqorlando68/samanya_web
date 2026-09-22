@@ -10,8 +10,13 @@ import {
   UserCheck,
   Bell,
   CheckCircle2,
-  Edit3
+  Edit3,
+  X,
+  Users,
+  ArrowRight
 } from 'lucide-react';
+import { resolverAvatarUrl, DEFAULT_AVATAR } from '../../utils/avatarUtils';
+import { ResidentAvatar } from '../common/ResidentAvatar';
 
 export const AdminHeader: React.FC = () => {
   const {
@@ -25,12 +30,60 @@ export const AdminHeader: React.FC = () => {
     setIsRegisterFamilyOpen,
     setIsRegisterWorkerOpen,
     setIsEditSedeOpen,
-    metrics
+    metrics,
+    residentes,
+    trabajadores,
+    familiares,
+    setActiveTab,
+    setSelectedResidente,
+    setIsResidenteDetailOpen
   } = useAdmin();
 
   const [isSedeDropdownOpen, setIsSedeDropdownOpen] = useState(false);
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  const query = searchQuery.trim().toLowerCase();
+
+  const matchedResidentes = query
+    ? residentes
+        .filter(
+          (r) =>
+            r.idCentro === activeSedeId &&
+            (r.nombreCompleto.toLowerCase().includes(query) ||
+              r.identificacion.toLowerCase().includes(query) ||
+              r.habitacion.toLowerCase().includes(query) ||
+              r.codigoExpediente.toLowerCase().includes(query))
+        )
+        .slice(0, 4)
+    : [];
+
+  const matchedTrabajadores = query
+    ? trabajadores
+        .filter(
+          (t) =>
+            t.nombreCompleto.toLowerCase().includes(query) ||
+            t.identificacion.toLowerCase().includes(query) ||
+            t.cargo.toLowerCase().includes(query) ||
+            t.area.toLowerCase().includes(query)
+        )
+        .slice(0, 3)
+    : [];
+
+  const matchedFamiliares = query
+    ? familiares
+        .filter(
+          (f) =>
+            f.nombreCompleto.toLowerCase().includes(query) ||
+            f.identificacion.toLowerCase().includes(query) ||
+            f.telefonoPrincipal.toLowerCase().includes(query)
+        )
+        .slice(0, 3)
+    : [];
+
+  const totalResultsCount =
+    matchedResidentes.length + matchedTrabajadores.length + matchedFamiliares.length;
 
   return (
     <header className="h-16 bg-white border-b border-[#DEDBD1] px-6 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
@@ -92,18 +145,173 @@ export const AdminHeader: React.FC = () => {
         )}
       </div>
 
-      {/* 2. Global Search Bar */}
-      <div className="flex-1 max-w-md mx-6 hidden md:block">
+      {/* 2. Global Search Bar with Live Spotlight Dropdown */}
+      <div className="flex-1 max-w-md mx-6 hidden md:block relative">
         <div className="relative">
           <Search className="w-4 h-4 text-[#7A745F] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Buscar por nombre, documento o habitación..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#F7F6F2] border border-[#DEDBD1] text-sm text-[#26241F] placeholder:text-[#9A917A] focus:outline-none focus:border-[#B3803F] focus:bg-white transition-all"
+            onFocus={() => setIsSearchFocused(true)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setIsSearchFocused(true);
+            }}
+            className="w-full pl-10 pr-10 py-2 rounded-xl bg-[#F7F6F2] border border-[#DEDBD1] text-sm text-[#26241F] placeholder:text-[#9A917A] focus:outline-none focus:border-[#B3803F] focus:bg-white transition-all shadow-2xs"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setIsSearchFocused(false);
+              }}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7A745F] hover:text-[#182F28] p-1 rounded-full hover:bg-[#ECE7DB] transition-colors cursor-pointer"
+              title="Limpiar búsqueda"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
+
+        {/* Live Search Dropdown */}
+        {isSearchFocused && query && (
+          <>
+            <div
+              className="fixed inset-0 z-30"
+              onClick={() => setIsSearchFocused(false)}
+            />
+            <div className="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-[#DEDBD1] py-2 z-40 max-h-[75vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-4 py-2 border-b border-[#DEDBD1]/60 flex items-center justify-between text-xs text-[#7A745F]">
+                <span className="font-mono font-bold uppercase">Resultados en {activeSede.nombre}</span>
+                <span className="font-semibold text-[#B3803F]">{totalResultsCount} encontrados</span>
+              </div>
+
+              {totalResultsCount === 0 ? (
+                <div className="p-5 text-center text-sm text-[#7A745F]">
+                  <p className="font-semibold text-[#182F28]">Sin coincidencias</p>
+                  <p className="text-xs mt-1 text-[#5C6058]">
+                    No se encontró ningún residente, colaborador o familiar con "{searchQuery}"
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-[#DEDBD1]/40">
+                  {/* Categoría: Residentes */}
+                  {matchedResidentes.length > 0 && (
+                    <div className="py-1.5">
+                      <div className="px-4 py-1 text-[11px] font-bold text-[#B3803F] uppercase tracking-wider flex items-center gap-1.5">
+                        <Users className="w-3 h-3" />
+                        <span>Residentes ({matchedResidentes.length})</span>
+                      </div>
+                      {matchedResidentes.map((res) => (
+                        <div
+                          key={res.id}
+                          onClick={() => {
+                            setSelectedResidente(res);
+                            setIsResidenteDetailOpen(true);
+                            setIsSearchFocused(false);
+                          }}
+                          className="px-4 py-2 hover:bg-[#F7F6F2] cursor-pointer flex items-center justify-between transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <ResidentAvatar
+                              fotoUrl={res.fotoUrl}
+                              nombres={res.nombres}
+                              apellidos={res.apellidos}
+                              nombreCompleto={res.nombreCompleto}
+                              sizeClass="w-8 h-8"
+                              roundedClass="rounded-full"
+                              textClass="text-[11px]"
+                            />
+                            <div>
+                              <div className="text-sm font-bold text-[#182F28]">{res.nombreCompleto}</div>
+                              <div className="text-xs text-[#7A745F]">
+                                Hab. {res.habitacion} • Cama {res.cama} • CC {res.identificacion}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-bold text-[#1E7A4C] bg-[#DFF3E7] px-2 py-0.5 rounded-md">
+                            {res.estado}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Categoría: Talento Humano */}
+                  {matchedTrabajadores.length > 0 && (
+                    <div className="py-1.5">
+                      <div className="px-4 py-1 text-[11px] font-bold text-[#274A3F] uppercase tracking-wider flex items-center gap-1.5">
+                        <UserCheck className="w-3 h-3" />
+                        <span>Talento Humano ({matchedTrabajadores.length})</span>
+                      </div>
+                      {matchedTrabajadores.map((worker) => (
+                        <div
+                          key={worker.id}
+                          onClick={() => {
+                            setActiveTab('trabajadores');
+                            setIsSearchFocused(false);
+                          }}
+                          className="px-4 py-2 hover:bg-[#F7F6F2] cursor-pointer flex items-center justify-between transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <img
+                              src={resolverAvatarUrl(worker.avatarUrl)}
+                              alt={worker.nombreCompleto}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = DEFAULT_AVATAR;
+                              }}
+                              className="w-8 h-8 rounded-full object-cover border border-[#DEDBD1]"
+                            />
+                            <div>
+                              <div className="text-sm font-bold text-[#182F28]">{worker.nombreCompleto}</div>
+                              <div className="text-xs text-[#7A745F]">
+                                {worker.cargo} • <span className="text-[#274A3F]">{worker.area}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-bold text-[#075158] bg-[#D9F0F1] px-2 py-0.5 rounded-md">
+                            {worker.estado}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Categoría: Familiares */}
+                  {matchedFamiliares.length > 0 && (
+                    <div className="py-1.5">
+                      <div className="px-4 py-1 text-[11px] font-bold text-[#7A4F9E] uppercase tracking-wider flex items-center gap-1.5">
+                        <HeartHandshake className="w-3 h-3" />
+                        <span>Familiares & Acudientes ({matchedFamiliares.length})</span>
+                      </div>
+                      {matchedFamiliares.map((fam) => (
+                        <div
+                          key={fam.id}
+                          onClick={() => {
+                            setActiveTab('familiares');
+                            setIsSearchFocused(false);
+                          }}
+                          className="px-4 py-2 hover:bg-[#F7F6F2] cursor-pointer flex items-center justify-between transition-colors"
+                        >
+                          <div>
+                            <div className="text-sm font-bold text-[#182F28]">{fam.nombreCompleto}</div>
+                            <div className="text-xs text-[#7A745F]">
+                              Tel: {fam.telefonoPrincipal} • {fam.residentesAsociados?.[0]?.parentesco || 'Acudiente'}
+                            </div>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-[#7A745F]" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* 3. Action Buttons & Admin Profile */}

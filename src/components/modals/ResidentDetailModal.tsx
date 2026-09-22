@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAdmin } from '../../context/AdminContext';
-import { X, HeartHandshake, Phone, Mail, User, ShieldAlert, Sparkles, Building2, Edit3 } from 'lucide-react';
+import { X, HeartHandshake, Phone, Mail, User, ShieldAlert, Sparkles, Building2, Edit3, Pill, Clock, Calendar } from 'lucide-react';
+import { ResidentAvatar } from '../common/ResidentAvatar';
 
 export const ResidentDetailModal: React.FC = () => {
   const {
@@ -23,13 +24,15 @@ export const ResidentDetailModal: React.FC = () => {
         {/* Header Modal */}
         <div className="p-6 bg-[#182F28] text-white flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img
-              src={
-                selectedResidente.fotoUrl ||
-                'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80'
-              }
-              alt={selectedResidente.nombreCompleto}
-              className="w-14 h-14 rounded-2xl object-cover border-2 border-[#DCB87F]"
+            <ResidentAvatar
+              fotoUrl={selectedResidente.fotoUrl}
+              nombres={selectedResidente.nombres}
+              apellidos={selectedResidente.apellidos}
+              nombreCompleto={selectedResidente.nombreCompleto}
+              sizeClass="w-14 h-14"
+              roundedClass="rounded-2xl"
+              textClass="text-xl"
+              className="border-2 border-[#DCB87F]"
             />
             <div>
               <div className="flex items-center gap-2">
@@ -113,6 +116,78 @@ export const ResidentDetailModal: React.FC = () => {
                 {selectedResidente.fechaIngreso}
               </span>
             </div>
+          </div>
+
+          {/* Farmacoterapia & Medicamentos Prescritos */}
+          <div className="border border-[#DEDBD1] rounded-2xl p-4 bg-white space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#DFF3E7] text-[#1E7A4C] flex items-center justify-center">
+                  <Pill className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-serif font-bold text-sm text-[#182F28]">
+                    Farmacoterapia & Medicamentos Prescritos
+                  </h4>
+                  <p className="text-[11px] text-[#7A745F]">
+                    Plan terapéutico activo del residente
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs text-[#1E7A4C] font-mono font-bold bg-[#DFF3E7] px-2 py-0.5 rounded-full">
+                {selectedResidente.medicamentos?.length || 0} medicamento(s)
+              </span>
+            </div>
+
+            {selectedResidente.medicamentos && selectedResidente.medicamentos.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {selectedResidente.medicamentos.map((med, idx) => (
+                  <div
+                    key={med.id || idx}
+                    className="p-3 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1] flex flex-col justify-between space-y-2 hover:border-[#1E7A4C]/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-xs font-bold text-[#182F28] block">
+                          {med.medicamento}
+                        </span>
+                        <span className="text-[11px] text-[#7A4F9E] font-semibold">
+                          Cantidad / Dosis: {med.cantidad}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white border border-[#DEDBD1] text-[#182F28] font-bold">
+                        Rx #{idx + 1}
+                      </span>
+                    </div>
+
+                    <div className="pt-1.5 border-t border-[#DEDBD1]/60 text-[11px] text-[#5C6058] space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-[#068591]" />
+                        <span>Frecuencia: <strong className="text-[#182F28]">{med.frecuencia}</strong></span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-[#B3803F]" />
+                        <span>
+                          Hasta:{' '}
+                          <strong className="text-[#182F28]">
+                            {med.fechaFin ? med.fechaFin : 'Tratamiento Continuo'}
+                          </strong>
+                        </span>
+                      </div>
+                      {med.indicaciones && (
+                        <p className="text-[10px] text-[#7A745F] italic mt-1 bg-white/70 p-1.5 rounded-md">
+                          {med.indicaciones}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-[#F7F6F2] rounded-xl text-center text-xs text-[#7A745F]">
+                No tiene medicamentos registrados actualmente.
+              </div>
+            )}
           </div>
 
           {/* Familiares y Acudientes Responsables */}

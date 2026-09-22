@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../context/AdminContext';
-import { X, Save, User, Bed, HeartPulse, ShieldAlert, Camera } from 'lucide-react';
-import { Residente } from '../../types';
+import { X, Save, User, Bed, HeartPulse, ShieldAlert, Camera, Pill, Plus, Trash2, Clock, Calendar } from 'lucide-react';
+import { Residente, MedicamentoPrescrito } from '../../types';
+import { obtenerIniciales } from '../../utils/avatarUtils';
 
 export const EditResidentModal: React.FC = () => {
   const {
@@ -14,6 +15,14 @@ export const EditResidentModal: React.FC = () => {
 
   const [formData, setFormData] = useState<Partial<Residente>>({});
   const [fotoPreview, setFotoPreview] = useState<string | undefined>(undefined);
+  const [medicamentos, setMedicamentos] = useState<MedicamentoPrescrito[]>([]);
+  const [nuevoMed, setNuevoMed] = useState<MedicamentoPrescrito>({
+    medicamento: '',
+    cantidad: '',
+    frecuencia: '',
+    fechaFin: '',
+    indicaciones: ''
+  });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -34,9 +43,11 @@ export const EditResidentModal: React.FC = () => {
         tipoDieta: editingResidente.tipoDieta,
         alertasClinicas: editingResidente.alertasClinicas || '',
         estado: editingResidente.estado,
+        fechaIngreso: editingResidente.fechaIngreso,
         fotoUrl: editingResidente.fotoUrl
       });
       setFotoPreview(editingResidente.fotoUrl);
+      setMedicamentos(editingResidente.medicamentos ? [...editingResidente.medicamentos] : []);
     }
   }, [editingResidente]);
 
@@ -58,13 +69,33 @@ export const EditResidentModal: React.FC = () => {
     }
   };
 
+  const handleAgregarMedicamento = () => {
+    if (!nuevoMed.medicamento.trim() || !nuevoMed.cantidad.trim() || !nuevoMed.frecuencia.trim()) {
+      alert('Por favor ingrese el nombre del medicamento, la cantidad/dosis y la frecuencia.');
+      return;
+    }
+    setMedicamentos((prev) => [...prev, { ...nuevoMed }]);
+    setNuevoMed({
+      medicamento: '',
+      cantidad: '',
+      frecuencia: '',
+      fechaFin: '',
+      indicaciones: ''
+    });
+  };
+
+  const handleEliminarMedicamento = (index: number) => {
+    setMedicamentos((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       await actualizarResidente(editingResidente.id, {
         ...formData,
-        fotoUrl: fotoPreview
+        fotoUrl: fotoPreview,
+        medicamentos
       });
       handleClose();
     } catch (err) {
@@ -114,8 +145,12 @@ export const EditResidentModal: React.FC = () => {
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-[#B3803F] shadow-xs"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-[#E8E4D9] flex items-center justify-center text-[#7A745F] border border-[#DEDBD1]">
-                  <Camera className="w-7 h-7 text-[#9A917A]" />
+                <div className="w-16 h-16 rounded-2xl bg-[#182F28] text-[#DCB87F] border border-[#DCB87F]/40 font-serif font-bold text-xl flex items-center justify-center shrink-0 shadow-inner">
+                  {obtenerIniciales(
+                    formData.nombres || editingResidente.nombres,
+                    formData.apellidos || editingResidente.apellidos,
+                    editingResidente.nombreCompleto
+                  )}
                 </div>
               )}
             </div>
@@ -250,7 +285,7 @@ export const EditResidentModal: React.FC = () => {
               <Bed className="w-4 h-4 text-[#B3803F]" />
               2. Habitación y Cuidados Asistenciales
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <div>
                 <label className="block text-xs font-bold text-[#4B4636] mb-1">
                   Habitación *
@@ -278,17 +313,32 @@ export const EditResidentModal: React.FC = () => {
               </div>
 
               <div>
+                <label className="block text-xs font-bold text-[#4B4636] mb-1 flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-[#B3803F]" />
+                  <span>Fecha de Ingreso *</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={formData.fechaIngreso || ''}
+                  onChange={(e) => setFormData({ ...formData, fechaIngreso: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-[#F7F6F2] text-xs font-semibold text-[#182F28] focus:outline-none focus:border-[#B3803F]"
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-[#4B4636] mb-1">
                   Estado Administrativo
                 </label>
                 <select
                   value={formData.estado || 'Activo'}
-                  onChange={(e) => setFormData({ ...formData, estado: e.target.value as 'Activo' | 'En Observación' | 'Hospitalizado' })}
+                  onChange={(e) => setFormData({ ...formData, estado: e.target.value as any })}
                   className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-[#F7F6F2] text-xs font-semibold text-[#182F28] focus:outline-none"
                 >
                   <option value="Activo">Activo</option>
                   <option value="En Observación">En Observación</option>
                   <option value="Hospitalizado">Hospitalizado</option>
+                  <option value="Egresado">Egresado</option>
                 </select>
               </div>
 
@@ -410,6 +460,163 @@ export const EditResidentModal: React.FC = () => {
                   className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-[#F7F6F2] text-xs font-semibold text-[#182F28] focus:outline-none focus:border-[#B3803F]"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Farmacoterapia & Medicamentos Prescritos */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-mono font-bold uppercase text-[#7A745F] tracking-wider flex items-center gap-1.5">
+              <Pill className="w-4 h-4 text-[#1E7A4C]" />
+              <span>Farmacoterapia & Medicamentos Prescritos</span>
+            </h4>
+
+            <div className="p-4 bg-[#F7F6F2] rounded-2xl border border-[#DEDBD1] space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#182F28] mb-1">
+                    Medicamento
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Losartán 50mg, Enoxaparina..."
+                    value={nuevoMed.medicamento}
+                    onChange={(e) => setNuevoMed({ ...nuevoMed, medicamento: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#182F28] mb-1">
+                    Cantidad / Dosis
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej. 1 tableta, 10 ml, 500 mg..."
+                    value={nuevoMed.cantidad}
+                    onChange={(e) => setNuevoMed({ ...nuevoMed, cantidad: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#182F28] mb-1">
+                    Frecuencia
+                  </label>
+                  <input
+                    type="text"
+                    list="frecuencias-sugeridas-edit"
+                    placeholder="Ej. Cada 8 horas, En el desayuno..."
+                    value={nuevoMed.frecuencia}
+                    onChange={(e) => setNuevoMed({ ...nuevoMed, frecuencia: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                  />
+                  <datalist id="frecuencias-sugeridas-edit">
+                    <option value="Cada 8 horas" />
+                    <option value="Cada 12 horas" />
+                    <option value="Cada 24 horas (Mañana)" />
+                    <option value="Cada 24 horas (Noche)" />
+                    <option value="Con el desayuno" />
+                    <option value="Antes de dormir" />
+                    <option value="Según necesidad / SOS" />
+                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#182F28] mb-1">
+                    Hasta qué fecha <span className="text-[#7A745F] font-normal">(Vacío = Continuo)</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={nuevoMed.fechaFin}
+                    onChange={(e) => setNuevoMed({ ...nuevoMed, fechaFin: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#182F28] mb-1">
+                  Indicaciones Especiales <span className="text-[#7A745F] font-normal">(Opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej. Tomar en ayunas con abundante agua..."
+                  value={nuevoMed.indicaciones}
+                  onChange={(e) => setNuevoMed({ ...nuevoMed, indicaciones: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#B3803F]"
+                />
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={handleAgregarMedicamento}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-[#274A3F] hover:bg-[#182F28] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Agregar Medicamento</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Lista actual de medicamentos */}
+            <div className="space-y-2">
+              <span className="text-xs font-mono font-bold uppercase text-[#7A745F]">
+                Medicamentos Prescritos ({medicamentos.length})
+              </span>
+
+              {medicamentos.length === 0 ? (
+                <div className="p-3 bg-[#F7F6F2] rounded-xl text-center text-xs text-[#7A745F]">
+                  No tiene medicamentos prescritos registrados.
+                </div>
+              ) : (
+                medicamentos.map((m, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 bg-white rounded-xl border border-[#DEDBD1] flex items-center justify-between gap-3 shadow-2xs hover:border-[#1E7A4C]/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-[#DFF3E7] text-[#1E7A4C] flex items-center justify-center shrink-0">
+                        <Pill className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-[#182F28] flex items-center gap-2">
+                          <span>{m.medicamento}</span>
+                          <span className="text-[10px] bg-[#FEF7EE] text-[#9A5B12] px-1.5 py-0.5 rounded font-medium border border-[#DCB87F]/30">
+                            Dosis: {m.cantidad}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-[#5C6058] flex items-center gap-3 mt-0.5">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-[#068591]" />
+                            {m.frecuencia}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-[#B3803F]" />
+                            Hasta: {m.fechaFin ? m.fechaFin : 'Continuo'}
+                          </span>
+                        </div>
+                        {m.indicaciones && (
+                          <div className="text-[10px] text-[#7A745F] italic mt-0.5">
+                            {m.indicaciones}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleEliminarMedicamento(idx)}
+                      className="w-7 h-7 rounded-lg bg-[#FBE8E6] text-[#A4453A] hover:bg-[#f7d6d3] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                      title="Eliminar medicamento"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

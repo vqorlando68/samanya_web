@@ -36,6 +36,15 @@ AS
      *   "idNivelMovilidad": 2,
      *   "idTipoDieta": 3,
      *   "alertasClinicas": "Alergia a penicilina",
+     *   "medicamentos": [
+     *       {
+     *           "medicamento": "Losartan 50mg",
+     *           "cantidad": "1 tableta",
+     *           "frecuencia": "Cada 12 horas",
+     *           "fechaFin": "2026-12-31",
+     *           "indicaciones": "Tomar con abundante agua"
+     *       }
+     *   ],
      *   "acudienteAsociado": {
      *       "nombres": "Claudia Patricia",
      *       "apellidos": "Restrepo Gomez",
@@ -97,6 +106,7 @@ AS
         vro_residente          smy_residentes%ROWTYPE;
         vro_acudiente          smy_acudientes%ROWTYPE;
         vro_res_acu            smy_residente_acudiente%ROWTYPE;
+        vro_med                smy_medicamentos_prescritos%ROWTYPE;
 
         -- Datos acudiente asociado
         v_acu_nombres          smy_acudientes.nombres%TYPE;
@@ -148,11 +158,15 @@ AS
         vro_residente.eps                    := JSON_VALUE(pcl_json, '$.eps');
         vro_residente.plan_complementario    := JSON_VALUE(pcl_json, '$.planComplementario');
         vro_residente.tipo_sangre            := NVL(JSON_VALUE(pcl_json, '$.tipoSangre'), 'O+');
-        vro_residente.id_nivel_movilidad     := TO_NUMBER(JSON_VALUE(pcl_json, '$.idNivelMovilidad'));
-        vro_residente.id_tipo_dieta          := TO_NUMBER(JSON_VALUE(pcl_json, '$.idTipoDieta'));
+        vro_residente.id_nivel_movilidad     := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.idNivelMovilidad')), 1);
+        vro_residente.id_tipo_dieta          := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.idTipoDieta')), 1);
         vro_residente.alertas_clinicas       := JSON_VALUE(pcl_json, '$.alertasClinicas');
-        vro_residente.id_estado_residente    := 1; -- Activo
-        vro_residente.fecha_ingreso          := f_fecha_actual;
+        vro_residente.id_estado_residente    := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.idEstadoResidente')), 1);
+        IF JSON_VALUE(pcl_json, '$.fechaIngreso') IS NOT NULL THEN
+            vro_residente.fecha_ingreso      := TO_DATE(SUBSTR(JSON_VALUE(pcl_json, '$.fechaIngreso'), 1, 10), 'YYYY-MM-DD');
+        ELSE
+            vro_residente.fecha_ingreso      := f_fecha_actual;
+        END IF;
         vro_residente.fecha_creacion         := f_fecha_actual;
 
         -- 4. Inserción delegada al DAO exclusivo de la tabla
@@ -188,6 +202,45 @@ AS
             vro_res_acu.fecha_creacion     := f_fecha_actual;
             PKGSMY_RESIDENTE_ACUDIENTE_DAO.p_insertar(vro_res_acu);
         END IF;
+
+        -- 5.1 Si incluye medicamentos prescritos, se insertan vía su DAO exclusivo
+        FOR r_med IN (
+            SELECT medicamento,
+                   cantidad,
+                   frecuencia,
+                   fecha_fin,
+                   indicaciones
+            FROM JSON_TABLE(pcl_json, '$.medicamentos[*]'
+                COLUMNS (
+                    medicamento  VARCHAR2(120) PATH '$.medicamento',
+                    cantidad     VARCHAR2(50)  PATH '$.cantidad',
+                    frecuencia   VARCHAR2(100) PATH '$.frecuencia',
+                    fecha_fin    VARCHAR2(30)  PATH '$.fechaFin',
+                    indicaciones VARCHAR2(500) PATH '$.indicaciones'
+                )
+            )
+        ) LOOP
+            IF TRIM(r_med.medicamento) IS NOT NULL THEN
+                vro_med.id                     := SEQ_SMY_MEDICAMENTOS_PRESCRITOS.NEXTVAL;
+                vro_med.id_residente           := vro_residente.id;
+                vro_med.nombre_medicamento     := TRIM(r_med.medicamento);
+                vro_med.dosis                  := NVL(TRIM(r_med.cantidad), '1 toma');
+                vro_med.cantidad               := TRIM(r_med.cantidad);
+                vro_med.id_via_administracion  := 1; -- Vía oral estándar
+                vro_med.horarios_fijos         := TRIM(r_med.frecuencia);
+                vro_med.indicaciones           := TRIM(r_med.indicaciones);
+                vro_med.requiere_foto_comp     := 'N';
+                vro_med.fecha_inicio           := f_fecha_actual;
+                IF r_med.fecha_fin IS NOT NULL AND LENGTH(TRIM(r_med.fecha_fin)) >= 10 THEN
+                    vro_med.fecha_fin          := TO_DATE(SUBSTR(r_med.fecha_fin, 1, 10), 'YYYY-MM-DD');
+                ELSE
+                    vro_med.fecha_fin          := NULL;
+                END IF;
+                vro_med.id_estado_medicamento  := 1; -- Activo
+                vro_med.fecha_creacion         := f_fecha_actual;
+                PKGSMY_MEDICAMENTOS_PRESCRITOS_DAO.p_insertar(vro_med);
+            END IF;
+        END LOOP;
 
         -- 6. Control transaccional mediante p_do_commit
         p_do_commit('pkgln_admision_residente.pr_registrar_residente');
@@ -264,6 +317,9 @@ AS
         END IF;
         IF JSON_VALUE(pcl_json, '$.alertasClinicas') IS NOT NULL THEN
             vro_residente.alertas_clinicas := JSON_VALUE(pcl_json, '$.alertasClinicas');
+        END IF;
+        IF JSON_VALUE(pcl_json, '$.fechaIngreso') IS NOT NULL THEN
+            vro_residente.fecha_ingreso := TO_DATE(SUBSTR(JSON_VALUE(pcl_json, '$.fechaIngreso'), 1, 10), 'YYYY-MM-DD');
         END IF;
         IF JSON_VALUE(pcl_json, '$.idEstadoResidente') IS NOT NULL THEN
             vro_residente.id_estado_residente := TO_NUMBER(JSON_VALUE(pcl_json, '$.idEstadoResidente'));
