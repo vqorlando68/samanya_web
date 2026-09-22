@@ -2484,21 +2484,15 @@
     "semantic_hash": ""
   },
   "src/components/modals/LeaveAttachmentModal.tsx": {
-    "mtime": 1790115714.0594454,
-    "seen": 1790115912.2910454,
-    "ast_hash": "fd47ead4a36302f4e8aeaf8ef38e83e7",
+    "mtime": 1790114090.8428583,
+    "seen": 1790114325.4725854,
+    "ast_hash": "0723daf411c9f3295757baa5b510e4d7",
     "semantic_hash": ""
   },
   "backend/oauth_setup.py": {
     "mtime": 1790115006.686128,
     "seen": 1790115171.2831824,
     "ast_hash": "01a6ff380805b5b4cb9a927d186022c4",
-    "semantic_hash": ""
-  },
-  "public/uploads/talento_humano/popochito.jpg": {
-    "mtime": 1790115407.5535767,
-    "seen": 1790115912.2912276,
-    "ast_hash": "0f22e62acbec1c716f1f2839800c0608",
     "semantic_hash": ""
   }
 }

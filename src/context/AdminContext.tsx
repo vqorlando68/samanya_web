@@ -58,6 +58,8 @@ interface AdminContextType {
   setIsRegisterFamilyOpen: (open: boolean) => void;
   isRegisterWorkerOpen: boolean;
   setIsRegisterWorkerOpen: (open: boolean) => void;
+  isRegisterLeaveOpen: boolean;
+  setIsRegisterLeaveOpen: (open: boolean) => void;
   isAssignShiftOpen: boolean;
   setIsAssignShiftOpen: (open: boolean) => void;
   selectedResidente: Residente | null;
@@ -120,6 +122,7 @@ interface AdminContextType {
 
   aprobarPermiso: (idPermiso: number, comentarios: string) => Promise<void>;
   rechazarPermiso: (idPermiso: number, comentarios: string) => Promise<void>;
+  registrarPermiso: (nuevoPermiso: Omit<PermisoAusencia, 'id' | 'fechaSolicitud'> & { fechaSolicitud?: string }) => Promise<void>;
 
   // Notificaciones Toast
   toast: { message: string; type: 'success' | 'alert' | 'info' } | null;
@@ -322,6 +325,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isRegisterResidentOpen, setIsRegisterResidentOpen] = useState(false);
   const [isRegisterFamilyOpen, setIsRegisterFamilyOpen] = useState(false);
   const [isRegisterWorkerOpen, setIsRegisterWorkerOpen] = useState(false);
+  const [isRegisterLeaveOpen, setIsRegisterLeaveOpen] = useState(false);
   const [isAssignShiftOpen, setIsAssignShiftOpen] = useState(false);
   const [selectedResidente, setSelectedResidente] = useState<Residente | null>(null);
   const [isResidenteDetailOpen, setIsResidenteDetailOpen] = useState(false);
@@ -766,6 +770,56 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Solicitud de permiso rechazada', 'alert');
   };
 
+  const registrarPermiso = async (
+    nuevoPermiso: Omit<PermisoAusencia, 'id' | 'fechaSolicitud'> & { fechaSolicitud?: string }
+  ) => {
+    const newId = Math.max(0, ...permisos.map((p) => p.id)) + 1;
+    const fechaSolicitud = nuevoPermiso.fechaSolicitud || new Date().toISOString().split('T')[0];
+
+    const registroCompleto: PermisoAusencia = {
+      ...nuevoPermiso,
+      id: newId,
+      fechaSolicitud
+    };
+
+    // Mapeo a IDs de catálogo requeridos por Oracle
+    const tipoMap: Record<string, number> = {
+      'Vacaciones': 1,
+      'Incapacidad Médica': 2,
+      'Permiso Personal': 3,
+      'Licencia': 5
+    };
+
+    const idTipoPermiso = tipoMap[nuevoPermiso.tipo] || 3;
+    const idEstadoPermiso =
+      nuevoPermiso.estado === 'Aprobado' ? 2 : nuevoPermiso.estado === 'Rechazado' ? 3 : 1;
+
+    try {
+      await adminApi.permisos.registrarPermiso({
+        idTrabajador: nuevoPermiso.idTrabajador,
+        idTipoPermiso,
+        fechaInicio: nuevoPermiso.fechaInicio,
+        fechaFin: nuevoPermiso.fechaFin,
+        motivo: nuevoPermiso.motivo,
+        urlSoporte: nuevoPermiso.soporteUrl,
+        idEstadoPermiso,
+        observacionesAdmin: nuevoPermiso.comentariosAdmin
+      });
+    } catch (err) {
+      console.warn('Registro de permiso en backend Oracle no completado (modo local/offline activo):', err);
+    }
+
+    // Si se crea en estado 'Aprobado', cambiar estado del colaborador a 'En Permiso'
+    if (nuevoPermiso.estado === 'Aprobado') {
+      setTrabajadores((prev) =>
+        prev.map((t) => (t.id === nuevoPermiso.idTrabajador ? { ...t, estado: 'En Permiso' } : t))
+      );
+    }
+
+    setPermisos((prev) => [registroCompleto, ...prev]);
+    showToast('Novedad de personal registrada exitosamente', 'success');
+  };
+
   // 7. Actualizar Residente
   const actualizarResidente = async (idResidente: number, data: Partial<Residente>) => {
     const payload = {
@@ -1057,6 +1111,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsRegisterFamilyOpen,
         isRegisterWorkerOpen,
         setIsRegisterWorkerOpen,
+        isRegisterLeaveOpen,
+        setIsRegisterLeaveOpen,
         isAssignShiftOpen,
         setIsAssignShiftOpen,
         selectedResidente,
@@ -1090,6 +1146,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         asignarTrabajadorATurno,
         aprobarPermiso,
         rechazarPermiso,
+        registrarPermiso,
         toast,
         showToast
       }}

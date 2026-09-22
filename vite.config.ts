@@ -8,7 +8,12 @@ function samanyaApiPlugin(): Plugin {
     name: 'samanya-api-plugin',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        if (req.url?.startsWith('/api/drive/subir-foto-talento') && req.method === 'POST') {
+        if (
+          (req.url?.startsWith('/api/drive/subir-foto-talento') ||
+           req.url?.startsWith('/api/drive/subir-soporte-talento') ||
+           req.url?.startsWith('/api/drive/subir-archivo-talento')) &&
+          req.method === 'POST'
+        ) {
           let body = '';
           req.on('data', (chunk) => {
             body += chunk;

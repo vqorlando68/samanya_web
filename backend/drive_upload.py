@@ -35,7 +35,7 @@ def load_gdrive_config():
 def get_access_token():
     client_id, client_secret, refresh_token = load_gdrive_config()
     if not (client_id and client_secret and refresh_token):
-        raise ValueError("Google Drive OAuth credentials not found in environment or gdrive_credentials.json")
+        raise ValueError("Credenciales Google Drive no configuradas en backend/gdrive_credentials.json. Ejecute 'python backend/oauth_setup.py'.")
 
     url = "https://oauth2.googleapis.com/token"
     data = urllib.parse.urlencode({
@@ -45,25 +45,33 @@ def get_access_token():
         "grant_type": "refresh_token"
     }).encode("utf-8")
     req = urllib.request.Request(url, data=data, method="POST")
-    with urllib.request.urlopen(req) as resp:
-        res = json.loads(resp.read().decode("utf-8"))
-        return res["access_token"]
+    try:
+        with urllib.request.urlopen(req) as resp:
+            res = json.loads(resp.read().decode("utf-8"))
+            return res["access_token"]
+    except urllib.error.HTTPError as he:
+        body = he.read().decode("utf-8")
+        if "invalid_grant" in body:
+            raise ValueError("El Refresh Token de Google Drive ha expirado o fue revocado por Google (en modo de prueba personal de Google Cloud los tokens expiran cada 7 días). Por favor ejecute en su terminal 'python backend/oauth_setup.py' para re-autorizar su cuenta.")
+        raise ValueError(f"Error de Google OAuth al renovar token ({he.code}): {body}")
 
 def find_or_create_folder(access_token, folder_name, parent_id=None):
-    q = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
     if parent_id:
-        q += f" and '{parent_id}' in parents"
+        q = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and '{parent_id}' in parents and trashed = false"
     else:
-        q += " and 'root' in parents"
+        q = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
     
-    url = f"https://www.googleapis.com/drive/v3/files?q={urllib.parse.quote(q)}&fields=files(id,name)"
+    url = f"https://www.googleapis.com/drive/v3/files?q={urllib.parse.quote(q)}&fields=files(id,name)&spaces=drive"
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {access_token}"})
-    with urllib.request.urlopen(req) as resp:
-        res = json.loads(resp.read().decode("utf-8"))
-        if res.get("files"):
-            return res["files"][0]["id"]
+    try:
+        with urllib.request.urlopen(req) as resp:
+            res = json.loads(resp.read().decode("utf-8"))
+            if res.get("files"):
+                return res["files"][0]["id"]
+    except Exception as e:
+        sys.stderr.write(f"Aviso al listar carpeta '{folder_name}': {e}\n")
             
-    # Create folder
+    # Si no existe, crear la carpeta automáticamente en la jerarquía
     meta = {
         "name": folder_name,
         "mimeType": "application/vnd.google-apps.folder"
@@ -140,23 +148,33 @@ def upload_file_to_drive(access_token, parent_folder_id, file_name, file_bytes, 
         "avatarUrl": f"https://lh3.googleusercontent.com/d/{file_id}"
     }
 
-def register_in_oracle(payload):
-    conn = oracledb.connect(
-        user='SAMANYA',
-        password='T3k3r_2025_DEV',
-        dsn='samanya_high',
-        config_dir='./wallet',
-        wallet_location='./wallet',
-        wallet_password='Samanya2026*'
-    )
-    c = conn.cursor()
-    c.execute("""
-        BEGIN
-            PKGLN_ARCHIVOS.PR_REGISTRAR_FOTO_TALENTO_HUMANO(:pcl_json);
-        END;
-    """, [json.dumps(payload)])
-    conn.commit()
-    conn.close()
+def register_in_oracle(payload, tipo="foto"):
+    try:
+        conn = oracledb.connect(
+            user='SAMANYA',
+            password='T3k3r_2025_DEV',
+            dsn='samanya_high',
+            config_dir='./wallet',
+            wallet_location='./wallet',
+            wallet_password='Samanya2026*'
+        )
+        c = conn.cursor()
+        if tipo == "soporte":
+            c.execute("""
+                BEGIN
+                    PKGLN_ARCHIVOS.PR_REGISTRAR_SOPORTE_TALENTO_HUMANO(:pcl_json);
+                END;
+            """, [json.dumps(payload)])
+        else:
+            c.execute("""
+                BEGIN
+                    PKGLN_ARCHIVOS.PR_REGISTRAR_FOTO_TALENTO_HUMANO(:pcl_json);
+                END;
+            """, [json.dumps(payload)])
+        conn.commit()
+        conn.close()
+    except Exception as oe:
+        sys.stderr.write(f"Advertencia al persistir en Oracle ({tipo}): {str(oe)}\n")
 
 def main():
     try:
@@ -175,42 +193,53 @@ def main():
         import base64
         file_bytes = base64.b64decode(file_base64)
         
-        id_usuario = int(data.get("idUsuario", 202))
-        id_empleado = int(data.get("idEmpleado", id_usuario))
+        tipo_documento = data.get("tipoDocumento", "foto")
+        id_usuario = int(data.get("idUsuario") or data.get("idEmpleado") or 202)
+        id_empleado = int(data.get("idEmpleado") or id_usuario)
         identificacion = str(data.get("identificacion", "SIN_DOC")).strip().replace(".", "").replace("-", "")
-        nombre_original = data.get("nombreOriginal", "foto.jpg")
-        nombre_completo = data.get("nombreCompleto", f"Colaborador {id_usuario}")
+        nombre_original = data.get("nombreOriginal", "archivo.pdf" if tipo_documento == "soporte" else "foto.jpg")
+        nombre_completo = data.get("nombreCompleto", f"Colaborador {id_empleado}")
         id_centro = int(data.get("idCentro", 1))
         
         # Extension
         ext = os.path.splitext(nombre_original)[1].lower()
         if not ext:
-            ext = ".jpg"
+            ext = ".pdf" if tipo_documento == "soporte" else ".jpg"
             
+        tipo_mime = data.get("tipoMime")
+        if not tipo_mime:
+            if ext == ".pdf":
+                tipo_mime = "application/pdf"
+            elif ext in [".png", ".jpg", ".jpeg", ".webp"]:
+                tipo_mime = f"image/{ext.replace('.', '')}"
+            else:
+                tipo_mime = "application/octet-stream"
+
         # 1. Calculate real SHA-256 hash
         hash_sha256 = hashlib.sha256(file_bytes).hexdigest()
         nombre_almacenado = f"{hash_sha256}{ext}"
+        nombre_archivo_drive = nombre_original if tipo_documento == "soporte" else nombre_almacenado
         
-        # 2. Upload to Google Drive inside "Samanya / Talento_humano / {id_usuario}_{identificacion}"
+        # 2. Upload to Google Drive inside "Samanya/Talento_humano/{id_empleado}_{identificacion}"
         token = get_access_token()
         samanya_folder_id = find_or_create_folder(token, "Samanya")
         talento_folder_id = find_or_create_folder(token, "Talento_humano", parent_id=samanya_folder_id)
-        user_folder_name = f"{id_usuario}_{identificacion}"
+        user_folder_name = f"{id_empleado}_{identificacion}"
         user_folder_id = find_or_create_folder(token, user_folder_name, parent_id=talento_folder_id)
         
-        upload_result = upload_file_to_drive(token, user_folder_id, nombre_almacenado, file_bytes)
+        upload_result = upload_file_to_drive(token, user_folder_id, nombre_archivo_drive, file_bytes, mime_type=tipo_mime)
         file_id = upload_result["fileId"]
         drive_url = f"https://drive.google.com/uc?export=view&id={file_id}"
         ruta_relativa = f"Samanya/Talento_humano/{user_folder_name}"
         
-        # Save local copy in public/uploads/talento_humano to guarantee 100% browser rendering without CORP block
+        # Save local copy in public/uploads/talento_humano
         local_dir = os.path.join("public", "uploads", "talento_humano")
         os.makedirs(local_dir, exist_ok=True)
-        local_file_path = os.path.join(local_dir, nombre_almacenado)
+        local_file_path = os.path.join(local_dir, nombre_archivo_drive)
         with open(local_file_path, "wb") as f:
             f.write(file_bytes)
             
-        avatar_url = f"/uploads/talento_humano/{nombre_almacenado}"
+        avatar_url = f"/uploads/talento_humano/{nombre_archivo_drive}"
         
         # 3. Register in Oracle Database via PKGLN_ARCHIVOS
         oracle_payload = {
@@ -218,20 +247,21 @@ def main():
             "idEmpleado": id_empleado,
             "identificacion": identificacion,
             "nombreArchivo": nombre_original,
-            "nombreArchivoAlmacenado": nombre_almacenado,
+            "nombreArchivoAlmacenado": nombre_archivo_drive,
             "hashArchivo": hash_sha256,
             "rutaRelativa": ruta_relativa,
             "rutaCompletaAlmacenamiento": drive_url,
             "avatarUrl": avatar_url,
             "tamanoBytes": len(file_bytes),
             "extension": ext,
-            "tipoMime": data.get("tipoMime", "image/jpeg"),
+            "tipoMime": tipo_mime,
             "idCentro": id_centro,
             "idUsuarioCreacion": id_usuario,
+            "idSolicitudPermiso": data.get("idSolicitudPermiso"),
             "nombreCompleto": nombre_completo
         }
         
-        register_in_oracle(oracle_payload)
+        register_in_oracle(oracle_payload, tipo=tipo_documento)
         
         response = {
             "success": True,
@@ -239,11 +269,12 @@ def main():
             "driveUrl": drive_url,
             "fileId": file_id,
             "hash": hash_sha256,
-            "nombreAlmacenado": nombre_almacenado,
+            "nombreOriginal": nombre_original,
+            "nombreAlmacenado": nombre_archivo_drive,
             "rutaRelativa": ruta_relativa,
             "directorioRaiz": "Samanya/Talento_humano",
             "directorioUsuario": user_folder_name,
-            "mensaje": f"Foto cargada a Google Drive ({ruta_relativa}/{nombre_almacenado}) y registrada en Oracle SMY_ARCHIVOS / SMY_USUARIOS exitosamente."
+            "mensaje": f"Archivo cargado a Google Drive ({ruta_relativa}/{nombre_archivo_drive}) y registrado en Oracle SMY_ARCHIVOS exitosamente."
         }
         print(json.dumps(response))
         

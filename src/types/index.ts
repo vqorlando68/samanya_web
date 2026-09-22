@@ -129,6 +129,8 @@ export type PermisoAusencia = {
   fechaFin: string;
   motivo: string;
   soporteUrl?: string;
+  driveUrl?: string;
+  rutaDrive?: string;
   estado: 'Pendiente' | 'Aprobado' | 'Rechazado';
   comentariosAdmin?: string;
   fechaSolicitud: string;

@@ -241,6 +241,19 @@ export const adminApi = {
 
   // 6. Permisos y Ausencias (PKGLN_PERMISOS_AUSENCIAS)
   permisos: {
+    async registrarPermiso(payload: {
+      idTrabajador: number;
+      idTipoPermiso: number;
+      fechaInicio: string;
+      fechaFin: string;
+      motivo: string;
+      urlSoporte?: string;
+      idEstadoPermiso?: number;
+      observacionesAdmin?: string;
+    }) {
+      return postToPackage('/pkgln_permisos_ausencias/pr_registrar_permiso', payload);
+    },
+
     async gestionarSolicitud(payload: {
       idSolicitud: number;
       idEstadoPermiso: number; // 2 = Aprobado, 3 = Rechazado

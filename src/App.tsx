@@ -17,6 +17,7 @@ import { ClinicalSupervisionView } from './components/views/ClinicalSupervisionV
 import { RegisterResidentModal } from './components/modals/RegisterResidentModal';
 import { RegisterFamilyModal } from './components/modals/RegisterFamilyModal';
 import { RegisterWorkerModal } from './components/modals/RegisterWorkerModal';
+import { RegisterLeaveModal } from './components/modals/RegisterLeaveModal';
 import { ResidentDetailModal } from './components/modals/ResidentDetailModal';
 import { EditResidentModal } from './components/modals/EditResidentModal';
 import { EditWorkerModal } from './components/modals/EditWorkerModal';
@@ -50,6 +51,7 @@ const AdminLayout: React.FC = () => {
       <RegisterResidentModal />
       <RegisterFamilyModal />
       <RegisterWorkerModal />
+      <RegisterLeaveModal />
       <ResidentDetailModal />
 
       {/* Modales de Edición */}

@@ -140,3 +140,87 @@ export async function subirFotoTalentoHumano(
     throw error;
   }
 }
+
+export interface UploadSoportePermisoParams {
+  file: File;
+  idEmpleado: number;
+  identificacion: string;
+  idCentro?: number;
+  nombreCompleto?: string;
+  idSolicitudPermiso?: number;
+}
+
+export interface UploadSoportePermisoResult {
+  success: boolean;
+  driveUrl: string;
+  nombreArchivo: string;
+  nombreAlmacenado: string;
+  hash: string;
+  rutaRelativa: string;
+  idArchivo?: number;
+  fileId?: string;
+  mensaje?: string;
+}
+
+/**
+ * Carga de Documento de Soporte (Incapacidad, Vacaciones o Permiso) a Google Drive:
+ * Ruta: Samanya/Talento_humano/{id}_{identificacion}/{archivo}
+ * y registro en la tabla SMY_ARCHIVOS vía PKGLN_ARCHIVOS.PR_REGISTRAR_SOPORTE_TALENTO_HUMANO
+ */
+export async function subirSoportePermiso(
+  params: UploadSoportePermisoParams
+): Promise<UploadSoportePermisoResult> {
+  const { file, idEmpleado, identificacion, idCentro = 1, nombreCompleto, idSolicitudPermiso } = params;
+
+  try {
+    const hash = await calcularSha256(file);
+    const extension = normalizarExtension(file.name);
+    const docSanitizado = sanitizarIdentificador(identificacion);
+    const fileBase64 = await fileToBase64(file);
+
+    const response = await fetch('/api/drive/subir-soporte-talento', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fileBase64,
+        idEmpleado,
+        idUsuario: idEmpleado,
+        identificacion: docSanitizado,
+        nombreOriginal: file.name,
+        nombreCompleto: nombreCompleto || `Colaborador ${idEmpleado}`,
+        tipoMime: file.type || (extension === '.pdf' ? 'application/pdf' : 'application/octet-stream'),
+        tipoDocumento: 'soporte',
+        idCentro,
+        idSolicitudPermiso
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Error en servidor (${response.status}): ${errText}`);
+    }
+
+    const resJson = await response.json();
+    if (!resJson.success) {
+      throw new Error(resJson.error || 'Error subiendo soporte a Google Drive y Oracle');
+    }
+
+    return {
+      success: true,
+      driveUrl: resJson.driveUrl || '',
+      nombreArchivo: file.name,
+      nombreAlmacenado: resJson.nombreAlmacenado || file.name,
+      hash: resJson.hash || hash,
+      rutaRelativa: resJson.rutaRelativa || `Samanya/Talento_humano/${idEmpleado}_${docSanitizado}`,
+      idArchivo: resJson.idArchivo || Date.now(),
+      fileId: resJson.fileId,
+      mensaje: resJson.mensaje || 'Soporte adjunto subido exitosamente a Google Drive y registrado en SMY_ARCHIVOS'
+    };
+  } catch (error: any) {
+    console.error('Error al subir soporte de permiso a Google Drive:', error);
+    throw error;
+  }
+}
+

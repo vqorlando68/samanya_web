@@ -588,6 +588,8 @@ export const SEED_PERMISOS: PermisoAusencia[] = [
     fechaFin: '2025-02-21',
     motivo: 'Cuadro de lumbago mecánico certificado por EPS Sanitas.',
     soporteUrl: 'incapacidad_sandra_torres.pdf',
+    driveUrl: 'https://drive.google.com/file/d/demo_incapacidad_sandra_torres/view',
+    rutaDrive: 'Samanya/Talento_humano/204_1032456789/incapacidad_sandra_torres.pdf',
     estado: 'Aprobado',
     comentariosAdmin: 'Aprobada incapacidad de 3 días. Turnos reasignados a cuidador de refuerzo.',
     fechaSolicitud: '2025-02-17'
@@ -601,6 +603,9 @@ export const SEED_PERMISOS: PermisoAusencia[] = [
     fechaInicio: '2025-02-25',
     fechaFin: '2025-02-25',
     motivo: 'Cita en juzgado para diligencia familiar improrrogable.',
+    soporteUrl: 'citacion_juzgado_jose_quiroga.pdf',
+    driveUrl: 'https://drive.google.com/file/d/demo_citacion_juzgado/view',
+    rutaDrive: 'Samanya/Talento_humano/203_1018234567/citacion_juzgado_jose_quiroga.pdf',
     estado: 'Pendiente',
     fechaSolicitud: '2025-02-18'
   }
