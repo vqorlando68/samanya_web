@@ -217,6 +217,36 @@ export const FamilyMembersView: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {filtered.length === 0 && (
+        <div className="p-12 text-center bg-white rounded-3xl border border-[#DEDBD1] space-y-4 max-w-xl mx-auto shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-[#FEF7EE] text-[#9A5B12] mx-auto flex items-center justify-center">
+            <HeartHandshake className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-serif font-bold text-lg text-[#182F28]">
+              {familiares.length === 0
+                ? 'Base de Datos Oracle Conectada (Sin Familiares)'
+                : 'No se encontraron familiares con los filtros aplicados'}
+            </h4>
+            <p className="text-xs text-[#7A745F] max-w-md mx-auto leading-relaxed">
+              {familiares.length === 0
+                ? 'Actualmente no hay familiares o acudientes registrados en la base de datos. Puedes registrar un nuevo contacto familiar.'
+                : 'Ajusta los criterios de búsqueda para visualizar los acudientes.'}
+            </p>
+          </div>
+          {familiares.length === 0 && (
+            <button
+              type="button"
+              onClick={() => setIsRegisterFamilyOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B3803F] hover:bg-[#9a6c32] text-white font-bold rounded-xl text-xs shadow-xs transition-all cursor-pointer"
+            >
+              <HeartHandshake className="w-4 h-4" />
+              <span>Registrar Primer Familiar</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

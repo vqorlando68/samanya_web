@@ -205,6 +205,22 @@ export const ShiftsView: React.FC = () => {
           );
         })}
       </div>
+
+      {sedeTurnos.length === 0 && (
+        <div className="p-12 text-center bg-white rounded-3xl border border-[#DEDBD1] space-y-4 max-w-xl mx-auto shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-[#D9F0F1] text-[#075158] mx-auto flex items-center justify-center">
+            <Clock className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-serif font-bold text-lg text-[#182F28]">
+              Sin Turnos ni Cuadrantes Asignados
+            </h4>
+            <p className="text-xs text-[#7A745F] max-w-md mx-auto leading-relaxed">
+              No se registran cuadrantes asistenciales activos en la base de datos de esta sede.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

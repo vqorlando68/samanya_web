@@ -7,6 +7,7 @@ export type SedeCentro = {
   telefono: string;
   capacidadTotal: number;
   esSedePrincipal?: boolean;
+  idOrganizacion?: number;
 };
 
 export type MedicamentoPrescrito = {
@@ -162,3 +163,46 @@ export type AdminDashboardMetrics = {
   permisosPendientes: number;
   alertasCriticas: number;
 };
+
+export type ElementoDotacionCatalogo = {
+  id: number;
+  idOrganizacion?: number;
+  nombreElemento: string;
+  categoria: string;
+  cantidadDefecto: number;
+  frecuenciaCambioMeses?: number | null;
+  descripcion?: string;
+  esSugeridoIngreso: boolean;
+  estado: 'Activo' | 'Inactivo';
+};
+
+export type HistorialCambioDotacion = {
+  id: number;
+  idDotacionResidente: number;
+  fechaCambio: string;
+  motivo: string;
+  condicionNuevo?: string;
+  observaciones?: string;
+  usuarioRegistra?: string;
+};
+
+export type DotacionResidente = {
+  id: number;
+  idResidente: number;
+  idElementoCatalogo?: number | null;
+  nombreElemento: string;
+  categoria: string;
+  cantidad: number;
+  fechaEntrega: string;
+  frecuenciaCambioMeses?: number | null;
+  fechaProximoCambio?: string | null;
+  fechaUltimoCambio?: string | null;
+  estadoElemento: 'Entregado' | 'Cambio Pendiente' | 'Renovado' | 'Devuelto' | 'Baja / Deterioro';
+  condicionEntrega?: string;
+  notas?: string;
+  usuarioEntrega?: string;
+  semaforoCambio?: 'VIGENTE' | 'PROXIMO' | 'VENCIDO' | 'SIN_VENCIMIENTO';
+  diasParaCambio?: number | null;
+  historial?: HistorialCambioDotacion[];
+};
+

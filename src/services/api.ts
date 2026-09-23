@@ -53,7 +53,7 @@ export const adminApi = {
   // 1. Métricas e Incidentes (PKGLN_DASHBOARD_ADMINISTRADOR)
   dashboard: {
     async obtenerMetricas(idCentro: number) {
-      return postToPackage('/pkgln_dashboard_administrador/pr_obtener_metricas', { idCentro });
+      return postToPackage<{ success: boolean; data: any }>('/pkgln_dashboard_administrador/f_obtener_resumen_json', { idCentro });
     }
   },
 
@@ -123,8 +123,12 @@ export const adminApi = {
     }
   },
 
-  // 3. Gestión de Familiares y Acudientes (PKGLN_GESTION_FAMILIARES)
+  // 3. Gestión de Familiares y Acudientes (PKGLN_GESTION_FAMILIARES / PKGCA_SMY_ACUDIENTES)
   familiares: {
+    async consultarFamiliares(idCentro?: number): Promise<{ success: boolean; data?: any[]; count?: number }> {
+      return postToPackage('/pkgca_smy_acudientes/p_consultar_acudientes', { idCentro });
+    },
+
     async registrarFamiliar(payload: {
       idTipoIdentificacion?: number;
       tipoIdentificacion: string;
@@ -180,8 +184,12 @@ export const adminApi = {
     }
   },
 
-  // 4. Talento Humano y Trabajadores (PKGLN_TALENTO_HUMANO)
+  // 4. Talento Humano y Trabajadores (PKGLN_TALENTO_HUMANO / PKGCA_SMY_EMPLEADOS)
   trabajadores: {
+    async consultarTrabajadores(idCentro?: number): Promise<{ success: boolean; data?: any[]; count?: number }> {
+      return postToPackage('/pkgca_smy_empleados/p_consultar_empleados', { idCentro });
+    },
+
     async registrarTrabajador(payload: {
       idCentro: number;
       tipoIdentificacion: string;
@@ -311,6 +319,73 @@ export const adminApi = {
     async subirFotoTalentoHumano(payload: Record<string, any>) {
       return postToPackage('/pkgln_archivos/pr_subir_foto_talento_humano', payload);
     }
+  },
+
+  // 9. Control de Dotación e Inventario de Residentes (PKGLN_DOTACION_RESIDENTES)
+  dotacion: {
+    async consultarCatalogo(idOrganizacion?: number) {
+      return postToPackage<{ success: boolean; data?: any[]; count?: number }>('/pkgln_dotacion_residentes/pr_consultar_catalogo', { idOrganizacion });
+    },
+
+    async guardarArticuloCatalogo(payload: {
+      id?: number;
+      idOrganizacion?: number;
+      nombreElemento: string;
+      categoria?: string;
+      cantidadDefecto?: number;
+      frecuenciaCambioMeses?: number | null;
+      descripcion?: string;
+      esSugeridoIngreso?: number;
+      estado?: string;
+      idUsuario?: number;
+    }) {
+      return postToPackage('/pkgln_dotacion_residentes/pr_guardar_articulo_catalogo', payload);
+    },
+
+    async consultarDotacionResidente(idResidente: number) {
+      return postToPackage('/pkgln_dotacion_residentes/pr_consultar_dotacion_residente', { idResidente });
+    },
+
+    async registrarEntregaIngreso(payload: {
+      idResidente: number;
+      idUsuario?: number;
+      articulos: Array<{
+        idElementoCatalogo?: number | null;
+        nombreElemento: string;
+        categoria?: string;
+        cantidad: number;
+        frecuenciaCambioMeses?: number | null;
+        condicionEntrega?: string;
+        notas?: string;
+      }>;
+    }) {
+      return postToPackage('/pkgln_dotacion_residentes/pr_registrar_entrega_ingreso', payload);
+    },
+
+    async agregarArticuloResidente(payload: {
+      idResidente: number;
+      idElementoCatalogo?: number | null;
+      nombreElemento: string;
+      categoria?: string;
+      cantidad: number;
+      frecuenciaCambioMeses?: number | null;
+      condicionEntrega?: string;
+      notas?: string;
+      idUsuario?: number;
+    }) {
+      return postToPackage('/pkgln_dotacion_residentes/pr_agregar_articulo_residente', payload);
+    },
+
+    async registrarRecambio(payload: {
+      idDotacionResidente: number;
+      motivo?: string;
+      condicionNuevo?: string;
+      observaciones?: string;
+      idUsuario?: number;
+    }) {
+      return postToPackage('/pkgln_dotacion_residentes/pr_registrar_recambio', payload);
+    }
   }
 };
+
 

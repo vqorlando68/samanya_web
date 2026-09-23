@@ -17,11 +17,45 @@ import { MedicamentoPrescrito } from '../../types';
 import { obtenerIniciales } from '../../utils/avatarUtils';
 
 export const RegisterResidentModal: React.FC = () => {
-  const { isRegisterResidentOpen, setIsRegisterResidentOpen, registrarResidente, activeSede } = useAdmin();
+  const { isRegisterResidentOpen, setIsRegisterResidentOpen, registrarResidente, activeSede, catalogoDotacion } = useAdmin();
 
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fotoPreview, setFotoPreview] = useState<string | undefined>(undefined);
+
+  // Lista de Dotación de Ingreso (Catálogo Sugerido + Personalización)
+  const [itemsDotacion, setItemsDotacion] = useState<
+    Array<{
+      idElementoCatalogo?: number | null;
+      nombreElemento: string;
+      categoria: string;
+      cantidad: number;
+      frecuenciaCambioMeses?: number | null;
+      condicionEntrega: string;
+      notas: string;
+      incluido: boolean;
+    }>
+  >(() => {
+    return (catalogoDotacion || [])
+      .filter((c) => c.esSugeridoIngreso && c.estado === 'Activo')
+      .map((c) => ({
+        idElementoCatalogo: c.id,
+        nombreElemento: c.nombreElemento,
+        categoria: c.categoria,
+        cantidad: c.cantidadDefecto || 1,
+        frecuenciaCambioMeses: c.frecuenciaCambioMeses,
+        condicionEntrega: 'Nuevo',
+        notas: '',
+        incluido: true
+      }));
+  });
+
+  const [nuevoItemDotacion, setNuevoItemDotacion] = useState({
+    nombreElemento: '',
+    categoria: 'Lencería y Ropa de Cama',
+    cantidad: 1,
+    frecuenciaCambioMeses: 12 as number | null
+  });
 
   // Lista de Medicamentos Prescritos
   const [medicamentos, setMedicamentos] = useState<MedicamentoPrescrito[]>([]);
@@ -113,6 +147,17 @@ export const RegisterResidentModal: React.FC = () => {
         fotoUrl: fotoPreview,
         medicamentos: medicamentos.length > 0 ? medicamentos : undefined,
         acudientes: [],
+        dotacionInicial: itemsDotacion
+          .filter((it) => it.incluido && it.nombreElemento.trim())
+          .map((it) => ({
+            idElementoCatalogo: it.idElementoCatalogo,
+            nombreElemento: it.nombreElemento,
+            categoria: it.categoria,
+            cantidad: it.cantidad,
+            frecuenciaCambioMeses: it.frecuenciaCambioMeses,
+            condicionEntrega: it.condicionEntrega,
+            notas: it.notas
+          })),
         familiarContacto: formData.incluirAcudiente && formData.acudienteNombres ? {
           nombres: formData.acudienteNombres,
           apellidos: formData.acudienteApellidos,
@@ -126,6 +171,7 @@ export const RegisterResidentModal: React.FC = () => {
       setIsRegisterResidentOpen(false);
       setFotoPreview(undefined);
       setMedicamentos([]);
+      setStep(1);
       setNuevoMed({
         medicamento: '',
         cantidad: '',
@@ -247,6 +293,18 @@ export const RegisterResidentModal: React.FC = () => {
             }`}
           >
             <span>4. Acudiente Responsable</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStep(5)}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
+              step === 5 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
+            }`}
+          >
+            <span>5. Dotación & Entregas</span>
+            <span className="text-[10px] bg-[#DCB87F] text-[#182F28] px-1.5 py-0.2 rounded-full font-bold">
+              {itemsDotacion.filter((i) => i.incluido).length}
+            </span>
           </button>
         </div>
 
@@ -850,6 +908,200 @@ export const RegisterResidentModal: React.FC = () => {
             </div>
           )}
 
+          {/* STEP 5: DOTACIÓN Y ELEMENTOS DE INGRESO */}
+          {step === 5 && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              <div className="p-4 bg-[#FEF7EE] rounded-2xl border border-[#DCB87F]/40 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-[#DCB87F]/30 text-[#9A5B12] flex items-center justify-center shrink-0 mt-0.5">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-serif font-bold text-sm text-[#182F28]">
+                    Control de Dotación y Elementos Entregados al Residente
+                  </h4>
+                  <p className="text-xs text-[#5C6058] mt-0.5 leading-relaxed">
+                    Personalice la lista de elementos entregados al residente. Puede <strong>excluir</strong> artículos
+                    desmarcando la casilla, <strong>aumentar cantidades</strong> o <strong>agregar nuevos artículos</strong> personalizados.
+                    Los artículos con periodicidad tendrán alertas visuales de recambio automático en la ficha.
+                  </p>
+                </div>
+              </div>
+
+              {/* Agregar artículo adicional o ad-hoc */}
+              <div className="p-4 bg-[#F7F6F2] rounded-2xl border border-[#DEDBD1] space-y-3">
+                <span className="text-xs font-bold text-[#182F28] uppercase font-mono block">
+                  + Agregar Artículo Extra o Personalizado
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                  <div className="sm:col-span-4">
+                    <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Nombre Artículo</label>
+                    <input
+                      type="text"
+                      placeholder="Ej. Almohada extra, Cojín antireflujo"
+                      value={nuevoItemDotacion.nombreElemento}
+                      onChange={(e) => setNuevoItemDotacion({ ...nuevoItemDotacion, nombreElemento: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs text-[#182F28] focus:outline-none focus:border-[#182F28]"
+                    />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Categoría</label>
+                    <select
+                      value={nuevoItemDotacion.categoria}
+                      onChange={(e) => setNuevoItemDotacion({ ...nuevoItemDotacion, categoria: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs text-[#182F28] focus:outline-none focus:border-[#182F28]"
+                    >
+                      <option value="Lencería y Ropa de Cama">Lencería</option>
+                      <option value="Aseo y Cuidado Personal">Aseo Personal</option>
+                      <option value="Menaje">Menaje</option>
+                      <option value="Ayudas Técnicas">Ayudas Técnicas</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Cantidad</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={nuevoItemDotacion.cantidad}
+                      onChange={(e) => setNuevoItemDotacion({ ...nuevoItemDotacion, cantidad: parseInt(e.target.value) || 1 })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs text-[#182F28] focus:outline-none focus:border-[#182F28]"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Periodicidad</label>
+                    <select
+                      value={nuevoItemDotacion.frecuenciaCambioMeses ?? ''}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? null : parseInt(e.target.value);
+                        setNuevoItemDotacion({ ...nuevoItemDotacion, frecuenciaCambioMeses: val });
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-white text-xs text-[#182F28] focus:outline-none focus:border-[#182F28]"
+                    >
+                      <option value="">Única vez</option>
+                      <option value="6">6 meses</option>
+                      <option value="12">12 meses</option>
+                      <option value="24">24 meses</option>
+                    </select>
+                  </div>
+                  <div className="sm:col-span-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!nuevoItemDotacion.nombreElemento.trim()) {
+                          alert('Ingrese el nombre del artículo.');
+                          return;
+                        }
+                        setItemsDotacion((prev) => [
+                          ...prev,
+                          {
+                            nombreElemento: nuevoItemDotacion.nombreElemento.trim(),
+                            categoria: nuevoItemDotacion.categoria,
+                            cantidad: nuevoItemDotacion.cantidad,
+                            frecuenciaCambioMeses: nuevoItemDotacion.frecuenciaCambioMeses,
+                            condicionEntrega: 'Nuevo',
+                            notas: 'Artículo adicional agregado durante admisión',
+                            incluido: true
+                          }
+                        ]);
+                        setNuevoItemDotacion({
+                          nombreElemento: '',
+                          categoria: 'Lencería y Ropa de Cama',
+                          cantidad: 1,
+                          frecuenciaCambioMeses: 12
+                        });
+                      }}
+                      className="w-full py-2 bg-[#182F28] hover:bg-[#274A3F] text-white text-xs font-bold rounded-xl flex items-center justify-center cursor-pointer"
+                      title="Agregar a la lista"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lista editable de dotación sugerida */}
+              <div className="border border-[#DEDBD1] rounded-2xl overflow-hidden bg-white">
+                <div className="p-3 bg-[#F7F6F2] border-b border-[#DEDBD1] flex items-center justify-between text-xs font-bold text-[#182F28]">
+                  <span>Artículos Propuestos para Entrega Física</span>
+                  <span className="font-mono text-[#7A745F]">
+                    {itemsDotacion.filter((i) => i.incluido).length} de {itemsDotacion.length} incluidos
+                  </span>
+                </div>
+
+                <div className="divide-y divide-[#DEDBD1]/60 max-h-[300px] overflow-y-auto">
+                  {itemsDotacion.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-3.5 flex items-center justify-between gap-3 transition-colors ${
+                        item.incluido ? 'bg-white' : 'bg-gray-50/70 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={item.incluido}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setItemsDotacion((prev) =>
+                              prev.map((it, i) => (i === idx ? { ...it, incluido: checked } : it))
+                            );
+                          }}
+                          className="w-4 h-4 rounded border-[#DEDBD1] text-[#182F28] focus:ring-[#182F28] cursor-pointer"
+                        />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-[#182F28]">
+                              {item.nombreElemento}
+                            </span>
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#DCB87F]/30 text-[#694819]">
+                              {item.categoria}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-[11px] text-[#7A745F] mt-0.5">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-[#B3803F]" />
+                              {item.frecuenciaCambioMeses
+                                ? `Recambio cada ${item.frecuenciaCambioMeses} meses (calculado automáticamente)`
+                                : 'Entrega única (sin ciclo de recambio)'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <label className="text-xs text-[#5C6058] font-bold">Cant:</label>
+                        <input
+                          type="number"
+                          min="1"
+                          disabled={!item.incluido}
+                          value={item.cantidad}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 1;
+                            setItemsDotacion((prev) =>
+                              prev.map((it, i) => (i === idx ? { ...it, cantidad: val } : it))
+                            );
+                          }}
+                          className="w-16 px-2 py-1 rounded-lg border border-[#DEDBD1] text-xs font-bold text-center focus:outline-none focus:border-[#182F28]"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setItemsDotacion((prev) => prev.filter((_, i) => i !== idx));
+                          }}
+                          className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors cursor-pointer"
+                          title="Eliminar de la lista"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Footer Controls */}
           <div className="pt-4 border-t border-[#DEDBD1] flex items-center justify-between">
             {step > 1 ? (
@@ -873,7 +1125,7 @@ export const RegisterResidentModal: React.FC = () => {
                 Cancelar
               </button>
 
-              {step < 4 ? (
+              {step < 5 ? (
                 <button
                   type="button"
                   onClick={() => setStep((step + 1) as any)}
@@ -887,7 +1139,7 @@ export const RegisterResidentModal: React.FC = () => {
                   disabled={isSubmitting}
                   className="px-5 py-2.5 bg-[#B3803F] hover:bg-[#9a6c32] text-white font-bold rounded-xl text-sm shadow-xs transition-all cursor-pointer disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Guardando en Base de Datos...' : 'Completar Admisión'}
+                  {isSubmitting ? 'Guardando en Base de Datos...' : 'Completar Admisión & Dotación'}
                 </button>
               )}
             </div>

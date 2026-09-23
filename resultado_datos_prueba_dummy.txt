@@ -1,0 +1,639 @@
+
+Session alterado.
+
+============================================================================
+INICIANDO CARGA DE DATOS DUMMY - SAMANYA OS
+HORA OFICIAL (Bogotá, Colombia - UTC-5): CAST(SYSTIMESTAMP AT TIME ZONE '-05:00' AS DATE)
+============================================================================
+0. Garantizando Organizaciones y Centros Multi-Tenant...
+
+0 filas fusionadas.
+
+
+0 filas fusionadas.
+
+Confirmación terminada.
+1. Insertando Usuarios del Sistema (SMY_USUARIOS)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+1.1 Insertando Dueños de Organización (SMY_ORGANIZACION_DUENOS)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+1.2 Insertando Asignación de Usuarios a Sedes (SMY_CENTRO_USUARIOS)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+2. Insertando Empleados (SMY_EMPLEADOS)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+3. Insertando Residentes (SMY_RESIDENTES)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+4. Insertando Historias Clínicas (SMY_HISTORIAS_CLINICAS)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+5. Insertando Acudientes (SMY_ACUDIENTES)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+6. Insertando Relación Residente-Acudiente (SMY_RESIDENTE_ACUDIENTE)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+7. Insertando Turnos Asignados (SMY_TURNOS_ASIGNADOS)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+8. Insertando Medicamentos Prescritos (SMY_MEDICAMENTOS_PRESCRITOS)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+9. Insertando Registros de Administración de Medicamentos (SMY_REGISTROS_ADMIN_MED)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+10. Insertando Signos Vitales (SMY_SIGNOS_VITALES)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+11. Insertando Bitácora Asistencial (SMY_BITACORA_RESIDENTE)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+12. Insertando Consentimientos Informados (SMY_CONSENTIMIENTOS y SMY_CONSENTIMIENTO_DESTINATARIOS)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+13. Insertando Tareas Operativas (SMY_TAREAS_OPERATIVAS y SMY_TAREA_RESIDENTES)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+14. Insertando Incidentes (SMY_INCIDENTES y SMY_INCIDENTE_RESIDENTES)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+15. Insertando Eventos de Calendario (SMY_EVENTOS_CALENDARIO)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+16. Insertando Mensajería y Chat (SMY_CONVERSACIONES_CHAT, SMY_CHAT_PARTICIPANTES, SMY_MENSAJES_CHAT)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+17. Insertando Notificaciones del Sistema (SMY_NOTIFICACIONES_SISTEMA)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+17.1 Insertando Solicitudes de Admisión (SMY_SOLICITUDES_ADMISION)...
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+18. Insertando Parámetros del Sistema y Google Drive (SMY_PARAMETROS)...
+
+6 filas eliminado
+
+Confirmación terminada.
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+
+1 fila insertadas.
+
+Confirmación terminada.
+18. Insertando Dotación Inicial y Entregas a Residentes...
+
+0 filas fusionadas.
+
+
+7 filas fusionadas.
+
+
+1 fila fusionadas.
+
+Confirmación terminada.
+19. Sincronizando Secuencias Oracle...
+Procedimiento PL/SQL terminado correctamente.
+Confirmación terminada.
+============================================================================
+POBLACIÓN DE DATOS DUMMY COMPLETADA CON ÉXITO
+RESUMEN:
+- 2 Organizaciones y 3 Centros Geriátricos Multi-Tenant
+- 3 Registros de Dueños / Socios y 23 Asignaciones Multi-Sede en SMY_CENTRO_USUARIOS
+- 10 Residentes registrados con Historia Clínica (6 en Central, 4 en Campestre)
+- 4 Empleados / Cuidadores asignados por sede
+- 2 Solicitudes previas de admisión con contactos
+- 14 Familiares / Acudientes creados con usuarios
+- 2 Residentes con 3 familiares cada uno vinculados
+- Turnos, Signos, Medicamentos, Bitácoras y Consentimientos activos
+- Dotación de ingreso: Catálogo configurado, entregas físicas y alertas de recambio
+- 32 Secuencias Oracle sincronizadas
+- 17 Parámetros del sistema y credenciales Google Drive configurados
+- Contraseña universal para todos los usuarios: Samanya2026*
+============================================================================

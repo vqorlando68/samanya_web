@@ -5,7 +5,9 @@ import {
   TrabajadorEmpleado,
   TurnoAsignado,
   PermisoAusencia,
-  IncidenteOperativo
+  IncidenteOperativo,
+  ElementoDotacionCatalogo,
+  DotacionResidente
 } from '../types';
 
 export const SEED_SEDES: SedeCentro[] = [
@@ -643,3 +645,211 @@ export const SEED_INCIDENTES: IncidenteOperativo[] = [
     notificadoFamiliar: false
   }
 ];
+
+export const SEED_CATALOGO_DOTACION: ElementoDotacionCatalogo[] = [
+  {
+    id: 1,
+    idOrganizacion: 1,
+    nombreElemento: 'Juego de sábanas completo (Sobresábana, bajera, funda)',
+    categoria: 'Lencería y Ropa de Cama',
+    cantidadDefecto: 2,
+    frecuenciaCambioMeses: 12,
+    descripcion: 'Juego de cama 100% algodón 200 hilos para cama hospitalaria/geriátrica. Renovación cada 12 meses.',
+    esSugeridoIngreso: true,
+    estado: 'Activo'
+  },
+  {
+    id: 2,
+    idOrganizacion: 1,
+    nombreElemento: 'Cobija térmica o plumón liviano',
+    categoria: 'Lencería y Ropa de Cama',
+    cantidadDefecto: 1,
+    frecuenciaCambioMeses: 24,
+    descripcion: 'Manta térmica hipoalergénica lavable en máquina. Ciclo de recambio sugerido cada 24 meses.',
+    esSugeridoIngreso: true,
+    estado: 'Activo'
+  },
+  {
+    id: 3,
+    idOrganizacion: 1,
+    nombreElemento: 'Almohada ortopédica ergonómica',
+    categoria: 'Lencería y Ropa de Cama',
+    cantidadDefecto: 1,
+    frecuenciaCambioMeses: 12,
+    descripcion: 'Almohada con memoria viscoelástica y funda lavable antifluido. Cambio recomendado cada año.',
+    esSugeridoIngreso: true,
+    estado: 'Activo'
+  },
+  {
+    id: 4,
+    idOrganizacion: 1,
+    nombreElemento: 'Juego de toallas (Cuerpo, manos y pies)',
+    categoria: 'Aseo y Cuidado Personal',
+    cantidadDefecto: 2,
+    frecuenciaCambioMeses: 6,
+    descripcion: 'Toallas de baño absorbentes personalizadas con el nombre del residente. Recambio cada 6 meses.',
+    esSugeridoIngreso: true,
+    estado: 'Activo'
+  },
+  {
+    id: 5,
+    idOrganizacion: 1,
+    nombreElemento: 'Protector de colchón antifluido',
+    categoria: 'Lencería y Ropa de Cama',
+    cantidadDefecto: 1,
+    frecuenciaCambioMeses: 12,
+    descripcion: 'Cubrecolchón impermeable y transpirable con cierre perimetral. Recambio anual.',
+    esSugeridoIngreso: true,
+    estado: 'Activo'
+  },
+  {
+    id: 6,
+    idOrganizacion: 1,
+    nombreElemento: 'Kit menaje personal (Pocillo térmico, vaso y cubiertos)',
+    categoria: 'Menaje',
+    cantidadDefecto: 1,
+    frecuenciaCambioMeses: null,
+    descripcion: 'Vajilla personal irrompible libre de BPA. Entrega única al ingreso, reposición por pérdida.',
+    esSugeridoIngreso: true,
+    estado: 'Activo'
+  },
+  {
+    id: 7,
+    idOrganizacion: 1,
+    nombreElemento: 'Neceser y kit de higiene personal inicial',
+    categoria: 'Aseo y Cuidado Personal',
+    cantidadDefecto: 1,
+    frecuenciaCambioMeses: 1,
+    descripcion: 'Cepillo, crema dental, esponja suave, peine y jabonera. Entrega al ingreso, reposición mensual de consumibles.',
+    esSugeridoIngreso: true,
+    estado: 'Activo'
+  }
+];
+
+export const SEED_DOTACIONES_RESIDENTES: DotacionResidente[] = [
+  {
+    id: 1,
+    idResidente: 1,
+    idElementoCatalogo: 1,
+    nombreElemento: 'Juego de sábanas completo (Sobresábana, bajera, funda)',
+    categoria: 'Lencería y Ropa de Cama',
+    cantidad: 2,
+    fechaEntrega: '2025-03-10',
+    frecuenciaCambioMeses: 12,
+    fechaProximoCambio: '2026-03-10',
+    fechaUltimoCambio: '2025-03-10',
+    estadoElemento: 'Entregado',
+    condicionEntrega: 'Nuevo de paquete',
+    notas: 'Dotación entregada completa por ingreso. Color beige.',
+    usuarioEntrega: 'Dr. Alejandro Morales',
+    semaforoCambio: 'PROXIMO',
+    diasParaCambio: 15,
+    historial: []
+  },
+  {
+    id: 2,
+    idResidente: 1,
+    idElementoCatalogo: 2,
+    nombreElemento: 'Cobija térmica o plumón liviano',
+    categoria: 'Lencería y Ropa de Cama',
+    cantidad: 1,
+    fechaEntrega: '2025-03-10',
+    frecuenciaCambioMeses: 24,
+    fechaProximoCambio: '2027-03-10',
+    fechaUltimoCambio: '2025-03-10',
+    estadoElemento: 'Entregado',
+    condicionEntrega: 'Nuevo',
+    notas: 'Plumón térmico color azul oscuro.',
+    usuarioEntrega: 'Dr. Alejandro Morales',
+    semaforoCambio: 'VIGENTE',
+    diasParaCambio: 380,
+    historial: []
+  },
+  {
+    id: 3,
+    idResidente: 1,
+    idElementoCatalogo: 4,
+    nombreElemento: 'Juego de toallas (Cuerpo, manos y pies)',
+    categoria: 'Aseo y Cuidado Personal',
+    cantidad: 2,
+    fechaEntrega: '2025-03-10',
+    frecuenciaCambioMeses: 6,
+    fechaProximoCambio: '2025-09-10',
+    fechaUltimoCambio: '2025-03-10',
+    estadoElemento: 'Cambio Pendiente',
+    condicionEntrega: 'Nuevo',
+    notas: 'Desgaste por uso continuo. Pendiente renovación semestral.',
+    usuarioEntrega: 'Dr. Alejandro Morales',
+    semaforoCambio: 'VENCIDO',
+    diasParaCambio: -160,
+    historial: []
+  },
+  {
+    id: 4,
+    idResidente: 1,
+    idElementoCatalogo: 6,
+    nombreElemento: 'Kit menaje personal (Pocillo térmico, vaso y cubiertos)',
+    categoria: 'Menaje',
+    cantidad: 1,
+    fechaEntrega: '2025-03-10',
+    frecuenciaCambioMeses: null,
+    fechaProximoCambio: null,
+    fechaUltimoCambio: '2025-03-10',
+    estadoElemento: 'Entregado',
+    condicionEntrega: 'Nuevo',
+    notas: 'Marcado con el nombre de la residente en base.',
+    usuarioEntrega: 'Dr. Alejandro Morales',
+    semaforoCambio: 'SIN_VENCIMIENTO',
+    diasParaCambio: null,
+    historial: []
+  },
+  {
+    id: 5,
+    idResidente: 2,
+    idElementoCatalogo: 1,
+    nombreElemento: 'Juego de sábanas completo (Sobresábana, bajera, funda)',
+    categoria: 'Lencería y Ropa de Cama',
+    cantidad: 2,
+    fechaEntrega: '2025-05-20',
+    frecuenciaCambioMeses: 12,
+    fechaProximoCambio: '2026-05-20',
+    fechaUltimoCambio: '2025-05-20',
+    estadoElemento: 'Entregado',
+    condicionEntrega: 'Nuevo',
+    notas: 'Entregado juego celeste y juego blanco.',
+    usuarioEntrega: 'Mariana Cifuentes Rojas',
+    semaforoCambio: 'VIGENTE',
+    diasParaCambio: 85,
+    historial: []
+  },
+  {
+    id: 6,
+    idResidente: 2,
+    idElementoCatalogo: 4,
+    nombreElemento: 'Juego de toallas (Cuerpo, manos y pies)',
+    categoria: 'Aseo y Cuidado Personal',
+    cantidad: 2,
+    fechaEntrega: '2025-11-20',
+    frecuenciaCambioMeses: 6,
+    fechaProximoCambio: '2026-05-20',
+    fechaUltimoCambio: '2025-11-20',
+    estadoElemento: 'Entregado',
+    condicionEntrega: 'Nuevo',
+    notas: 'Recambio semestral efectuado satisfactoriamente.',
+    usuarioEntrega: 'Mariana Cifuentes Rojas',
+    semaforoCambio: 'VIGENTE',
+    diasParaCambio: 85,
+    historial: [
+      {
+        id: 1,
+        idDotacionResidente: 6,
+        fechaCambio: '2025-11-20',
+        motivo: 'Recambio semestral por uso continuo',
+        condicionNuevo: 'Nuevo de paquete',
+        observaciones: 'Se retiran las toallas anteriores entregadas en mayo.',
+        usuarioRegistra: 'Mariana Cifuentes Rojas'
+      }
+    ]
+  }
+];
+

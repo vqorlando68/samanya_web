@@ -1625,6 +1625,61 @@ INSERT INTO SMY_PARAMETROS (ID,CODIGO_PARAMETRO,NOMBRE_PARAMETRO,DESCRIPCION,GRU
 COMMIT;
 
 -- =============================================================================
+-- 18. CONTROL DE DOTACIÓN Y ENTREGAS A RESIDENTES (CATÁLOGO Y ASIGNACIONES)
+-- =============================================================================
+PROMPT 18. Insertando Dotación Inicial y Entregas a Residentes...
+
+-- 18.1 Catálogo Maestro de Dotación
+MERGE INTO SMY_DOTACION_CATALOGO dest
+USING (
+    SELECT 1 AS ID, 1 AS ID_ORGANIZACION, 'Juego de sábanas completo (Sobresábana, bajera, funda)' AS NOMBRE_ELEMENTO, 'Lencería y Ropa de Cama' AS CATEGORIA, 2 AS CANTIDAD_DEFECTO, 12 AS FRECUENCIA_CAMBIO_MESES, 'Juego 100% algodón 200 hilos para cama hospitalaria/geriátrica. Renovación cada 12 meses.' AS DESCRIPCION, 1 AS ES_SUGERIDO_INGRESO, 'Activo' AS ESTADO FROM DUAL
+    UNION ALL SELECT 2, 1, 'Cobija térmica o plumón liviano', 'Lencería y Ropa de Cama', 1, 24, 'Manta térmica hipoalergénica lavable en máquina. Recambio sugerido cada 24 meses.', 1, 'Activo' FROM DUAL
+    UNION ALL SELECT 3, 1, 'Almohada ortopédica ergonómica', 'Lencería y Ropa de Cama', 1, 12, 'Almohada viscoelástica con forro antifluido. Cambio recomendado cada año.', 1, 'Activo' FROM DUAL
+    UNION ALL SELECT 4, 1, 'Juego de toallas (Cuerpo, manos y pies)', 'Aseo y Cuidado Personal', 2, 6, 'Toallas de baño absorbentes personalizadas. Recambio cada 6 meses.', 1, 'Activo' FROM DUAL
+    UNION ALL SELECT 5, 1, 'Protector de colchón antifluido', 'Lencería y Ropa de Cama', 1, 12, 'Cubrecolchón impermeable y transpirable. Recambio anual.', 1, 'Activo' FROM DUAL
+    UNION ALL SELECT 6, 1, 'Kit menaje personal (Pocillo térmico, vaso y cubiertos)', 'Menaje', 1, NULL, 'Vajilla personal irrompible libre de BPA. Entrega única al ingreso.', 1, 'Activo' FROM DUAL
+    UNION ALL SELECT 7, 1, 'Neceser y kit de higiene personal inicial', 'Aseo y Cuidado Personal', 1, 1, 'Cepillo, crema dental, esponja suave y jabonera. Reposición mensual.', 1, 'Activo' FROM DUAL
+) src ON (dest.ID = src.ID)
+WHEN NOT MATCHED THEN
+INSERT (ID, ID_ORGANIZACION, NOMBRE_ELEMENTO, CATEGORIA, CANTIDAD_DEFECTO, FRECUENCIA_CAMBIO_MESES, DESCRIPCION, ES_SUGERIDO_INGRESO, ESTADO)
+VALUES (src.ID, src.ID_ORGANIZACION, src.NOMBRE_ELEMENTO, src.CATEGORIA, src.CANTIDAD_DEFECTO, src.FRECUENCIA_CAMBIO_MESES, src.DESCRIPCION, src.ES_SUGERIDO_INGRESO, src.ESTADO);
+
+-- 18.2 Entregas Físicas a Residentes con Estados de Vigencia y Semáforo de Cambio
+MERGE INTO SMY_DOTACION_RESIDENTES dest
+USING (
+    -- Residente 1 (Álvaro Delgado) - Ingreso hace 11 meses: Sábanas próximas a vencer en 1 mes (Amarillo)
+    SELECT 1 AS ID, 1 AS ID_RESIDENTE, 1 AS ID_ELEMENTO_CATALOGO, 'Juego de sábanas completo (Sobresábana, bajera, funda)' AS NOMBRE_ELEMENTO, 'Lencería y Ropa de Cama' AS CATEGORIA, 2 AS CANTIDAD, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), -11) AS FECHA_ENTREGA, 12 AS FRECUENCIA_CAMBIO_MESES, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), 1) AS FECHA_PROXIMO_CAMBIO, 'Entregado' AS ESTADO_ELEMENTO, 'Nuevo' AS CONDICION_ENTREGA, 'Entregado en admisión inicial' AS NOTAS, 1 AS ID_USUARIO_ENTREGA, NULL AS FECHA_ULTIMO_CAMBIO FROM DUAL
+    UNION ALL
+    SELECT 2, 1, 3, 'Almohada ortopédica ergonómica', 'Lencería y Ropa de Cama', 1, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), -11), 12, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), 1), 'Entregado', 'Nuevo', 'Funda azul marcada con nombre', 1, NULL FROM DUAL
+    UNION ALL
+    SELECT 3, 1, 4, 'Juego de toallas (Cuerpo, manos y pies)', 'Aseo y Cuidado Personal', 2, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), -5), 6, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), 1), 'Entregado', 'Nuevo', 'Toallas bordadas', 1, NULL FROM DUAL
+    UNION ALL
+    -- Residente 2 (Elena Pérez) - Sábanas vencidas hace 1 mes: Requiere recambio anual obligatorio (Rojo)
+    SELECT 4, 2, 1, 'Juego de sábanas completo (Sobresábana, bajera, funda)', 'Lencería y Ropa de Cama', 2, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), -13), 12, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), -1), 'Cambio Pendiente', 'Nuevo', 'Cumplió 1 año de uso en cama clínica. Requiere recambio programado.', 1, NULL FROM DUAL
+    UNION ALL
+    SELECT 5, 2, 2, 'Cobija térmica o plumón liviano', 'Lencería y Ropa de Cama', 1, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), -13), 24, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), 11), 'Entregado', 'Nuevo', 'Buen estado de conservación', 1, NULL FROM DUAL
+    UNION ALL
+    -- Residente 3 (Carlos Mario Restrepo) - Entrega reciente: Vigente por 10 meses (Verde)
+    SELECT 6, 3, 1, 'Juego de sábanas completo (Sobresábana, bajera, funda)', 'Lencería y Ropa de Cama', 2, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), -2), 12, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), 10), 'Entregado', 'Nuevo', 'Dotación estándar de admisión', 1, NULL FROM DUAL
+    UNION ALL
+    SELECT 7, 3, 6, 'Kit menaje personal (Pocillo térmico, vaso y cubiertos)', 'Menaje', 1, ADD_MONTHS(TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)), -2), NULL, NULL, 'Entregado', 'Nuevo', 'Identificado con número de habitación', 1, NULL FROM DUAL
+) src ON (dest.ID = src.ID)
+WHEN NOT MATCHED THEN
+INSERT (ID, ID_RESIDENTE, ID_ELEMENTO_CATALOGO, NOMBRE_ELEMENTO, CATEGORIA, CANTIDAD, FECHA_ENTREGA, FRECUENCIA_CAMBIO_MESES, FECHA_PROXIMO_CAMBIO, ESTADO_ELEMENTO, CONDICION_ENTREGA, NOTAS, ID_USUARIO_ENTREGA, FECHA_ULTIMO_CAMBIO)
+VALUES (src.ID, src.ID_RESIDENTE, src.ID_ELEMENTO_CATALOGO, src.NOMBRE_ELEMENTO, src.CATEGORIA, src.CANTIDAD, src.FECHA_ENTREGA, src.FRECUENCIA_CAMBIO_MESES, src.FECHA_PROXIMO_CAMBIO, src.ESTADO_ELEMENTO, src.CONDICION_ENTREGA, src.NOTAS, src.ID_USUARIO_ENTREGA, src.FECHA_ULTIMO_CAMBIO);
+
+-- 18.3 Historial de Recambio de Prueba
+MERGE INTO SMY_DOTACION_HISTORIAL dest
+USING (
+    SELECT 1 AS ID, 3 AS ID_DOTACION_RESIDENTE, TRUNC(CAST(SYSTIMESTAMP AT TIME ZONE 'America/Bogota' AS DATE)) - 30 AS FECHA_CAMBIO, 'Renovación Periódica' AS MOTIVO, 'Nuevo' AS CONDICION_NUEVO, 'Recambio semestral de toallas de baño efectuado conforme a protocolo.' AS OBSERVACIONES, 1 AS ID_USUARIO_REGISTRA FROM DUAL
+) src ON (dest.ID = src.ID)
+WHEN NOT MATCHED THEN
+INSERT (ID, ID_DOTACION_RESIDENTE, FECHA_CAMBIO, MOTIVO, CONDICION_NUEVO, OBSERVACIONES, ID_USUARIO_REGISTRA)
+VALUES (src.ID, src.ID_DOTACION_RESIDENTE, src.FECHA_CAMBIO, src.MOTIVO, src.CONDICION_NUEVO, src.OBSERVACIONES, src.ID_USUARIO_REGISTRA);
+
+COMMIT;
+
+-- =============================================================================
 -- 19. SINCRONIZACIÓN DE SECUENCIAS ORACLE (AUTO-INCREMENT)
 -- Garantiza que las secuencias queden posicionadas por encima del ID máximo
 -- insertado manualmente para que nuevos INSERTs automáticos desde la app no fallen.
@@ -1673,6 +1728,9 @@ BEGIN
     v_arr(27).v_table := 'SMY_SOLICITUDES_ADMISION';       v_arr(27).v_seq := 'SEQ_SMY_SOLICITUDES_ADMISION';
     v_arr(28).v_table := 'SMY_SOLICITUD_ADM_CONTACTOS';    v_arr(28).v_seq := 'SEQ_SMY_SOL_ADM_CONTACTOS';
     v_arr(29).v_table := 'SMY_PARAMETROS';                 v_arr(29).v_seq := 'SEQ_SMY_PARAMETROS';
+    v_arr(30).v_table := 'SMY_DOTACION_CATALOGO';          v_arr(30).v_seq := 'SEQ_SMY_DOTACION_CATALOGO';
+    v_arr(31).v_table := 'SMY_DOTACION_RESIDENTES';         v_arr(31).v_seq := 'SEQ_SMY_DOTACION_RESIDENTES';
+    v_arr(32).v_table := 'SMY_DOTACION_HISTORIAL';          v_arr(32).v_seq := 'SEQ_SMY_DOTACION_HISTORIAL';
 
     FOR i IN 1..v_arr.COUNT LOOP
         BEGIN
@@ -1705,7 +1763,8 @@ PROMPT     - 2 Solicitudes previas de admisión con contactos
 PROMPT     - 14 Familiares / Acudientes creados con usuarios
 PROMPT     - 2 Residentes con 3 familiares cada uno vinculados
 PROMPT     - Turnos, Signos, Medicamentos, Bitácoras y Consentimientos activos
-PROMPT     - 29 Secuencias Oracle sincronizadas
+PROMPT     - Dotación de ingreso: Catálogo configurado, entregas físicas y alertas de recambio
+PROMPT     - 32 Secuencias Oracle sincronizadas
 PROMPT     - 17 Parámetros del sistema y credenciales Google Drive configurados
 PROMPT     - Contraseña universal para todos los usuarios: Samanya2026*
 PROMPT ============================================================================

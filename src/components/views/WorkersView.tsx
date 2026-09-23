@@ -234,6 +234,36 @@ export const WorkersView: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {filtered.length === 0 && (
+        <div className="p-12 text-center bg-white rounded-3xl border border-[#DEDBD1] space-y-4 max-w-xl mx-auto shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-[#DFF3E7] text-[#1E7A4C] mx-auto flex items-center justify-center">
+            <UserCheck className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-serif font-bold text-lg text-[#182F28]">
+              {trabajadores.length === 0
+                ? 'Base de Datos Oracle Conectada (Sin Colaboradores)'
+                : 'No se encontraron colaboradores con los filtros aplicados'}
+            </h4>
+            <p className="text-xs text-[#7A745F] max-w-md mx-auto leading-relaxed">
+              {trabajadores.length === 0
+                ? 'Actualmente no hay colaboradores registrados en la base de datos de esta sede. Puedes vincular el primer colaborador ahora.'
+                : 'Ajusta los criterios de búsqueda para visualizar el personal.'}
+            </p>
+          </div>
+          {trabajadores.length === 0 && (
+            <button
+              type="button"
+              onClick={() => setIsRegisterWorkerOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#274A3F] hover:bg-[#182F28] text-white font-bold rounded-xl text-xs shadow-xs transition-all cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Registrar Primer Colaborador</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

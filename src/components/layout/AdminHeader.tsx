@@ -13,7 +13,9 @@ import {
   Edit3,
   X,
   Users,
-  ArrowRight
+  ArrowRight,
+  RefreshCw,
+  Database
 } from 'lucide-react';
 import { resolverAvatarUrl, DEFAULT_AVATAR } from '../../utils/avatarUtils';
 import { ResidentAvatar } from '../common/ResidentAvatar';
@@ -36,7 +38,11 @@ export const AdminHeader: React.FC = () => {
     familiares,
     setActiveTab,
     setSelectedResidente,
-    setIsResidenteDetailOpen
+    setIsResidenteDetailOpen,
+    isSyncingGlobal,
+    isOracleLive,
+    sincronizarTodoConOracle,
+    limpiarCacheYReconectarOracle
   } = useAdmin();
 
   const [isSedeDropdownOpen, setIsSedeDropdownOpen] = useState(false);
@@ -315,7 +321,38 @@ export const AdminHeader: React.FC = () => {
       </div>
 
       {/* 3. Action Buttons & Admin Profile */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
+        {/* Indicador y botón de Sincronización Oracle Cloud */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => sincronizarTodoConOracle(false)}
+            disabled={isSyncingGlobal}
+            title="Conectado a Oracle Autonomous DB. Clic para sincronizar en vivo."
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-2xs ${
+              isSyncingGlobal
+                ? 'bg-[#FEF7EE] text-[#9A5B12] border-[#DCB87F]'
+                : isOracleLive
+                ? 'bg-[#DFF3E7] text-[#1E7A4C] border-[#1E7A4C]/30 hover:bg-[#cbebd6]'
+                : 'bg-[#F7F6F2] text-[#4B4636] border-[#DEDBD1] hover:bg-[#ECE7DB]'
+            }`}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGlobal ? 'animate-spin text-[#9A5B12]' : isOracleLive ? 'text-[#1E7A4C]' : 'text-[#7A745F]'}`} />
+            <span className="hidden sm:inline">
+              {isSyncingGlobal ? 'Sincronizando...' : isOracleLive ? 'Oracle Live' : 'Conectar Oracle'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={limpiarCacheYReconectarOracle}
+            title="Depurar caché local (localStorage) y consultar estado limpio desde Oracle"
+            className="p-1.5 rounded-xl text-[#7A745F] hover:text-[#A4453A] hover:bg-[#FBE8E6] border border-transparent hover:border-[#A4453A]/30 transition-all cursor-pointer"
+          >
+            <Database className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
         {/* Quick Action Button Dropdown */}
         <div className="relative">
           <button

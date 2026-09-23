@@ -1182,16 +1182,16 @@
     "semantic_hash": "b03454a5e38fe63cb9689f922148ae21"
   },
   "backend/db/scripts/build_all.sql": {
-    "mtime": 1789787384.9946587,
-    "seen": 1789787771.5889788,
-    "ast_hash": "c3fcd2b1070c6400cebac9bee68dc395",
+    "mtime": 1790126940.728434,
+    "seen": 1790127533.695632,
+    "ast_hash": "7dd62c3141ec84768ea2443ec5e9c57a",
     "semantic_hash": ""
   },
   "backend/db/scripts/datos_prueba_dummy.sql": {
-    "mtime": 1789703277.6588385,
-    "seen": 1789744324.0608304,
-    "ast_hash": "59a75b38c6f7ea20669eaeb290805cac",
-    "semantic_hash": "59a75b38c6f7ea20669eaeb290805cac"
+    "mtime": 1790126652.448653,
+    "seen": 1790127533.6956353,
+    "ast_hash": "8d768356b9277dafb19a300a973a3ff6",
+    "semantic_hash": ""
   },
   "backend/db/scripts/f_fecha_actual.sql": {
     "mtime": 1789598044.3600454,
@@ -1860,10 +1860,10 @@
     "semantic_hash": "cbb25f9314d7994543575432aeb7511a"
   },
   "creacion_modelo_relacional.sql": {
-    "mtime": 1789701291.7196333,
-    "seen": 1789744324.0610213,
-    "ast_hash": "629ca8841388066abe9db0501fbd6bea",
-    "semantic_hash": "629ca8841388066abe9db0501fbd6bea"
+    "mtime": 1790126590.0538602,
+    "seen": 1790127533.6959426,
+    "ast_hash": "e5aebf3fb4a9b91a321adcbc2a854eca",
+    "semantic_hash": ""
   },
   "docs/diagrams/samanya.architecture.json": {
     "mtime": 1789662292.0264237,
@@ -2160,9 +2160,9 @@
     "semantic_hash": ""
   },
   "configuracion_google.html": {
-    "mtime": 1789598044.6551251,
-    "seen": 1789745141.2719622,
-    "ast_hash": "99de64ccc1496424ef3fa18f02f69e92",
+    "mtime": 1790125691.840063,
+    "seen": 1790127533.696123,
+    "ast_hash": "e0dfc294677d4bfcef638385dc3950c3",
     "semantic_hash": ""
   },
   "diferencias.html": {
@@ -2172,9 +2172,9 @@
     "semantic_hash": ""
   },
   "documentacion_esquema.html": {
-    "mtime": 1789735434.929392,
-    "seen": 1789745141.271967,
-    "ast_hash": "76f40a6f1284bd3ed3eca9478b6dc4db",
+    "mtime": 1790129312.0858371,
+    "seen": 1790129713.0096762,
+    "ast_hash": "c92a5ea4324433b0f06b6cf8c14f8c54",
     "semantic_hash": ""
   },
   "estilos.txt": {
@@ -2244,9 +2244,9 @@
     "semantic_hash": ""
   },
   "src/App.tsx": {
-    "mtime": 1790109308.7441244,
-    "seen": 1790109567.265113,
-    "ast_hash": "bac9d6470d0386f1bb31a4212217da48",
+    "mtime": 1790127309.5926104,
+    "seen": 1790127533.6959646,
+    "ast_hash": "ba0b9842d7a7a831f0ac3b8d1b6cad9b",
     "semantic_hash": ""
   },
   "src/components/common/ToastNotification.tsx": {
@@ -2256,9 +2256,9 @@
     "semantic_hash": ""
   },
   "src/components/layout/AdminHeader.tsx": {
-    "mtime": 1790040965.3668478,
-    "seen": 1790041339.9559317,
-    "ast_hash": "881ac848a21dc401c6c77d8890d2e723",
+    "mtime": 1790131064.1808095,
+    "seen": 1790131260.8323503,
+    "ast_hash": "1863c64f9dfde3de9b9c5c2c849f7617",
     "semantic_hash": ""
   },
   "src/components/layout/AdminSidebar.tsx": {
@@ -2274,9 +2274,9 @@
     "semantic_hash": ""
   },
   "src/components/modals/RegisterResidentModal.tsx": {
-    "mtime": 1790043267.0653317,
-    "seen": 1790043390.572665,
-    "ast_hash": "b83501315408584b89b02c3fa211f203",
+    "mtime": 1790127255.4607823,
+    "seen": 1790127533.6959934,
+    "ast_hash": "e0a626a5b4ece79ebf3518935c03b6cc",
     "semantic_hash": ""
   },
   "src/components/modals/RegisterWorkerModal.tsx": {
@@ -2286,9 +2286,9 @@
     "semantic_hash": ""
   },
   "src/components/modals/ResidentDetailModal.tsx": {
-    "mtime": 1790040932.179239,
-    "seen": 1790041339.956005,
-    "ast_hash": "442298d3f0e3ff166cae286a7e00e34c",
+    "mtime": 1790127364.1869574,
+    "seen": 1790127533.6959972,
+    "ast_hash": "7b9f3dda2dba7576248a4464f7ad2328",
     "semantic_hash": ""
   },
   "src/components/views/ClinicalSupervisionView.tsx": {
@@ -2298,51 +2298,51 @@
     "semantic_hash": ""
   },
   "src/components/views/DashboardView.tsx": {
-    "mtime": 1790040949.0135665,
-    "seen": 1790041339.956019,
-    "ast_hash": "04df18cddadebec2a20877c3e793b8a6",
+    "mtime": 1790131114.0065885,
+    "seen": 1790131260.8323786,
+    "ast_hash": "08f121fd32f56f73a2a30a178a828587",
     "semantic_hash": ""
   },
   "src/components/views/FamilyMembersView.tsx": {
-    "mtime": 1789776329.6224165,
-    "seen": 1789776598.3611155,
-    "ast_hash": "9253709d8edbd5282a9498c2af218b19",
+    "mtime": 1790131155.5709994,
+    "seen": 1790131260.83238,
+    "ast_hash": "e40cb8303ea3fafd182491041186aeb8",
     "semantic_hash": ""
   },
   "src/components/views/LeavesView.tsx": {
-    "mtime": 1790114225.1575398,
-    "seen": 1790114325.4726236,
-    "ast_hash": "ce3601bba99152ed2a6070d120107cac",
+    "mtime": 1790116299.328732,
+    "seen": 1790116948.1411612,
+    "ast_hash": "c974fec1d03f7955469605063c994bd4",
     "semantic_hash": ""
   },
   "src/components/views/ResidentsView.tsx": {
-    "mtime": 1790043253.5500224,
-    "seen": 1790043390.5727153,
-    "ast_hash": "a4961beba10a01681c0acff4cdc87eb0",
+    "mtime": 1790131075.417924,
+    "seen": 1790131260.8323836,
+    "ast_hash": "3e5f5af7b1cd36a190229086b67d7695",
     "semantic_hash": ""
   },
   "src/components/views/ShiftsView.tsx": {
-    "mtime": 1789951916.404128,
-    "seen": 1789951991.7912161,
-    "ast_hash": "6443833c69358fe08d718f9229319a9f",
+    "mtime": 1790131142.6932404,
+    "seen": 1790131260.8323855,
+    "ast_hash": "fdec0f1ba7a9767986bab4cbe4b12d0a",
     "semantic_hash": ""
   },
   "src/components/views/WorkersView.tsx": {
-    "mtime": 1789790776.492476,
-    "seen": 1789791050.087762,
-    "ast_hash": "a619d178619f990504cb9acb0805ff69",
+    "mtime": 1790131130.6643186,
+    "seen": 1790131260.832387,
+    "ast_hash": "55d9a78482065938b2f573203cc1a10e",
     "semantic_hash": ""
   },
   "src/context/AdminContext.tsx": {
-    "mtime": 1790109253.0936708,
-    "seen": 1790109567.2652109,
-    "ast_hash": "1379871e8d988ed02156119b9abbccf5",
+    "mtime": 1790131037.2763498,
+    "seen": 1790131260.832389,
+    "ast_hash": "fe072f17d086e796c3501078d6dd6a7c",
     "semantic_hash": ""
   },
   "src/data/seedData.ts": {
-    "mtime": 1790114078.751631,
-    "seen": 1790114325.4726431,
-    "ast_hash": "16f6432d9c5185101259c3be2a15a41c",
+    "mtime": 1790127079.932655,
+    "seen": 1790127533.6960166,
+    "ast_hash": "7d47f3e0bae2e3ce13c727d977901ef4",
     "semantic_hash": ""
   },
   "src/main.tsx": {
@@ -2352,15 +2352,15 @@
     "semantic_hash": ""
   },
   "src/services/api.ts": {
-    "mtime": 1790109218.5517948,
-    "seen": 1790109567.2652256,
-    "ast_hash": "d701abdd52a249be184ea2791297fc2f",
+    "mtime": 1790131199.0354216,
+    "seen": 1790131260.832395,
+    "ast_hash": "dce4093ed4928c2263b985a83ea87ee4",
     "semantic_hash": ""
   },
   "src/types/index.ts": {
-    "mtime": 1790114052.7776525,
-    "seen": 1790114325.472658,
-    "ast_hash": "d6e9e36203469af9370a51fc1a40ed48",
+    "mtime": 1790131189.467531,
+    "seen": 1790131260.8323987,
+    "ast_hash": "1d957bd6a9a093de44e7bf3c01f3a73c",
     "semantic_hash": ""
   },
   "src/vite-env.d.ts": {
@@ -2472,9 +2472,9 @@
     "semantic_hash": ""
   },
   "backend/oracle_bridge.py": {
-    "mtime": 1790044992.421443,
-    "seen": 1790045028.8608952,
-    "ast_hash": "2de49bfde2b6fa21debc9b5f2d6bf7a3",
+    "mtime": 1790130615.6579905,
+    "seen": 1790131260.8323147,
+    "ast_hash": "cf66362b7e78efc6200708c117d305ec",
     "semantic_hash": ""
   },
   "src/components/modals/RegisterLeaveModal.tsx": {
@@ -2499,6 +2499,54 @@
     "mtime": 1790115407.5535767,
     "seen": 1790115912.2912276,
     "ast_hash": "0f22e62acbec1c716f1f2839800c0608",
+    "semantic_hash": ""
+  },
+  "backend/db/scripts/pkgca_smy_dotacion_catalogo.sql": {
+    "mtime": 1790126887.108126,
+    "seen": 1790127533.6956537,
+    "ast_hash": "81665399b020fcc8aaf9d6fcdb2c4e21",
+    "semantic_hash": ""
+  },
+  "backend/db/scripts/pkgca_smy_dotacion_residentes.sql": {
+    "mtime": 1790129657.4203794,
+    "seen": 1790129713.0091581,
+    "ast_hash": "fc763a4e202e74697ccb20703b356210",
+    "semantic_hash": ""
+  },
+  "backend/db/scripts/pkgln_dotacion_residentes.sql": {
+    "mtime": 1790126919.261911,
+    "seen": 1790127533.6956904,
+    "ast_hash": "96bf95feb53714e101d2a3884e83491d",
+    "semantic_hash": ""
+  },
+  "backend/db/scripts/pkgsmy_dotacion_catalogo_dao.sql": {
+    "mtime": 1790129624.3368793,
+    "seen": 1790129713.0092664,
+    "ast_hash": "f8354cf9dee4e53dff08070d70c600dd",
+    "semantic_hash": ""
+  },
+  "backend/db/scripts/pkgsmy_dotacion_historial_dao.sql": {
+    "mtime": 1790129638.7998967,
+    "seen": 1790129713.009269,
+    "ast_hash": "f2ed0f4f409ae98f33f4718f001d384b",
+    "semantic_hash": ""
+  },
+  "backend/db/scripts/pkgsmy_dotacion_residentes_dao.sql": {
+    "mtime": 1790129631.1045847,
+    "seen": 1790129713.0092714,
+    "ast_hash": "8bdfee61443c9ec3b16fc33a25e78320",
+    "semantic_hash": ""
+  },
+  "src/components/modals/GestionDotacionModal.tsx": {
+    "mtime": 1790127222.8332262,
+    "seen": 1790127533.6959844,
+    "ast_hash": "6b5eea44191dbf9192e6de4835d91980",
+    "semantic_hash": ""
+  },
+  "backend/db/scripts/errores_build_all.sql": {
+    "mtime": 1790129098.1920116,
+    "seen": 1790129713.0091274,
+    "ast_hash": "82685ca32735b724b045ceb9953ea13f",
     "semantic_hash": ""
   }
 }

@@ -55,21 +55,21 @@
       --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.07);
       --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.11);
       /* Variables Sidebar (Modo Claro) */
-      --sidebar-bg: #eae5db;
-      --sidebar-border: #d6cebd;
-      --sidebar-brand-title: #142420;
-      --sidebar-brand-sub: #4f5f58;
-      --sidebar-group-title: #19382f;
-      --sidebar-link-text: #21332c;
-      --sidebar-link-hover-bg: rgba(39, 74, 63, 0.11);
-      --sidebar-link-hover-text: #0b1713;
-      --sidebar-num-bg: #ded6c8;
-      --sidebar-num-color: #162923;
+      --sidebar-bg: #ece6da;
+      --sidebar-border: #d5cdbd;
+      --sidebar-brand-title: #10211c;
+      --sidebar-brand-sub: #495851;
+      --sidebar-group-title: #15382e;
+      --sidebar-link-text: #192b24;
+      --sidebar-link-hover-bg: rgba(27, 74, 61, 0.12);
+      --sidebar-link-hover-text: #05100c;
+      --sidebar-num-bg: #ded6c7;
+      --sidebar-num-color: #12241f;
       --sidebar-btn-bg: #ffffff;
-      --sidebar-btn-border: #cfc6b6;
-      --sidebar-btn-text: #1b211e;
-      --sidebar-btn-hover: #f1ebdE;
-      --sidebar-scroll-thumb: #b8af9e;
+      --sidebar-btn-border: #cec5b4;
+      --sidebar-btn-text: #162621;
+      --sidebar-btn-hover: #f5efe5;
+      --sidebar-scroll-thumb: #b5ac9b;
     }
 
     [data-theme="dark"] {
@@ -95,22 +95,22 @@
       --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
       --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.45);
       --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
-      /* Variables Sidebar (Modo Oscuro) */
-      --sidebar-bg: #0c1513;
-      --sidebar-border: rgba(255, 255, 255, 0.08);
+      /* Variables Sidebar (Modo Oscuro de Alto Contraste) */
+      --sidebar-bg: #14231f;
+      --sidebar-border: rgba(94, 196, 165, 0.22);
       --sidebar-brand-title: #ffffff;
-      --sidebar-brand-sub: #a8b8b0;
-      --sidebar-group-title: #5ec4a5;
-      --sidebar-link-text: #d4e2dc;
-      --sidebar-link-hover-bg: rgba(255, 255, 255, 0.09);
+      --sidebar-brand-sub: #b4c9c1;
+      --sidebar-group-title: #4ade80;
+      --sidebar-link-text: #f0f7f4;
+      --sidebar-link-hover-bg: rgba(62, 181, 159, 0.20);
       --sidebar-link-hover-text: #ffffff;
-      --sidebar-num-bg: rgba(255, 255, 255, 0.12);
-      --sidebar-num-color: #ffffff;
-      --sidebar-btn-bg: rgba(255, 255, 255, 0.07);
-      --sidebar-btn-border: rgba(255, 255, 255, 0.15);
+      --sidebar-num-bg: #223c34;
+      --sidebar-num-color: #86efac;
+      --sidebar-btn-bg: #1e352e;
+      --sidebar-btn-border: #355e51;
       --sidebar-btn-text: #ffffff;
-      --sidebar-btn-hover: rgba(255, 255, 255, 0.15);
-      --sidebar-scroll-thumb: #335348;
+      --sidebar-btn-hover: #29493f;
+      --sidebar-scroll-thumb: #355e51;
     }
 
     * {
@@ -235,20 +235,31 @@
     nav.toc {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 5px;
     }
 
-    nav.toc a {
-      color: var(--sidebar-link-text);
-      text-decoration: none;
-      font-size: 0.88rem;
-      padding: 8px 12px;
+    /* Regla absoluta: anular cualquier color azul/morado o subrayado de navegadores */
+    aside.sidebar a,
+    aside.sidebar a:link,
+    aside.sidebar a:visited {
+      color: var(--sidebar-link-text) !important;
+      text-decoration: none !important;
+    }
+
+    nav.toc a,
+    nav.toc a:link,
+    nav.toc a:visited {
+      color: var(--sidebar-link-text) !important;
+      text-decoration: none !important;
+      font-size: 0.90rem;
+      padding: 9px 12px;
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-weight: 600;
       transition: all 0.2s ease;
+      border: 1px solid transparent;
     }
 
     nav.toc a .step-num {
@@ -256,50 +267,55 @@
       height: 24px;
       border-radius: 50%;
       background: var(--sidebar-num-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-size: 0.75rem;
       font-weight: 700;
-      color: var(--sidebar-num-color);
+      color: var(--sidebar-num-color) !important;
       flex-shrink: 0;
       transition: all 0.2s ease;
     }
 
     nav.toc a:hover {
       background: var(--sidebar-link-hover-bg);
-      color: var(--sidebar-link-hover-text);
-      transform: translateX(3px);
+      color: var(--sidebar-link-hover-text) !important;
+      transform: translateX(4px);
     }
 
     nav.toc a.active {
-      background: var(--forest-main);
+      background: linear-gradient(135deg, #1b5445 0%, #2b7862 100%);
       color: #ffffff !important;
       font-weight: 700;
-      box-shadow: var(--shadow-sm);
+      border-color: rgba(62, 181, 159, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 
     nav.toc a.active .step-num {
       background: var(--gold-ochre);
       color: #12241f !important;
+      border-color: var(--gold-ochre);
     }
 
     /* Enlace especial para Token Definitivo */
     nav.toc a.highlight-nav {
       border: 1px dashed var(--gold-ochre);
-      background: rgba(179, 128, 63, 0.09);
-      color: var(--gold-ochre);
+      background: rgba(214, 159, 86, 0.15);
+      color: #ffd68a !important;
       font-weight: 700;
     }
 
     nav.toc a.highlight-nav .step-num {
       background: var(--gold-ochre);
-      color: #12241f;
+      color: #12241f !important;
+      border-color: var(--gold-ochre);
     }
 
     nav.toc a.highlight-nav:hover {
-      background: rgba(179, 128, 63, 0.20);
-      color: var(--gold-ochre);
+      background: rgba(214, 159, 86, 0.28);
+      color: #ffffff !important;
+      transform: translateX(4px);
     }
 
     nav.toc a.highlight-nav.active {

@@ -3323,6 +3323,130 @@ SELECT a.ID,
 COMMENT ON TABLE VW_SMY_ARCHIVOS_ACTIVOS IS 'Vista especializada que expone únicamente los archivos activos y disponibles (ID_ESTADO_ARCHIVO = 1) con su contexto de centro, residente y clase.';
 
 -- =============================================================================
+-- SECCIÓN 12.1: MÓDULO DE CONTROL DE DOTACIÓN Y ELEMENTOS DE INGRESO A RESIDENTES
+-- =============================================================================
+
+-- Tabla: SMY_DOTACION_CATALOGO (Plantilla Maestra / Catálogo Genérico de Artículos)
+CREATE TABLE SMY_DOTACION_CATALOGO (
+    ID                              NUMBER(10)          NOT NULL,
+    ID_ORGANIZACION                 NUMBER(10)          NOT NULL,
+    NOMBRE_ELEMENTO                 VARCHAR2(100)       NOT NULL,
+    CATEGORIA                       VARCHAR2(50)        NOT NULL,
+    CANTIDAD_DEFECTO                NUMBER(5)           DEFAULT 1 NOT NULL,
+    FRECUENCIA_CAMBIO_MESES         NUMBER(5)           NULL,
+    DESCRIPCION                     VARCHAR2(300)       NULL,
+    ES_SUGERIDO_INGRESO             NUMBER(1)           DEFAULT 1 NOT NULL,
+    ESTADO                          VARCHAR2(20)        DEFAULT 'Activo' NOT NULL,
+    FECHA_CREACION                  DATE                DEFAULT (SYSTIMESTAMP AT TIME ZONE 'America/Bogota') NOT NULL,
+    ID_USUARIO_ULTIMA_MODIFICACION  NUMBER(10)          NULL,
+    CONSTRAINT PK_SMY_DOTACION_CATALOGO PRIMARY KEY (ID),
+    CONSTRAINT FK_SMY_DOTCAT_ORG FOREIGN KEY (ID_ORGANIZACION) REFERENCES SMY_ORGANIZACIONES (ID),
+    CONSTRAINT CK_SMY_DOTCAT_EST CHECK (ESTADO IN ('Activo', 'Inactivo')),
+    CONSTRAINT CK_SMY_DOTCAT_SUG CHECK (ES_SUGERIDO_INGRESO IN (0, 1))
+);
+
+CREATE SEQUENCE SEQ_SMY_DOTACION_CATALOGO START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+CREATE OR REPLACE TRIGGER TRG_SMY_DOTACION_CATALOGO_BI
+BEFORE INSERT ON SMY_DOTACION_CATALOGO FOR EACH ROW
+BEGIN
+    IF :NEW.ID IS NULL THEN
+        SELECT SEQ_SMY_DOTACION_CATALOGO.NEXTVAL INTO :NEW.ID FROM DUAL;
+    END IF;
+END;
+/
+
+COMMENT ON TABLE SMY_DOTACION_CATALOGO IS 'Catálogo maestro o plantilla genérica de elementos de dotación que se entregan a los residentes al momento de su ingreso.';
+COMMENT ON COLUMN SMY_DOTACION_CATALOGO.ID IS 'Identificador único y clave primaria de la tabla SMY_DOTACION_CATALOGO.';
+COMMENT ON COLUMN SMY_DOTACION_CATALOGO.ID_ORGANIZACION IS 'Clave foránea hacia SMY_ORGANIZACIONES(ID). Multi-tenancy.';
+COMMENT ON COLUMN SMY_DOTACION_CATALOGO.NOMBRE_ELEMENTO IS 'Nombre descriptivo del artículo (ej. Juego de sábanas, Cobija, Toallas).';
+COMMENT ON COLUMN SMY_DOTACION_CATALOGO.CATEGORIA IS 'Categoría del artículo (Lencería y Ropa de Cama, Aseo Personal, Menaje, Ayudas Técnicas, Otro).';
+COMMENT ON COLUMN SMY_DOTACION_CATALOGO.CANTIDAD_DEFECTO IS 'Cantidad sugerida por defecto al momento del ingreso.';
+COMMENT ON COLUMN SMY_DOTACION_CATALOGO.FRECUENCIA_CAMBIO_MESES IS 'Periodicidad recomendada para el cambio o renovación en meses (ej. 12 = 1 año, NULL = Sin reposición obligatoria).';
+COMMENT ON COLUMN SMY_DOTACION_CATALOGO.DESCRIPCION IS 'Especificaciones técnicas o notas del artículo.';
+COMMENT ON COLUMN SMY_DOTACION_CATALOGO.ES_SUGERIDO_INGRESO IS 'Indicador booleano (1=Sí, 0=No) de si el artículo se incluye por defecto en la propuesta de ingreso.';
+COMMENT ON COLUMN SMY_DOTACION_CATALOGO.ESTADO IS 'Estado de vigencia del artículo en el catálogo (Activo o Inactivo).';
+
+-- Tabla: SMY_DOTACION_RESIDENTES (Artículos Entregados Físicamente al Residente)
+CREATE TABLE SMY_DOTACION_RESIDENTES (
+    ID                              NUMBER(10)          NOT NULL,
+    ID_RESIDENTE                    NUMBER(10)          NOT NULL,
+    ID_ELEMENTO_CATALOGO            NUMBER(10)          NULL,
+    NOMBRE_ELEMENTO                 VARCHAR2(100)       NOT NULL,
+    CATEGORIA                       VARCHAR2(50)        NOT NULL,
+    CANTIDAD                        NUMBER(5)           DEFAULT 1 NOT NULL,
+    FECHA_ENTREGA                   DATE                NOT NULL,
+    FRECUENCIA_CAMBIO_MESES         NUMBER(5)           NULL,
+    FECHA_PROXIMO_CAMBIO            DATE                NULL,
+    ESTADO_ELEMENTO                 VARCHAR2(30)        DEFAULT 'Entregado' NOT NULL,
+    CONDICION_ENTREGA               VARCHAR2(50)        DEFAULT 'Nuevo' NULL,
+    NOTAS                           VARCHAR2(500)       NULL,
+    ID_USUARIO_ENTREGA              NUMBER(10)          NULL,
+    FECHA_ULTIMO_CAMBIO             DATE                NULL,
+    FECHA_CREACION                  DATE                DEFAULT (SYSTIMESTAMP AT TIME ZONE 'America/Bogota') NOT NULL,
+    ID_USUARIO_ULTIMA_MODIFICACION  NUMBER(10)          NULL,
+    CONSTRAINT PK_SMY_DOTACION_RESIDENTES PRIMARY KEY (ID),
+    CONSTRAINT FK_SMY_DOTRES_RES FOREIGN KEY (ID_RESIDENTE) REFERENCES SMY_RESIDENTES (ID),
+    CONSTRAINT FK_SMY_DOTRES_CAT FOREIGN KEY (ID_ELEMENTO_CATALOGO) REFERENCES SMY_DOTACION_CATALOGO (ID),
+    CONSTRAINT CK_SMY_DOTRES_EST CHECK (ESTADO_ELEMENTO IN ('Entregado', 'Cambio Pendiente', 'Renovado', 'Devuelto', 'Baja / Deterioro'))
+);
+
+CREATE SEQUENCE SEQ_SMY_DOTACION_RESIDENTES START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+CREATE OR REPLACE TRIGGER TRG_SMY_DOTACION_RESIDENTES_BI
+BEFORE INSERT ON SMY_DOTACION_RESIDENTES FOR EACH ROW
+BEGIN
+    IF :NEW.ID IS NULL THEN
+        SELECT SEQ_SMY_DOTACION_RESIDENTES.NEXTVAL INTO :NEW.ID FROM DUAL;
+    END IF;
+END;
+/
+
+COMMENT ON TABLE SMY_DOTACION_RESIDENTES IS 'Artículos y elementos de dotación entregados al residente con control de periodicidad y fecha de próximo recambio.';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.ID IS 'Identificador único y clave primaria de la tabla SMY_DOTACION_RESIDENTES.';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.ID_RESIDENTE IS 'Clave foránea hacia SMY_RESIDENTES(ID) que recibe la dotación.';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.ID_ELEMENTO_CATALOGO IS 'Clave foránea opcional hacia SMY_DOTACION_CATALOGO(ID).';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.NOMBRE_ELEMENTO IS 'Nombre del artículo al momento de la entrega.';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.CATEGORIA IS 'Categoría del artículo.';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.CANTIDAD IS 'Número de unidades asignadas.';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.FECHA_ENTREGA IS 'Fecha en que se efectuó la entrega física al residente.';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.FRECUENCIA_CAMBIO_MESES IS 'Meses de vida útil o ciclo de cambio para el residente.';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.FECHA_PROXIMO_CAMBIO IS 'Fecha calculada en la que vence el artículo y requiere ser cambiado.';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.ESTADO_ELEMENTO IS 'Estado actual del artículo (Entregado, Cambio Pendiente, Renovado, Devuelto, Baja / Deterioro).';
+COMMENT ON COLUMN SMY_DOTACION_RESIDENTES.CONDICION_ENTREGA IS 'Condición física inicial (Nuevo, Buen Estado, etc.).';
+
+-- Tabla: SMY_DOTACION_HISTORIAL (Bitácora de Recambios Periódicos de Dotación)
+CREATE TABLE SMY_DOTACION_HISTORIAL (
+    ID                              NUMBER(10)          NOT NULL,
+    ID_DOTACION_RESIDENTE           NUMBER(10)          NOT NULL,
+    FECHA_CAMBIO                    DATE                NOT NULL,
+    MOTIVO                          VARCHAR2(50)        DEFAULT 'Renovación Periódica' NOT NULL,
+    CONDICION_NUEVO                 VARCHAR2(50)        DEFAULT 'Nuevo' NULL,
+    OBSERVACIONES                   VARCHAR2(500)       NULL,
+    ID_USUARIO_REGISTRA             NUMBER(10)          NULL,
+    FECHA_CREACION                  DATE                DEFAULT (SYSTIMESTAMP AT TIME ZONE 'America/Bogota') NOT NULL,
+    CONSTRAINT PK_SMY_DOTACION_HISTORIAL PRIMARY KEY (ID),
+    CONSTRAINT FK_SMY_DOTHIS_DOTRES FOREIGN KEY (ID_DOTACION_RESIDENTE) REFERENCES SMY_DOTACION_RESIDENTES (ID)
+);
+
+CREATE SEQUENCE SEQ_SMY_DOTACION_HISTORIAL START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+CREATE OR REPLACE TRIGGER TRG_SMY_DOTACION_HISTORIAL_BI
+BEFORE INSERT ON SMY_DOTACION_HISTORIAL FOR EACH ROW
+BEGIN
+    IF :NEW.ID IS NULL THEN
+        SELECT SEQ_SMY_DOTACION_HISTORIAL.NEXTVAL INTO :NEW.ID FROM DUAL;
+    END IF;
+END;
+/
+
+COMMENT ON TABLE SMY_DOTACION_HISTORIAL IS 'Historial y auditoría de cambios y recambios periódicos de dotación (ej. reposición anual de sábanas).';
+COMMENT ON COLUMN SMY_DOTACION_HISTORIAL.ID IS 'Identificador único y clave primaria de la tabla SMY_DOTACION_HISTORIAL.';
+COMMENT ON COLUMN SMY_DOTACION_HISTORIAL.ID_DOTACION_RESIDENTE IS 'Clave foránea hacia SMY_DOTACION_RESIDENTES(ID).';
+COMMENT ON COLUMN SMY_DOTACION_HISTORIAL.FECHA_CAMBIO IS 'Fecha en que se efectuó el recambio físico del artículo.';
+COMMENT ON COLUMN SMY_DOTACION_HISTORIAL.MOTIVO IS 'Causa del recambio (Renovación Periódica, Deterioro, Pérdida, etc.).';
+
+-- =============================================================================
 -- SECCIÓN 13: ÍNDICES DE RENDIMIENTO (OPTIMIZACIÓN PARA CONSULTAS FRECUENTES)
 -- =============================================================================
 
@@ -3371,6 +3495,10 @@ CREATE INDEX IDX_SMY_EMP_CENTRO ON SMY_EMPLEADOS(ID_CENTRO);
 CREATE INDEX IDX_SMY_RES_CENTRO ON SMY_RESIDENTES(ID_CENTRO);
 CREATE INDEX IDX_SMY_SOL_CENTRO ON SMY_SOLICITUDES_ADMISION(ID_CENTRO);
 CREATE INDEX IDX_SMY_PAR_ORG_CEN ON SMY_PARAMETROS(ID_ORGANIZACION, ID_CENTRO);
+CREATE INDEX IDX_SMY_DOTCAT_ORG ON SMY_DOTACION_CATALOGO(ID_ORGANIZACION, ESTADO);
+CREATE INDEX IDX_SMY_DOTRES_RES ON SMY_DOTACION_RESIDENTES(ID_RESIDENTE, ESTADO_ELEMENTO);
+CREATE INDEX IDX_SMY_DOTRES_PROX ON SMY_DOTACION_RESIDENTES(FECHA_PROXIMO_CAMBIO);
+CREATE INDEX IDX_SMY_DOTHIS_DOTRES ON SMY_DOTACION_HISTORIAL(ID_DOTACION_RESIDENTE, FECHA_CAMBIO);
 
 -- =============================================================================
 -- SECCIÓN 14: INSERCIÓN DE DATOS SEMILLA EN TABLAS MAESTRAS
@@ -3723,6 +3851,28 @@ VALUES (5, 'API_WHATSAPP_BEARER_TOKEN', 'Bearer Token API WhatsApp', 'Token de a
 
 INSERT INTO SMY_PARAMETROS (ID, CODIGO_PARAMETRO, NOMBRE_PARAMETRO, DESCRIPCION, GRUPO_PARAMETRO, VALOR_NUMERICO, ES_ENCRIPTADO, ES_SISTEMA)
 VALUES (6, 'AUTH_JWT_EXPIRATION_MINUTES', 'Tiempo de Expiración Token JWT (Minutos)', 'Minutos de validez de la sesión antes de requerir refresh token.', 'SEGURIDAD', 15, 'N', 'S');
+
+-- Catálogo Maestro Inicial de Dotación para Ingreso de Residentes
+INSERT INTO SMY_DOTACION_CATALOGO (ID, ID_ORGANIZACION, NOMBRE_ELEMENTO, CATEGORIA, CANTIDAD_DEFECTO, FRECUENCIA_CAMBIO_MESES, DESCRIPCION, ES_SUGERIDO_INGRESO, ESTADO)
+VALUES (1, 1, 'Juego de sábanas completo (Sobresábana, bajera, funda)', 'Lencería y Ropa de Cama', 2, 12, 'Juego de cama 100% algodón 200 hilos para cama hospitalaria/geriátrica. Renovación cada 12 meses.', 1, 'Activo');
+
+INSERT INTO SMY_DOTACION_CATALOGO (ID, ID_ORGANIZACION, NOMBRE_ELEMENTO, CATEGORIA, CANTIDAD_DEFECTO, FRECUENCIA_CAMBIO_MESES, DESCRIPCION, ES_SUGERIDO_INGRESO, ESTADO)
+VALUES (2, 1, 'Cobija térmica o plumón liviano', 'Lencería y Ropa de Cama', 1, 24, 'Manta térmica hipoalergénica lavable en máquina. Ciclo de recambio sugerido cada 24 meses.', 1, 'Activo');
+
+INSERT INTO SMY_DOTACION_CATALOGO (ID, ID_ORGANIZACION, NOMBRE_ELEMENTO, CATEGORIA, CANTIDAD_DEFECTO, FRECUENCIA_CAMBIO_MESES, DESCRIPCION, ES_SUGERIDO_INGRESO, ESTADO)
+VALUES (3, 1, 'Almohada ortopédica ergonómica', 'Lencería y Ropa de Cama', 1, 12, 'Almohada con memoria viscoelástica y funda lavable antifluido. Cambio recomendado cada año.', 1, 'Activo');
+
+INSERT INTO SMY_DOTACION_CATALOGO (ID, ID_ORGANIZACION, NOMBRE_ELEMENTO, CATEGORIA, CANTIDAD_DEFECTO, FRECUENCIA_CAMBIO_MESES, DESCRIPCION, ES_SUGERIDO_INGRESO, ESTADO)
+VALUES (4, 1, 'Juego de toallas (Cuerpo, manos y pies)', 'Aseo y Cuidado Personal', 2, 6, 'Toallas de baño absorbentes personalizadas con el nombre del residente. Recambio cada 6 meses.', 1, 'Activo');
+
+INSERT INTO SMY_DOTACION_CATALOGO (ID, ID_ORGANIZACION, NOMBRE_ELEMENTO, CATEGORIA, CANTIDAD_DEFECTO, FRECUENCIA_CAMBIO_MESES, DESCRIPCION, ES_SUGERIDO_INGRESO, ESTADO)
+VALUES (5, 1, 'Protector de colchón antifluido', 'Lencería y Ropa de Cama', 1, 12, 'Cubrecolchón impermeable y transpirable con cierre perimetral. Recambio anual.', 1, 'Activo');
+
+INSERT INTO SMY_DOTACION_CATALOGO (ID, ID_ORGANIZACION, NOMBRE_ELEMENTO, CATEGORIA, CANTIDAD_DEFECTO, FRECUENCIA_CAMBIO_MESES, DESCRIPCION, ES_SUGERIDO_INGRESO, ESTADO)
+VALUES (6, 1, 'Kit menaje personal (Pocillo térmico, vaso y cubiertos)', 'Menaje', 1, NULL, 'Vajilla personal irrompible libre de BPA. Entrega única al ingreso, reposición por pérdida.', 1, 'Activo');
+
+INSERT INTO SMY_DOTACION_CATALOGO (ID, ID_ORGANIZACION, NOMBRE_ELEMENTO, CATEGORIA, CANTIDAD_DEFECTO, FRECUENCIA_CAMBIO_MESES, DESCRIPCION, ES_SUGERIDO_INGRESO, ESTADO)
+VALUES (7, 1, 'Neceser y kit de higiene personal inicial', 'Aseo y Cuidado Personal', 1, 1, 'Cepillo, crema dental, esponja suave, peine y jabonera. Entrega al ingreso, reposición mensual de consumibles.', 1, 'Activo');
 
 COMMIT;
 

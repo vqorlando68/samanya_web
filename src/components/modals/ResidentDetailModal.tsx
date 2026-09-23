@@ -1,7 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
-import { X, HeartHandshake, Phone, Mail, User, ShieldAlert, Sparkles, Building2, Edit3, Pill, Clock, Calendar } from 'lucide-react';
+import {
+  X,
+  HeartHandshake,
+  Phone,
+  Mail,
+  User,
+  ShieldAlert,
+  Sparkles,
+  Building2,
+  Edit3,
+  Pill,
+  Clock,
+  Calendar,
+  Package,
+  Plus,
+  RefreshCw,
+  RotateCcw
+} from 'lucide-react';
 import { ResidentAvatar } from '../common/ResidentAvatar';
+import { DotacionResidente } from '../../types';
 
 export const ResidentDetailModal: React.FC = () => {
   const {
@@ -13,8 +31,27 @@ export const ResidentDetailModal: React.FC = () => {
     setIsEditResidenteOpen,
     familiares,
     setEditingFamiliar,
-    setIsEditFamiliarOpen
+    setIsEditFamiliarOpen,
+    dotaciones,
+    agregarArticuloDotacionResidente,
+    registrarRecambioDotacion
   } = useAdmin();
+
+  const [mostrarFormAgregarDotacion, setMostrarFormAgregarDotacion] = useState(false);
+  const [nuevoArticuloDotacion, setNuevoArticuloDotacion] = useState({
+    nombre: '',
+    categoria: 'Lencería y Ropa de Cama',
+    cantidad: 1,
+    frecuenciaMeses: 12 as number | null
+  });
+
+  const [itemParaRecambio, setItemParaRecambio] = useState<DotacionResidente | null>(null);
+  const [motivoRecambio, setMotivoRecambio] = useState('Cumplimiento de ciclo de recambio programado');
+  const [condicionNuevo, setCondicionNuevo] = useState('Nuevo de paquete');
+  const [observacionesRecambio, setObservacionesRecambio] = useState('');
+
+  const dotacionesResidente = (dotaciones || []).filter((d) => d.idResidente === selectedResidente?.id);
+
 
   if (!isResidenteDetailOpen || !selectedResidente) return null;
 
@@ -258,6 +295,329 @@ export const ResidentDetailModal: React.FC = () => {
             ) : (
               <div className="p-4 bg-[#F7F6F2] rounded-xl text-center text-xs text-[#7A745F]">
                 No tiene acudientes registrados. Puedes vincular uno desde la sección de Familiares.
+              </div>
+            )}
+          </div>
+
+          {/* Dotación y Elementos Entregados al Residente */}
+          <div className="border border-[#DEDBD1] rounded-2xl p-4 bg-white space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Package className="w-5 h-5 text-[#B3803F]" />
+                <h4 className="font-serif font-bold text-sm text-[#182F28]">
+                  Dotación & Artículos Entregados al Residente
+                </h4>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#7A745F] font-mono">
+                  {dotacionesResidente.length} artículo(s)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMostrarFormAgregarDotacion(!mostrarFormAgregarDotacion)}
+                  className="flex items-center gap-1 px-2.5 py-1 bg-[#182F28] hover:bg-[#274A3F] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Entregar Artículo</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Formulario rápido para agregar artículo adicional */}
+            {mostrarFormAgregarDotacion && (
+              <div className="p-4 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1] space-y-3 animate-in fade-in duration-150">
+                <span className="text-xs font-bold text-[#182F28] uppercase font-mono block">
+                  Registrar Entrega de Artículo Adicional
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Nombre Artículo</label>
+                    <input
+                      type="text"
+                      placeholder="Ej. Cobija extra, Paquete de toallas"
+                      value={nuevoArticuloDotacion.nombre}
+                      onChange={(e) => setNuevoArticuloDotacion({ ...nuevoArticuloDotacion, nombre: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border border-[#DEDBD1] bg-white text-xs text-[#182F28] focus:outline-none focus:border-[#182F28]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Categoría</label>
+                    <select
+                      value={nuevoArticuloDotacion.categoria}
+                      onChange={(e) => setNuevoArticuloDotacion({ ...nuevoArticuloDotacion, categoria: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border border-[#DEDBD1] bg-white text-xs text-[#182F28] focus:outline-none focus:border-[#182F28]"
+                    >
+                      <option value="Lencería y Ropa de Cama">Lencería</option>
+                      <option value="Aseo y Cuidado Personal">Aseo Personal</option>
+                      <option value="Menaje">Menaje</option>
+                      <option value="Ayudas Técnicas">Ayudas Técnicas</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Periodicidad</label>
+                    <select
+                      value={nuevoArticuloDotacion.frecuenciaMeses ?? ''}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? null : parseInt(e.target.value);
+                        setNuevoArticuloDotacion({ ...nuevoArticuloDotacion, frecuenciaMeses: val });
+                      }}
+                      className="w-full px-3 py-1.5 rounded-lg border border-[#DEDBD1] bg-white text-xs text-[#182F28] focus:outline-none focus:border-[#182F28]"
+                    >
+                      <option value="">Única vez</option>
+                      <option value="6">6 meses</option>
+                      <option value="12">12 meses (1 año)</option>
+                      <option value="24">24 meses (2 años)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setMostrarFormAgregarDotacion(false)}
+                    className="px-3 py-1 text-xs text-[#5C6058] font-bold hover:bg-[#EFECE6] rounded-lg cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!nuevoArticuloDotacion.nombre.trim()) {
+                        alert('Ingrese el nombre del artículo.');
+                        return;
+                      }
+                      await agregarArticuloDotacionResidente(selectedResidente.id, {
+                        nombreElemento: nuevoArticuloDotacion.nombre.trim(),
+                        categoria: nuevoArticuloDotacion.categoria,
+                        cantidad: 1,
+                        frecuenciaCambioMeses: nuevoArticuloDotacion.frecuenciaMeses,
+                        condicionEntrega: 'Nuevo',
+                        notas: 'Entrega física directa al residente'
+                      });
+                      setNuevoArticuloDotacion({
+                        nombre: '',
+                        categoria: 'Lencería y Ropa de Cama',
+                        cantidad: 1,
+                        frecuenciaMeses: 12
+                      });
+                      setMostrarFormAgregarDotacion(false);
+                    }}
+                    className="px-4 py-1.5 bg-[#182F28] hover:bg-[#274A3F] text-white text-xs font-bold rounded-lg cursor-pointer"
+                  >
+                    Guardar y Entregar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Modal flotante o diálogo para Registrar Recambio */}
+            {itemParaRecambio && (
+              <div className="p-4 bg-[#FEF7EE] rounded-xl border-2 border-[#DCB87F] space-y-3 animate-in fade-in duration-150">
+                <div className="flex items-center justify-between pb-2 border-b border-[#DCB87F]/40">
+                  <span className="text-xs font-bold text-[#9A5B12] uppercase font-mono flex items-center gap-1.5">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Registrar Recambio: {itemParaRecambio.nombreElemento}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setItemParaRecambio(null)}
+                    className="text-xs text-[#9A5B12] hover:text-[#182F28] font-bold cursor-pointer"
+                  >
+                    ✕ Cerrar
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Motivo de Renovación</label>
+                    <input
+                      type="text"
+                      value={motivoRecambio}
+                      onChange={(e) => setMotivoRecambio(e.target.value)}
+                      placeholder="Ej. Cumplimiento de ciclo anual (12 meses)"
+                      className="w-full px-3 py-1.5 rounded-lg border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#182F28]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Condición del Nuevo Artículo</label>
+                    <select
+                      value={condicionNuevo}
+                      onChange={(e) => setCondicionNuevo(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#182F28]"
+                    >
+                      <option value="Nuevo de paquete">Nuevo de paquete</option>
+                      <option value="Excelente estado (Lavandería)">Excelente estado (Lavandería)</option>
+                      <option value="Reemplazo por donación">Reemplazo por donación</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#5C6058] mb-1">Observaciones</label>
+                  <input
+                    type="text"
+                    value={observacionesRecambio}
+                    onChange={(e) => setObservacionesRecambio(e.target.value)}
+                    placeholder="Ej. Se retira juego de sábanas anterior deteriorado y se entrega juego nuevo color beige."
+                    className="w-full px-3 py-1.5 rounded-lg border border-[#DEDBD1] bg-white text-xs focus:outline-none focus:border-[#182F28]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-[11px] text-[#7A745F]">
+                    Próximo recambio calculado en: <strong>{itemParaRecambio.frecuenciaCambioMeses || 12} meses</strong>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setItemParaRecambio(null)}
+                      className="px-3 py-1 text-xs text-[#5C6058] font-bold hover:bg-[#fcecd7] rounded-lg cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await registrarRecambioDotacion(itemParaRecambio.id, {
+                          motivo: motivoRecambio,
+                          condicionNuevo,
+                          observaciones: observacionesRecambio
+                        });
+                        setItemParaRecambio(null);
+                        setMotivoRecambio('Cumplimiento de ciclo de recambio programado');
+                        setObservacionesRecambio('');
+                      }}
+                      className="px-4 py-1.5 bg-[#B3803F] hover:bg-[#9a6c32] text-white text-xs font-bold rounded-lg cursor-pointer"
+                    >
+                      Confirmar y Renovar Ciclo
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Listado de Artículos con Semáforo de Recambio */}
+            {dotacionesResidente.length > 0 ? (
+              <div className="space-y-3">
+                {dotacionesResidente.map((dot) => {
+                  const dias = dot.diasParaCambio;
+                  const semaforo = dot.semaforoCambio;
+
+                  return (
+                    <div
+                      key={dot.id}
+                      className="p-3.5 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1] space-y-2.5"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-bold text-[#182F28]">
+                              {dot.nombreElemento}
+                            </span>
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#DCB87F]/30 text-[#694819]">
+                              {dot.categoria}
+                            </span>
+                            <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-white border border-[#DEDBD1] text-[#182F28] font-bold">
+                              {dot.cantidad} unidad(es)
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-4 text-xs text-[#5C6058] mt-1.5 flex-wrap">
+                            <span>
+                              Entrega inicial: <strong className="text-[#182F28]">{dot.fechaEntrega}</strong>
+                            </span>
+                            {dot.frecuenciaCambioMeses ? (
+                              <span>
+                                Ciclo de reposición: <strong className="text-[#182F28]">{dot.frecuenciaCambioMeses} meses</strong>
+                              </span>
+                            ) : (
+                              <span>Entrega única</span>
+                            )}
+                            {dot.fechaUltimoCambio && dot.fechaUltimoCambio !== dot.fechaEntrega && (
+                              <span>
+                                Último recambio: <strong className="text-[#182F28]">{dot.fechaUltimoCambio}</strong>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Semáforo de Estado de Recambio */}
+                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                          {semaforo === 'VENCIDO' && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700 border border-red-300">
+                              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                              <span>Vencido ({Math.abs(dias || 0)} días)</span>
+                            </span>
+                          )}
+
+                          {semaforo === 'PROXIMO' && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                              <span className="w-2 h-2 rounded-full bg-amber-500" />
+                              <span>Próximo recambio ({dias} días)</span>
+                            </span>
+                          )}
+
+                          {semaforo === 'VIGENTE' && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                              <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                              <span>Vigente ({dias} días)</span>
+                            </span>
+                          )}
+
+                          {semaforo === 'SIN_VENCIMIENTO' && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
+                              Sin vencimiento
+                            </span>
+                          )}
+
+                          {/* Botón para registrar recambio */}
+                          {dot.frecuenciaCambioMeses && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setItemParaRecambio(dot);
+                                setMotivoRecambio(
+                                  semaforo === 'VENCIDO'
+                                    ? 'Renovación por vencimiento de ciclo'
+                                    : 'Recambio periódico programado'
+                                );
+                              }}
+                              className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white border border-[#DEDBD1] hover:border-[#182F28] text-[#182F28] hover:bg-[#182F28] hover:text-white transition-all cursor-pointer shadow-2xs"
+                              title="Registrar nuevo recambio físico y resetear ciclo"
+                            >
+                              <RotateCcw className="w-3 h-3 text-[#B3803F]" />
+                              <span>Registrar Recambio</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Historial de recambios previos si existen */}
+                      {dot.historial && dot.historial.length > 0 && (
+                        <div className="pt-2 border-t border-[#DEDBD1]/60 text-[11px] text-[#7A745F]">
+                          <span className="font-bold text-[#182F28] block mb-1">
+                            📋 Historial de Recambios ({dot.historial.length}):
+                          </span>
+                          <div className="space-y-1 pl-2 border-l-2 border-[#DCB87F]">
+                            {dot.historial.map((h, i) => (
+                              <div key={i} className="flex items-center justify-between">
+                                <span>
+                                  <strong>{h.fechaCambio}</strong>: {h.motivo} ({h.condicionNuevo})
+                                </span>
+                                <span className="text-[10px] text-[#5C6058]">{h.usuarioRegistra}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-4 bg-[#F7F6F2] rounded-xl text-center text-xs text-[#7A745F]">
+                No tiene elementos de dotación asignados todavía. Utilice el botón "Entregar Artículo" para asignarle sábanas, cobijas o toallas.
               </div>
             )}
           </div>

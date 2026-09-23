@@ -13,7 +13,8 @@ import {
   Bed,
   Utensils,
   Activity,
-  Pill
+  Pill,
+  Package
 } from 'lucide-react';
 import { ResidentAvatar } from '../common/ResidentAvatar';
 
@@ -30,7 +31,9 @@ export const ResidentsView: React.FC = () => {
     setIsEditResidenteOpen,
     setEditingFamiliar,
     setIsEditFamiliarOpen,
-    sincronizarResidentes
+    sincronizarResidentes,
+    setIsGestionDotacionOpen,
+    dotaciones
   } = useAdmin();
 
   const [isSyncing, setIsSyncing] = useState(false);
@@ -105,6 +108,16 @@ export const ResidentsView: React.FC = () => {
           >
             <RefreshCw className={`w-4 h-4 text-[#274A3F] ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar con Oracle'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsGestionDotacionOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-[#F2EFE9] text-[#182F28] border border-[#DEDBD1] font-semibold rounded-xl text-sm shadow-2xs transition-all cursor-pointer"
+            title="Administrar plantilla genérica y catálogo de dotación de ingreso"
+          >
+            <Package className="w-4 h-4 text-[#B3803F]" />
+            <span>Catálogo Dotación</span>
           </button>
 
           <button
@@ -279,6 +292,36 @@ export const ResidentsView: React.FC = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Resumen de Dotación del Residente */}
+                {(() => {
+                  const resDot = (dotaciones || []).filter((d) => d.idResidente === res.id);
+                  const vencidos = resDot.filter((d) => d.semaforoCambio === 'VENCIDO').length;
+                  const proximos = resDot.filter((d) => d.semaforoCambio === 'PROXIMO').length;
+                  if (resDot.length === 0) return null;
+
+                  return (
+                    <div className="mt-2.5 p-2 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1] flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5 text-[#182F28] font-semibold">
+                        <Package className="w-3.5 h-3.5 text-[#B3803F]" />
+                        <span>{resDot.length} artículo(s) dotación</span>
+                      </div>
+                      {vencidos > 0 ? (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">
+                          {vencidos} vencido(s)
+                        </span>
+                      ) : proximos > 0 ? (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
+                          {proximos} por renovar
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          Vigente
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Botones Ficha y Editar */}
@@ -308,14 +351,32 @@ export const ResidentsView: React.FC = () => {
       </div>
 
       {filtered.length === 0 && (
-        <div className="p-12 text-center bg-white rounded-3xl border border-[#DEDBD1] space-y-2">
-          <Users className="w-8 h-8 text-[#9A917A] mx-auto" />
-          <h4 className="font-serif font-bold text-base text-[#182F28]">
-            No se encontraron residentes con los filtros aplicados
-          </h4>
-          <p className="text-xs text-[#7A745F]">
-            Ajusta los parámetros de búsqueda o registra una nueva admisión.
-          </p>
+        <div className="p-12 text-center bg-white rounded-3xl border border-[#DEDBD1] space-y-4 max-w-xl mx-auto shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-[#DFF3E7] text-[#1E7A4C] mx-auto flex items-center justify-center">
+            <Users className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-serif font-bold text-lg text-[#182F28]">
+              {residentes.length === 0
+                ? 'Base de Datos Oracle Conectada (Sin Residentes)'
+                : 'No se encontraron residentes con los filtros aplicados'}
+            </h4>
+            <p className="text-xs text-[#7A745F] max-w-md mx-auto leading-relaxed">
+              {residentes.length === 0
+                ? 'El censo en Oracle Autonomous Database está actualmente vacío o recién inicializado. Puedes admitir el primer residente o sincronizar en cualquier momento.'
+                : 'Ajusta los criterios de búsqueda o limpia los filtros para ver todos los residentes.'}
+            </p>
+          </div>
+          {residentes.length === 0 && (
+            <button
+              type="button"
+              onClick={() => setIsRegisterResidentOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B3803F] hover:bg-[#9a6c32] text-white font-bold rounded-xl text-xs shadow-xs transition-all cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Admitir Primer Residente</span>
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -294,14 +294,14 @@ export const DashboardView: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-2 mt-3">
             <span className="text-3xl font-black text-[#182F28]">
-              {activeShift.trabajadoresAsignados.length}
+              {activeShift ? activeShift.trabajadoresAsignados.length : metrics.personalActivoTurno}
             </span>
             <span className="text-xs font-semibold text-[#1E7A4C] bg-[#DFF3E7] px-2 py-0.5 rounded-md">
-              {activeShift.tipo}
+              {activeShift ? activeShift.tipo : 'Sin turno'}
             </span>
           </div>
           <p className="text-xs text-[#5C6058] mt-2">
-            Cobertura mínima requerida: {activeShift.coberturaMinimaRequerida} personas
+            Cobertura mínima requerida: {activeShift ? activeShift.coberturaMinimaRequerida : 0} personas
           </p>
         </div>
 
@@ -356,70 +356,90 @@ export const DashboardView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna Izquierda: Personal en Guardia Activa */}
         <div className="lg:col-span-2 admin-card p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#DEDBD1] pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-3 h-3 rounded-full bg-[#1E7A4C] animate-pulse" />
-              <h3 className="font-serif font-bold text-base text-[#182F28]">
-                {activeShift.nombre}
-              </h3>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono font-bold text-[#075158] bg-[#D9F0F1] px-2.5 py-1 rounded-lg">
-                {activeShift.horario}
-              </span>
-              <button
-                type="button"
-                onClick={() => setActiveTab('turnos')}
-                className="text-xs font-bold text-[#B3803F] hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <span>Gestionar Turnos</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
+          {activeShift ? (
+            <>
+              <div className="flex items-center justify-between border-b border-[#DEDBD1] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-3 h-3 rounded-full bg-[#1E7A4C] animate-pulse" />
+                  <h3 className="font-serif font-bold text-base text-[#182F28]">
+                    {activeShift.nombre}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono font-bold text-[#075158] bg-[#D9F0F1] px-2.5 py-1 rounded-lg">
+                    {activeShift.horario}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('turnos')}
+                    className="text-xs font-bold text-[#B3803F] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Gestionar Turnos</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
 
-          {activeShift.alertas && (
-            <div className="p-3 bg-[#FEF7EE] border border-[#DCB87F] rounded-xl flex items-center gap-2.5 text-xs text-[#9A5B12] font-semibold">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>{activeShift.alertas}</span>
+              {activeShift.alertas && (
+                <div className="p-3 bg-[#FEF7EE] border border-[#DCB87F] rounded-xl flex items-center gap-2.5 text-xs text-[#9A5B12] font-semibold">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{activeShift.alertas}</span>
+                </div>
+              )}
+
+              <div className="space-y-2.5">
+                {activeShift.trabajadoresAsignados.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-[#7A745F]">
+                    No hay colaboradores asignados a este turno actualmente.
+                  </div>
+                ) : (
+                  activeShift.trabajadoresAsignados.map((worker) => {
+                    const master = trabajadores.find((t) => t.id === worker.idTrabajador);
+                    const nombre = master?.nombreCompleto || worker.nombre;
+                    const cargo = master?.cargo || worker.cargo;
+                    const area = master?.area || worker.area;
+                    const avatar = master?.avatarUrl || worker.avatarUrl;
+
+                    return (
+                      <div
+                        key={worker.idTrabajador}
+                        className="flex items-center justify-between p-3 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1]"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={resolverAvatarUrl(avatar)}
+                            alt={nombre}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = DEFAULT_AVATAR;
+                            }}
+                            className="w-10 h-10 rounded-full object-cover border border-[#274A3F]/20"
+                          />
+                          <div>
+                            <div className="text-sm font-bold text-[#182F28]">{nombre}</div>
+                            <div className="text-xs text-[#5C6058]">{cargo} • <span className="text-[#274A3F] font-semibold">{area}</span></div>
+                          </div>
+                        </div>
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-[#DEDBD1] text-[#1E7A4C]">
+                          En servicio activo
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="p-8 text-center space-y-2">
+              <Clock className="w-8 h-8 text-[#7A745F] mx-auto opacity-40" />
+              <h4 className="font-serif font-bold text-sm text-[#182F28]">
+                Sin turnos activos asignados
+              </h4>
+              <p className="text-xs text-[#7A745F]">
+                No hay cuadrantes activos configurados para esta sede en la base de datos Oracle.
+              </p>
             </div>
           )}
-
-          <div className="space-y-2.5">
-            {activeShift.trabajadoresAsignados.map((worker) => {
-              const master = trabajadores.find((t) => t.id === worker.idTrabajador);
-              const nombre = master?.nombreCompleto || worker.nombre;
-              const cargo = master?.cargo || worker.cargo;
-              const area = master?.area || worker.area;
-              const avatar = master?.avatarUrl || worker.avatarUrl;
-
-              return (
-                <div
-                  key={worker.idTrabajador}
-                  className="flex items-center justify-between p-3 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1]"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={resolverAvatarUrl(avatar)}
-                      alt={nombre}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = DEFAULT_AVATAR;
-                      }}
-                      className="w-10 h-10 rounded-full object-cover border border-[#274A3F]/20"
-                    />
-                    <div>
-                      <div className="text-sm font-bold text-[#182F28]">{nombre}</div>
-                      <div className="text-xs text-[#5C6058]">{cargo} • <span className="text-[#274A3F] font-semibold">{area}</span></div>
-                    </div>
-                  </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-[#DEDBD1] text-[#1E7A4C]">
-                    En servicio activo
-                  </span>
-                </div>
-              );
-            })}
-          </div>
         </div>
 
         {/* Columna Derecha: Alertas Clínicas y Novedades */}
