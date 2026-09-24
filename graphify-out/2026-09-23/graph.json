@@ -12112,7 +12112,7 @@
       "file_type": "code",
       "norm_label": "shiftsview()",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L34"
+      "source_location": "L33"
     },
     {
       "id": "src_components_views_workersview_workersview",
@@ -34452,7 +34452,7 @@
       "file_type": "code",
       "norm_label": "dias_semana_headers",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L32"
+      "source_location": "L31"
     },
     {
       "id": "src_components_views_shiftsview_nombres_meses",
@@ -34463,7 +34463,7 @@
       "file_type": "code",
       "norm_label": "nombres_meses",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L27"
+      "source_location": "L26"
     },
     {
       "id": "src_components_views_workersview",
@@ -62953,7 +62953,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L43",
+      "source_location": "L42",
       "weight": 1.0
     },
     {
@@ -62965,7 +62965,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L787",
+      "source_location": "L605",
       "weight": 1.0
     },
     {
@@ -75441,7 +75441,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L24",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -75453,7 +75453,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L24",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -75465,7 +75465,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L25",
+      "source_location": "L24",
       "weight": 1.0
     },
     {
@@ -89325,7 +89325,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L24",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -89337,7 +89337,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L25",
+      "source_location": "L24",
       "weight": 1.0
     },
     {
@@ -118343,7 +118343,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L27",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -118354,7 +118354,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L32",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -118365,7 +118365,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/views/ShiftsView.tsx",
-      "source_location": "L34",
+      "source_location": "L33",
       "weight": 1.0
     },
     {

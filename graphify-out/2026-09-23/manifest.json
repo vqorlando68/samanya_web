@@ -2154,9 +2154,9 @@
     "semantic_hash": ""
   },
   "arquitectura.html": {
-    "mtime": 1790220746.2990348,
-    "seen": 1790220803.1644063,
-    "ast_hash": "66341f277523c5b981fba4df219893b0",
+    "mtime": 1789662542.8190932,
+    "seen": 1789745141.2719605,
+    "ast_hash": "286602d417c100d1a65665b99948a95e",
     "semantic_hash": ""
   },
   "configuracion_google.html": {
@@ -2322,9 +2322,9 @@
     "semantic_hash": ""
   },
   "src/components/views/ShiftsView.tsx": {
-    "mtime": 1790220398.182294,
-    "seen": 1790220462.1625104,
-    "ast_hash": "b2df868d105664ed2b8a05272dd909f9",
+    "mtime": 1790219266.0875065,
+    "seen": 1790219481.587889,
+    "ast_hash": "ea08b3e671c0444b67ce3bce6a191c01",
     "semantic_hash": ""
   },
   "src/components/views/WorkersView.tsx": {

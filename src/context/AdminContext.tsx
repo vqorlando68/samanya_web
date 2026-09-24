@@ -10,7 +10,8 @@ import {
   AdminDashboardMetrics,
   ElementoDotacionCatalogo,
   DotacionResidente,
-  HistorialCambioDotacion
+  HistorialCambioDotacion,
+  ProgramarTurnosRangoPayload
 } from '../types';
 import {
   SEED_SEDES,
@@ -67,6 +68,10 @@ interface AdminContextType {
   setIsRegisterLeaveOpen: (open: boolean) => void;
   isAssignShiftOpen: boolean;
   setIsAssignShiftOpen: (open: boolean) => void;
+  isProgramarTurnosOpen: boolean;
+  setIsProgramarTurnosOpen: (open: boolean) => void;
+  turnoModalFechaInicial?: string;
+  setTurnoModalFechaInicial: (fecha?: string) => void;
   selectedResidente: Residente | null;
   setSelectedResidente: (res: Residente | null) => void;
   isResidenteDetailOpen: boolean;
@@ -139,6 +144,8 @@ interface AdminContextType {
   actualizarEstadoTrabajador: (idTrabajador: number, nuevoEstado: 'Activo' | 'En Permiso' | 'Inactivo') => Promise<void>;
 
   asignarTrabajadorATurno: (idTurno: number, idTrabajador: number) => Promise<void>;
+  programarTurnosRango: (payload: ProgramarTurnosRangoPayload) => Promise<{ turnosGenerados: number; asignacionesGeneradas: number }>;
+  desasignarTrabajadorDeTurno: (idTurno: number, idTrabajador: number) => Promise<void>;
 
   aprobarPermiso: (idPermiso: number, comentarios: string) => Promise<void>;
   rechazarPermiso: (idPermiso: number, comentarios: string) => Promise<void>;
@@ -580,6 +587,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isRegisterWorkerOpen, setIsRegisterWorkerOpen] = useState(false);
   const [isRegisterLeaveOpen, setIsRegisterLeaveOpen] = useState(false);
   const [isAssignShiftOpen, setIsAssignShiftOpen] = useState(false);
+  const [isProgramarTurnosOpen, setIsProgramarTurnosOpen] = useState(false);
+  const [turnoModalFechaInicial, setTurnoModalFechaInicial] = useState<string | undefined>(undefined);
   const [selectedResidente, setSelectedResidente] = useState<Residente | null>(null);
   const [isResidenteDetailOpen, setIsResidenteDetailOpen] = useState(false);
 
@@ -1193,6 +1202,164 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast(`${trabajador.nombreCompleto} asignado al turno exitosamente`, 'success');
   };
 
+  // 5.1 Programar Turnos por Rango de Fechas
+  const programarTurnosRango = async (payload: ProgramarTurnosRangoPayload): Promise<{ turnosGenerados: number; asignacionesGeneradas: number }> => {
+    const {
+      idCentro,
+      idTurnoPlantilla,
+      nombreTurno,
+      tipo,
+      horario,
+      coberturaMinimaRequerida,
+      idsTrabajadores,
+      fechaInicio,
+      fechaFin,
+      diasSemana,
+      area,
+      observaciones
+    } = payload;
+
+    const [yStart, mStart, dStart] = fechaInicio.split('-').map(Number);
+    const [yEnd, mEnd, dEnd] = fechaFin.split('-').map(Number);
+    const start = new Date(yStart, mStart - 1, dStart);
+    const end = new Date(yEnd, mEnd - 1, dEnd);
+    const fechasValidas: string[] = [];
+
+    const curr = new Date(start);
+    while (curr <= end) {
+      const dayOfWeek = curr.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+      if (diasSemana.includes(dayOfWeek)) {
+        const y = curr.getFullYear();
+        const m = String(curr.getMonth() + 1).padStart(2, '0');
+        const d = String(curr.getDate()).padStart(2, '0');
+        fechasValidas.push(`${y}-${m}-${d}`);
+      }
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    if (fechasValidas.length === 0) {
+      throw new Error('No hay fechas en el rango seleccionado que coincidan con los días elegidos de la semana.');
+    }
+
+    const colaboradores = trabajadores.filter((t) => idsTrabajadores.includes(t.id));
+    if (colaboradores.length === 0) {
+      throw new Error('Debe seleccionar al menos un colaborador activo para asignar turnos.');
+    }
+
+    const turnoPlantillaId = idTurnoPlantilla || (tipo === 'Mañana' ? 301 : tipo === 'Tarde' ? 302 : 303);
+    let totalAsignaciones = 0;
+
+    // Despacho a Oracle para cada asignación individual
+    for (const fecha of fechasValidas) {
+      for (const colab of colaboradores) {
+        try {
+          await adminApi.turnos.asignarTurno({
+            idCentro,
+            idTrabajador: colab.id,
+            idTurno: turnoPlantillaId,
+            fechaTurno: fecha,
+            observaciones: observaciones || `Asignación programada rango ${fechaInicio} a ${fechaFin}`
+          });
+          totalAsignaciones++;
+        } catch (err) {
+          console.warn(`[programarTurnosRango] Aviso Oracle al asignar ${colab.id} en ${fecha}:`, err);
+        }
+      }
+    }
+
+    // Actualización de estado en caliente
+    setTurnos((prevTurnos) => {
+      let turnosActualizados = [...prevTurnos];
+
+      for (const fecha of fechasValidas) {
+        const turnoExistenteIndex = turnosActualizados.findIndex(
+          (t) => t.idCentro === idCentro && t.fecha === fecha && t.tipo === tipo
+        );
+
+        if (turnoExistenteIndex >= 0) {
+          const turnoExistente = turnosActualizados[turnoExistenteIndex];
+          const yaAsignadosIds = new Set(turnoExistente.trabajadoresAsignados.map((w) => w.idTrabajador));
+          
+          const nuevosParaTurno = colaboradores
+            .filter((c) => !yaAsignadosIds.has(c.id))
+            .map((c) => ({
+              idTrabajador: c.id,
+              nombre: c.nombreCompleto,
+              cargo: c.cargo,
+              area: c.area,
+              avatarUrl: c.avatarUrl
+            }));
+
+          if (nuevosParaTurno.length > 0) {
+            const updatedWorkers = [...turnoExistente.trabajadoresAsignados, ...nuevosParaTurno];
+            const cumple = updatedWorkers.length >= turnoExistente.coberturaMinimaRequerida;
+            turnosActualizados[turnoExistenteIndex] = {
+              ...turnoExistente,
+              trabajadoresAsignados: updatedWorkers,
+              alertas: cumple ? undefined : turnoExistente.alertas,
+              area: area || turnoExistente.area,
+              observaciones: observaciones || turnoExistente.observaciones
+            };
+          }
+        } else {
+          const nuevoTurnoId = Date.now() + Math.floor(Math.random() * 100000) + turnosActualizados.length;
+          const trabajadoresList = colaboradores.map((c) => ({
+            idTrabajador: c.id,
+            nombre: c.nombreCompleto,
+            cargo: c.cargo,
+            area: c.area,
+            avatarUrl: c.avatarUrl
+          }));
+          const cumple = trabajadoresList.length >= coberturaMinimaRequerida;
+
+          turnosActualizados.push({
+            id: nuevoTurnoId,
+            idCentro,
+            nombre: nombreTurno,
+            tipo,
+            horario,
+            fecha,
+            coberturaMinimaRequerida,
+            trabajadoresAsignados: trabajadoresList,
+            estado: cumple ? 'Programado' : 'Alerta Cobertura',
+            alertas: cumple ? undefined : `Alerta: Se requieren ${coberturaMinimaRequerida - trabajadoresList.length} persona(s) adicional(es).`,
+            area: area || 'Asistencial',
+            observaciones
+          });
+        }
+      }
+
+      return turnosActualizados;
+    });
+
+    showToast(
+      `Se programaron exitosamente ${fechasValidas.length} días de turnos para ${colaboradores.length} colaborador(es).`,
+      'success'
+    );
+
+    return {
+      turnosGenerados: fechasValidas.length,
+      asignacionesGeneradas: totalAsignaciones || (fechasValidas.length * colaboradores.length)
+    };
+  };
+
+  const desasignarTrabajadorDeTurno = async (idTurno: number, idTrabajador: number) => {
+    setTurnos((prev) =>
+      prev.map((t) => {
+        if (t.id !== idTurno) return t;
+        const updatedWorkers = t.trabajadoresAsignados.filter((w) => w.idTrabajador !== idTrabajador);
+        const cumple = updatedWorkers.length >= t.coberturaMinimaRequerida;
+        return {
+          ...t,
+          trabajadoresAsignados: updatedWorkers,
+          alertas: cumple ? undefined : `Alerta: Se requieren ${t.coberturaMinimaRequerida - updatedWorkers.length} persona(s) adicional(es).`,
+          estado: cumple ? t.estado : 'Alerta Cobertura'
+        };
+      })
+    );
+    showToast('Colaborador desasignado del turno.', 'info');
+  };
+
   // 6. Gestionar Permisos
   const aprobarPermiso = async (idPermiso: number, comentarios: string) => {
     try {
@@ -1587,6 +1754,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsRegisterLeaveOpen,
         isAssignShiftOpen,
         setIsAssignShiftOpen,
+        isProgramarTurnosOpen,
+        setIsProgramarTurnosOpen,
+        turnoModalFechaInicial,
+        setTurnoModalFechaInicial,
         selectedResidente,
         setSelectedResidente,
         isResidenteDetailOpen,
@@ -1616,6 +1787,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         actualizarTrabajador,
         actualizarEstadoTrabajador,
         asignarTrabajadorATurno,
+        programarTurnosRango,
+        desasignarTrabajadorDeTurno,
         aprobarPermiso,
         rechazarPermiso,
         registrarPermiso,

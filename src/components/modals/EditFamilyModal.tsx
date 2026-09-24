@@ -67,16 +67,33 @@ export const EditFamilyModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.nombres?.trim() || !formData.apellidos?.trim() || !formData.identificacion?.trim() || !formData.telefonoPrincipal?.trim() || !formData.email?.trim()) {
+      alert('Por favor complete los campos obligatorios: nombres, apellidos, identificación, teléfono y correo electrónico.');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      alert('Por favor ingrese un correo electrónico válido (ej. nombre@dominio.com).');
+      return;
+    }
+
     setLoading(true);
     try {
       await actualizarFamiliar(editingFamiliar.id, {
         ...formData,
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
+        identificacion: formData.identificacion.trim(),
+        telefonoPrincipal: formData.telefonoPrincipal.trim(),
+        telefonoSecundario: formData.telefonoSecundario?.trim(),
+        email: formData.email.trim(),
         fotoUrl: fotoPreview,
         esPrincipal
       });
       handleClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`Error al actualizar el familiar:\n${err.message || 'Error en la base de datos'}`);
     } finally {
       setLoading(false);
     }
@@ -294,15 +311,24 @@ export const EditFamilyModal: React.FC = () => {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-[#4B4636] mb-1">
-                  Correo Electrónico
+                <label className="block text-xs font-bold text-[#4B4636] mb-1 flex items-center justify-between">
+                  <span>Correo Electrónico *</span>
+                  <span className="text-[10px] text-[#B3803F] font-semibold">Obligatorio</span>
                 </label>
                 <input
                   type="email"
+                  required
                   value={formData.email || ''}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-[#DEDBD1] bg-[#F7F6F2] text-xs font-semibold text-[#182F28] focus:outline-none focus:border-[#B3803F]"
+                  className={`w-full px-3 py-2 rounded-xl border text-xs font-semibold text-[#182F28] focus:outline-none ${
+                    !formData.email?.trim()
+                      ? 'border-amber-300 bg-amber-50/20 focus:border-[#B3803F]'
+                      : 'border-[#DEDBD1] bg-[#F7F6F2] focus:border-[#B3803F]'
+                  }`}
                 />
+                <span className="text-[10px] text-[#5C6058] mt-0.5 block">
+                  Requerido por base de datos para la cuenta y notificaciones del familiar.
+                </span>
               </div>
 
               <div className="sm:col-span-2">

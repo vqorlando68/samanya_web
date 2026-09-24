@@ -3,12 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arquitectura de Sistemas - Samanya OS</title>
+  <title>Centro de Arquitectura & Grafo de Conocimiento - Samanya OS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/variables.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --color-primary: #182F28;
+      --color-primary-light: #274A3F;
+      --color-primary-hover: #0E1E1A;
+      --color-accent: #B3803F;
+      --color-accent-light: #DCB87F;
+      --color-accent-subtle: #FEF7EE;
+      --color-teal: #075158;
+      --color-teal-light: #D9F0F1;
+      --color-page-bg: #F7F6F2;
+      --color-card-bg: #FFFFFF;
+      --color-card-subtle: #FAF9F5;
+      --color-border: #DEDBD1;
+      --color-border-subtle: #ECE7DB;
+      --color-text-main: #182F28;
+      --color-text-sec: #5C6058;
+      --color-text-muted: #7A745F;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --font-family-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-family-heading: 'Playfair Display', Georgia, serif;
+      --font-family-mono: 'JetBrains Mono', monospace;
+    }
+
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
@@ -22,94 +47,98 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      line-height: 1.5;
     }
 
-    /* Top Bar */
+    /* Top Bar Header */
     .top-header {
       background-color: #FFFFFF;
       border-bottom: 1px solid var(--color-border);
-      padding: 0.85rem 2rem;
+      padding: 0.9rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
 
     .brand-area {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.1rem;
     }
 
     .brand-logo {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, var(--color-primary), #055961);
-      color: #FFFFFF;
-      border-radius: var(--radius-sm);
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+      color: var(--color-accent-light);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 1.25rem;
+      font-size: 1.35rem;
       font-family: var(--font-family-heading);
-      box-shadow: 0 4px 10px rgba(6, 133, 145, 0.25);
+      border: 1px solid rgba(179, 128, 63, 0.35);
+      box-shadow: 0 4px 12px rgba(24, 47, 40, 0.18);
     }
 
     .brand-titles h1 {
       font-family: var(--font-family-heading);
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
-      color: var(--color-text-main);
+      color: var(--color-primary);
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.65rem;
     }
 
     .brand-titles p {
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       color: var(--color-text-sec);
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
     }
 
     .badge-pill {
-      background-color: var(--color-primary-subtle);
-      color: var(--color-primary);
-      padding: 0.35rem 0.75rem;
+      background-color: var(--color-accent-subtle);
+      color: var(--color-accent);
+      border: 1px solid rgba(179, 128, 63, 0.25);
+      padding: 0.3rem 0.75rem;
       border-radius: 999px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
+      font-family: var(--font-family-mono);
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
     }
 
     .btn-action {
       background-color: #FFFFFF;
       color: var(--color-text-main);
       border: 1px solid var(--color-border);
-      padding: 0.5rem 1rem;
+      padding: 0.55rem 1.05rem;
       border-radius: var(--radius-sm);
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       cursor: pointer;
     }
 
     .btn-action:hover {
       background-color: var(--color-card-subtle);
-      border-color: var(--color-text-sec);
+      border-color: var(--color-primary-light);
     }
 
     .btn-primary-action {
@@ -125,17 +154,65 @@
 
     /* Container */
     .container {
-      max-width: 1440px;
+      max-width: 1480px;
       margin: 0 auto;
       padding: 1.5rem 2rem;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
       width: 100%;
     }
 
-    /* Diagram Switcher Tabs */
+    /* Metrics Grid */
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .metric-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      transition: transform 0.15s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .metric-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      shrink-0: 0;
+    }
+
+    .metric-info h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      font-family: var(--font-family-mono);
+      line-height: 1.1;
+    }
+
+    .metric-info p {
+      font-size: 0.76rem;
+      color: var(--color-text-sec);
+      margin-top: 0.15rem;
+    }
+
+    /* Switcher Tabs */
     .tabs-nav {
       display: flex;
       gap: 0.5rem;
@@ -149,7 +226,7 @@
 
     .tab-btn {
       flex: 1;
-      min-width: 200px;
+      min-width: 190px;
       background: transparent;
       border: none;
       padding: 0.75rem 1rem;
@@ -158,9 +235,9 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      font-family: var(--font-family-heading);
-      font-weight: 600;
-      font-size: 0.9rem;
+      font-family: var(--font-family-sans);
+      font-weight: 700;
+      font-size: 0.86rem;
       color: var(--color-text-sec);
       transition: all 0.2s ease;
       text-align: left;
@@ -168,13 +245,13 @@
 
     .tab-btn:hover {
       background-color: var(--color-card-subtle);
-      color: var(--color-text-main);
+      color: var(--color-primary);
     }
 
     .tab-btn.active {
       background-color: var(--color-primary);
       color: #FFFFFF;
-      box-shadow: 0 3px 8px rgba(6, 133, 145, 0.3);
+      box-shadow: 0 3px 8px rgba(24, 47, 40, 0.25);
     }
 
     .tab-btn .tab-icon {
@@ -187,17 +264,18 @@
     }
 
     .tab-btn .tab-meta small {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 500;
       opacity: 0.85;
+      font-family: var(--font-family-mono);
     }
 
     /* Main Viewer Card */
     .viewer-card {
       background: #FFFFFF;
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-lg);
       border: 1px solid var(--color-border);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -209,13 +287,15 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #FAFAFA;
+      background: var(--color-card-subtle);
+      flex-wrap: wrap;
+      gap: 0.75rem;
     }
 
     .viewer-title h2 {
       font-family: var(--font-family-heading);
-      font-size: 1.15rem;
-      color: var(--color-text-main);
+      font-size: 1.2rem;
+      color: var(--color-primary);
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -230,6 +310,7 @@
     .viewer-controls {
       display: flex;
       gap: 0.5rem;
+      align-items: center;
     }
 
     /* Frame Window */
@@ -237,7 +318,7 @@
       position: relative;
       width: 100%;
       height: 720px;
-      background: #12161A;
+      background: #111827;
       border-bottom: 1px solid var(--color-border);
     }
 
@@ -248,26 +329,37 @@
       display: block;
     }
 
+    /* Custom Content View Container */
+    .custom-content-view {
+      padding: 2rem;
+      display: none;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--color-border);
+      overflow-y: auto;
+      max-height: 720px;
+    }
+
     /* Technical Details Card */
     .details-grid {
       padding: 1.5rem;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
+      gap: 1.25rem;
       background-color: #FFFFFF;
     }
 
     .detail-box {
       border: 1px solid var(--color-border-subtle);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       padding: 1.25rem;
       background: var(--color-card-subtle);
     }
 
     .detail-box h4 {
-      font-family: var(--font-family-heading);
+      font-family: var(--font-family-sans);
+      font-weight: 700;
       font-size: 0.95rem;
-      color: var(--color-text-main);
+      color: var(--color-primary);
       margin-bottom: 0.75rem;
       display: flex;
       align-items: center;
@@ -278,13 +370,13 @@
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.55rem;
     }
 
     .detail-box li {
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       color: var(--color-text-sec);
-      line-height: 1.4;
+      line-height: 1.45;
       display: flex;
       align-items: flex-start;
       gap: 0.5rem;
@@ -292,10 +384,33 @@
 
     .detail-box li::before {
       content: "•";
-      color: var(--color-primary);
+      color: var(--color-accent);
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       line-height: 1;
+    }
+
+    .code-badge {
+      font-family: var(--font-family-mono);
+      background-color: #ECE7DB;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.76rem;
+      color: var(--color-primary);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .code-block {
+      background: #182F28;
+      color: #E2E8F0;
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-family-mono);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+      border: 1px solid rgba(179, 128, 63, 0.3);
     }
 
     /* Footer */
@@ -329,16 +444,16 @@
     <div class="brand-area">
       <div class="brand-logo">S</div>
       <div class="brand-titles">
-        <h1>Centro de Arquitectura de Sistemas <span class="badge-pill">Archify v2.17</span></h1>
-        <p>Especificación visual, interactiva y validada de la plataforma corporativa Samanya OS</p>
+        <h1>Centro de Arquitectura & Grafo de Conocimiento <span class="badge-pill">Graphify v1.2</span></h1>
+        <p>Inspección topológica, mapa de dependencias AST y estándar arquitectónico de Samanya OS</p>
       </div>
     </div>
     <div class="header-actions">
       <a href="/" class="btn-action">
         &larr; Volver al Portal Superadmin
       </a>
-      <a id="btn-standalone" href="/diagrams/samanya-architecture.html" target="_blank" class="btn-action btn-primary-action">
-        ⤢ Pantalla Completa
+      <a id="btn-standalone" href="./graphify-out/graph.html" target="_blank" class="btn-action btn-primary-action">
+        ⤢ Pantalla Completa del Grafo
       </a>
     </div>
   </header>
@@ -346,41 +461,80 @@
   <!-- Main Container -->
   <main class="container">
 
+    <!-- Metrics Summary Bar from Graphify -->
+    <section class="metrics-bar">
+      <div class="metric-card">
+        <div class="metric-icon" style="background-color: #E6F4EA; color: #137333;">🕸️</div>
+        <div class="metric-info">
+          <h3>3,509</h3>
+          <p>Nodos en el Grafo de Conocimiento</p>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon" style="background-color: #E8F0FE; color: #1A73E8;">🔗</div>
+        <div class="metric-info">
+          <h3>7,015</h3>
+          <p>Aristas & Dependencias Detectadas</p>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon" style="background-color: #FEF7EE; color: #B3803F;">🏘️</div>
+        <div class="metric-info">
+          <h3>382</h3>
+          <p>Comunidades Modulares Identificadas</p>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon" style="background-color: #FCE8E6; color: #C5221F;">⚡</div>
+        <div class="metric-info">
+          <h3>98% AST</h3>
+          <p>Extracción Estática Fidedigna (0 Tokens)</p>
+        </div>
+      </div>
+    </section>
+
     <!-- Switcher Tabs -->
     <nav class="tabs-nav">
-      <button class="tab-btn active" data-type="architecture" data-file="/diagrams/samanya-architecture.html">
-        <span class="tab-icon">🏛️</span>
+      <button class="tab-btn active" data-type="graph">
+        <span class="tab-icon">🕸️</span>
         <div class="tab-meta">
-          <span>1. Arquitectura General</span>
-          <small>Type: architecture</small>
+          <span>1. Grafo Interactivo</span>
+          <small>graphify-out/graph.html</small>
         </div>
       </button>
-      <button class="tab-btn" data-type="workflow" data-file="/diagrams/samanya-workflow.html">
-        <span class="tab-icon">🔄</span>
+
+      <button class="tab-btn" data-type="godnodes">
+        <span class="tab-icon">👑</span>
         <div class="tab-meta">
-          <span>2. Flujo de Proceso</span>
-          <small>Type: workflow</small>
+          <span>2. God Nodes del Sistema</span>
+          <small>Core Abstractions & Hubs</small>
         </div>
       </button>
-      <button class="tab-btn" data-type="sequence" data-file="/diagrams/samanya-sequence.html">
-        <span class="tab-icon">⏱️</span>
+
+      <button class="tab-btn" data-type="communities">
+        <span class="tab-icon">🏘️</span>
         <div class="tab-meta">
-          <span>3. Secuencia de Ejecución</span>
-          <small>Type: sequence</small>
+          <span>3. Comunidades & Capas</span>
+          <small>Modularidad & Dominios</small>
         </div>
       </button>
-      <button class="tab-btn" data-type="dataflow" data-file="/diagrams/samanya-dataflow.html">
-        <span class="tab-icon">📊</span>
+
+      <button class="tab-btn" data-type="cli">
+        <span class="tab-icon">🛠️</span>
         <div class="tab-meta">
-          <span>4. Flujo de Datos</span>
-          <small>Type: dataflow</small>
+          <span>4. CLI & Herramientas Graphify</span>
+          <small>Query, Path, Explain & Update</small>
         </div>
       </button>
-      <button class="tab-btn" data-type="lifecycle" data-file="/diagrams/samanya-lifecycle.html">
-        <span class="tab-icon">🔁</span>
+
+      <button class="tab-btn" data-type="rules">
+        <span class="tab-icon">📜</span>
         <div class="tab-meta">
-          <span>5. Ciclo de Vida</span>
-          <small>Type: lifecycle</small>
+          <span>5. Estándar PL/SQL & Reglas</span>
+          <small>Directrices Mandatorias</small>
         </div>
       </button>
     </nav>
@@ -389,18 +543,27 @@
     <section class="viewer-card">
       <div class="viewer-header">
         <div class="viewer-title">
-          <h2 id="viewer-title-text">🏛️ Arquitectura Corporativa Samanya OS</h2>
-          <p id="viewer-desc-text">Topología global de componentes, límites de seguridad y capas Oracle PL/SQL</p>
+          <h2 id="viewer-title-text">🕸️ Grafo de Conocimiento Interactivo (Knowledge Graph)</h2>
+          <p id="viewer-desc-text">Visualización en vivo de los 3,509 nodos y 7,015 conexiones extraídas de Samanya OS mediante AST.</p>
         </div>
         <div class="viewer-controls">
-          <button id="btn-reload-frame" class="btn-action" title="Recargar diagrama interactivo">↻ Recargar</button>
-          <a id="btn-external-link" href="/diagrams/samanya-architecture.html" target="_blank" class="btn-action">Abrir pestaña independiente</a>
+          <button id="btn-reload-frame" class="btn-action" title="Recargar vista">↻ Recargar</button>
+          <a id="btn-external-link" href="./graphify-out/graph.html" target="_blank" class="btn-action">Abrir pestaña independiente</a>
         </div>
       </div>
 
-      <!-- Iframe Area -->
-      <div class="iframe-container">
-        <iframe id="diagram-frame" src="/diagrams/samanya-architecture.html" title="Diagrama Archify"></iframe>
+      <!-- Iframe Area for Interactive Graph -->
+      <div id="iframe-wrapper" class="iframe-container">
+        <div style="background: #FEFBF6; border-bottom: 1px solid #DEDBD1; padding: 0.5rem 1.25rem; font-size: 0.76rem; color: #5C6058; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+          <span>💡 Si tu navegador restringe el visor local (<code>file://</code>), usa <strong>Abrir pestaña independiente</strong> o accede en <strong>http://localhost:3000/arquitectura.html</strong></span>
+          <a href="./graphify-out/graph.html" target="_blank" style="color: #B3803F; font-weight: 700; text-decoration: underline;">Abrir graph.html &rarr;</a>
+        </div>
+        <iframe id="diagram-frame" src="./graphify-out/graph.html" title="Grafo de Conocimiento Graphify"></iframe>
+      </div>
+
+      <!-- Custom Content Container for Non-Iframe Tabs -->
+      <div id="custom-content" class="custom-content-view">
+        <!-- Renderizado dinámicamente -->
       </div>
 
       <!-- Technical Details Section -->
@@ -412,150 +575,263 @@
   </main>
 
   <footer>
-    Samanya OS &copy; 2026 &bull; Plataforma Especializada en Gestión y Cuidado Integral Geriátrico &bull; Cumplimiento Estándar Oracle PL/SQL
+    Samanya OS &bull; Grafo de Conocimiento y Arquitectura &bull; Motor Graphify v1.2 &bull; Bogotá, Colombia (UTC-5)
   </footer>
 
   <script>
-    const diagramMeta = {
-      architecture: {
-        title: "🏛️ Arquitectura Corporativa Samanya OS",
-        desc: "Topología integral: Frontend SPA, REST API Express, Pool Oracle Wallet y capas PL/SQL (PKGLN, PKGCN, DAOs).",
-        file: "/diagrams/samanya-architecture.html",
+    const graphDataMeta = {
+      graph: {
+        title: "🕸️ Grafo de Conocimiento Interactivo (Knowledge Graph)",
+        desc: "Visualización en vivo de los 3,509 nodos y 7,015 conexiones extraídas de Samanya OS mediante AST.",
+        file: "./graphify-out/graph.html",
+        isIframe: true,
         details: [
           {
-            title: "Capa de Lógica de Negocio (PKGLN)",
+            title: "Capacidad de Navegación 2D / 3D",
             items: [
-              "Regla mandatoria: CERO sentencias SQL directas (SELECT, INSERT, UPDATE, DELETE).",
-              "Intercambio unificado de parámetros mediante CLOB con formato JSON nativo.",
-              "Orquestación transaccional con commit centralizado vía p_do_commit('<paquete>.<metodo>')."
+              "Filtro interactivo en tiempo real por nombre de nodo, archivo fuente o nombre de función/paquete.",
+              "Agrupamiento por comunidades coloreadas automáticamente mediante algoritmos de Louvain/modularidad.",
+              "Inspección de grados de entrada y salida (in-degree / out-degree) al seleccionar cualquier nodo."
             ]
           },
           {
-            title: "Capa Multi-Tabla (PKGCN)",
+            title: "Precisión de la Extracción",
             items: [
-              "Consultas complejas y reportes que involucran múltiples tablas en una misma sentencia.",
-              "Uso obligatorio de sintaxis relacional clásica con comas en el FROM y (+) en el WHERE (prohibida la palabra JOIN).",
-              "Generación nativa de JSON mediante JSON_OBJECT y JSON_ARRAYAGG con RETURNING CLOB."
+              "98% de relaciones extraídas fielmente de los árboles de sintaxis abstracta (AST) de TypeScript, Python y SQL.",
+              "122 relaciones inferidas semánticamente con confianza promedio de 0.87.",
+              "0% de ambigüedad en el grafo persistente respaldado en graphify-out/graph.json."
             ]
           },
           {
-            title: "Capa de Acceso a Datos (DAOs)",
+            title: "Actualización Continua",
             items: [
-              "Plantilla oficial de 18 métodos exclusivos por PK/ROWID sin COMMIT ni ROLLBACK.",
-              "Persistencia atómica de las 15 tablas maestras y entidades principales del dominio.",
-              "Asignación de secuencias por variable directa (SEQ_<TABLA>.NEXTVAL), sin SELECT FROM DUAL."
+              "El grafo se actualiza localmente ejecutando python -m graphify update . sin consumo de API.",
+              "Copia automatizada a public/graphify-out/ para visualización directa en el portal web.",
+              "Detección y alerta inmediata de dependencias circulares o nodos huérfanos."
             ]
           }
         ]
       },
-      workflow: {
-        title: "🔄 Flujo de Aprovisionamiento y Gestión de Centros",
-        desc: "Proceso de alta de organizaciones, validación de perfil superadministrador y commit con auditoría.",
-        file: "/diagrams/samanya-workflow.html",
+      godnodes: {
+        title: "👑 God Nodes & Abstracciones Centrales del Sistema",
+        desc: "Componentes más densamente interconectados identificados por Graphify, que constituyen el núcleo de Samanya OS.",
+        isIframe: false,
+        contentHtml: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+            <div style="background: #FAF9F5; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <span class="code-badge" style="font-weight: 700;">useAdmin()</span>
+                <span style="font-size: 0.75rem; color: #B3803F; font-weight: 800; font-family: monospace;">45 conexiones</span>
+              </div>
+              <p style="font-size: 0.82rem; color: #5C6058; margin-top: 0.5rem; line-height: 1.45;">
+                Hook principal de React que provee todo el estado asistencial de la sede activa: residentes, familiares, personal asistencial, cuadrantes de turnos y sincronización transaccional.
+              </p>
+            </div>
+
+            <div style="background: #FAF9F5; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <span class="code-badge" style="font-weight: 700;">AdminContext.tsx</span>
+                <span style="font-size: 0.75rem; color: #B3803F; font-weight: 800; font-family: monospace;">77 nodos comunidad</span>
+              </div>
+              <p style="font-size: 0.82rem; color: #5C6058; margin-top: 0.5rem; line-height: 1.45;">
+                Proveedor de contexto global con despachos a la base de datos Oracle vía <span class="code-badge">api.ts</span> y <span class="code-badge">oracle_bridge.py</span> para admisiones, novedades y programación de turnos.
+              </p>
+            </div>
+
+            <div style="background: #FAF9F5; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <span class="code-badge" style="font-weight: 700;">types.ts / index.ts</span>
+                <span style="font-size: 0.75rem; color: #B3803F; font-weight: 800; font-family: monospace;">31 interfaces clave</span>
+              </div>
+              <p style="font-size: 0.82rem; color: #5C6058; margin-top: 0.5rem; line-height: 1.45;">
+                Definición canónica de entidades de dominio: <span class="code-badge">Residente</span>, <span class="code-badge">TurnoAsignado</span>, <span class="code-badge">Trabajador</span>, <span class="code-badge">Centro</span> y contratos de asignación asistencial.
+              </p>
+            </div>
+
+            <div style="background: #FAF9F5; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <span class="code-badge" style="font-weight: 700;">pkgln_cuadrantes_turnos</span>
+                <span style="font-size: 0.75rem; color: #B3803F; font-weight: 800; font-family: monospace;">Orquestación PL/SQL</span>
+              </div>
+              <p style="font-size: 0.82rem; color: #5C6058; margin-top: 0.5rem; line-height: 1.45;">
+                Paquete de lógica de negocio para la programación masiva por rango de fechas, asignación por área, verificación de cobertura asistencial mínima y registro de auditoría.
+              </p>
+            </div>
+          </div>
+        `,
         details: [
           {
-            title: "Gobernanza y Aprobación",
+            title: "Top 10 God Nodes (Graphify Ranking)",
             items: [
-              "Verificación estricta de ID_TIPO_USUARIO = 1 para el acceso a funciones nucleares.",
-              "Aislamiento de permisos y trazabilidad de cada acción de creación o edición."
+              "1. compileWorkflowInternal() - 175 conexiones (Motor de diagramación)",
+              "2. asArray() - 54 conexiones (Utilidad polimórfica)",
+              "3. useAdmin() - 45 conexiones (Estado asistencial Samanya)",
+              "4. textUnits() - 38 conexiones (Renderizado)",
+              "5. escapeHtml() - 37 conexiones (Sanitización y seguridad)"
             ]
           },
           {
-            title: "Integridad de Negocio",
+            title: "Riesgo Arquitectónico & Acoplamiento",
             items: [
-              "Validación de unicidad de NIT / Identificación tributaria antes de registrar la organización.",
-              "Inserción segura en PKGSMY_CENTROS_DAO con asignación de capacidad de residentes."
+              "El alto acoplamiento de useAdmin() requiere pruebas de regresión en cada extensión de estado.",
+              "Separación limpia lograda entre el contexto de UI y el puente Python hacia Oracle.",
+              "Graphify no detectó ciclos de importación (Import Cycles: None detected)."
             ]
           },
           {
-            title: "Recuperación de Excepciones",
+            title: "Estrategia de Refactorización",
             items: [
-              "Captura de excepciones en bloque WHEN OTHERS con ROLLBACK total de la transacción.",
-              "Registro en SMY_ERRORES vía uti_ge_excepciones_pkg.p_grabar_log para soporte técnico."
+              "Mantener sub-hooks especializados (ej. useTurnos, useResidentes) consumiendo useAdmin.",
+              "Garantizar tipado estricto en cada paso de parámetro hacia el backend.",
+              "Uso de memoización (useMemo/useCallback) en las vistas de alto volumen como ShiftsView."
             ]
           }
         ]
       },
-      sequence: {
-        title: "⏱️ Secuencia de Petición y Ejecución Arquitectónica PL/SQL",
-        desc: "Traza temporal paso a paso desde el clic del usuario hasta la respuesta JSON con estado 201 Created.",
-        file: "/diagrams/samanya-sequence.html",
+      communities: {
+        title: "🏘️ Comunidades & Dominios Funcionales",
+        desc: "382 agrupaciones modulares detectadas mediante algoritmos de modularidad en el grafo de código.",
+        isIframe: false,
+        contentHtml: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem;">
+            <div style="background: #FFFFFF; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <h4 style="color: #182F28; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.5rem;">Capa 1: Frontend SPA (React + Tailwind)</h4>
+              <p style="font-size: 0.82rem; color: #5C6058; line-height: 1.45; margin-bottom: 0.75rem;">
+                Comunidad centrada en <span class="code-badge">AdminContext.tsx</span> que incluye las vistas de gestión clínica: <span class="code-badge">ResidentsView</span>, <span class="code-badge">ShiftsView</span>, <span class="code-badge">WorkersView</span> y <span class="code-badge">ClinicalSupervisionView</span>.
+              </p>
+              <div style="font-size: 0.75rem; color: #075158; font-family: monospace; font-weight: 700;">77 nodos • Cohesión 0.06</div>
+            </div>
+
+            <div style="background: #FFFFFF; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <h4 style="color: #182F28; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.5rem;">Capa 2: Base de Datos Oracle PL/SQL</h4>
+              <p style="font-size: 0.82rem; color: #5C6058; line-height: 1.45; margin-bottom: 0.75rem;">
+                Comunidad del modelo de datos y paquetes: tablas relacionales <span class="code-badge">SMY_TURNOS_ASIGNADOS</span>, <span class="code-badge">SMY_RESIDENTES</span>, <span class="code-badge">SMY_CENTROS</span> y paquetes <span class="code-badge">pkgln_</span>, <span class="code-badge">pkgcn_</span>, <span class="code-badge">pkgca_</span>, <span class="code-badge">_dao</span>.
+              </p>
+              <div style="font-size: 0.75rem; color: #B3803F; font-family: monospace; font-weight: 700;">45 scripts DB • Cohesión alta</div>
+            </div>
+
+            <div style="background: #FFFFFF; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <h4 style="color: #182F28; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.5rem;">Capa 3: Integración & Bridge Python</h4>
+              <p style="font-size: 0.82rem; color: #5C6058; line-height: 1.45; margin-bottom: 0.75rem;">
+                Comunidad de servicios de integración: <span class="code-badge">oracle_bridge.py</span> (despacho JSON nativo hacia Autonomous DB) y <span class="code-badge">drive_upload.py</span> (almacenamiento de fotos y expedientes).
+              </p>
+              <div style="font-size: 0.75rem; color: #1E7A4C; font-family: monospace; font-weight: 700;">Seguridad Wallet • SSL/TLS</div>
+            </div>
+          </div>
+        `,
         details: [
           {
-            title: "Paso de Parámetros en CLOB JSON",
+            title: "Aislamiento de Responsabilidades",
             items: [
-              "El controlador Express recibe la petición y delega al servicio superadmin.service.ts.",
-              "El payload se transforma a string JSON y se envía como parámetro de entrada/salida tipo CLOB."
+              "Cero acoplamiento entre la capa de interfaz de usuario y la persistencia directa en disco o base de datos.",
+              "El puente Express/Vite enruta endpoints hacia procedimientos PL/SQL respetando la firma corporativa.",
+              "Las vistas consumen exclusivamente el contexto sin llamadas dispersas a APIs no autorizadas."
             ]
           },
           {
-            title: "Procesamiento con JSON_OBJECT_T",
+            title: "Gobernanza de Datos Asistenciales",
             items: [
-              "PKGLN parsea el CLOB utilizando la API orientada a objetos JSON_OBJECT_T de Oracle.",
-              "Se extraen tipos nativos (get_string, get_number) sin necesidad de tablas temporales."
-            ]
-          },
-          {
-            title: "Retorno y Feedback UI",
-            items: [
-              "La base de datos devuelve un objeto JSON estructurado con { success: true, id: ... }.",
-              "El frontend actualiza las tablas del DOM dinámicamente y emite notificaciones Toast."
+              "Entidades de salud protegidas bajo esquemas estrictos de confidencialidad médica y auditoría.",
+              "Los registros de residentes y turnos cuentan con trazabilidad de creación y modificación.",
+              "Control de acceso basado en roles (Superadministrador, Director Médico, Enfermería, Cuidador)."
             ]
           }
         ]
       },
-      dataflow: {
-        title: "📊 Flujo de Datos y Transaccionalidad en Samanya OS",
-        desc: "Pipeline de datos por etapas: Fuentes, API Gateway, Capas PL/SQL, Persistencia y Bitácoras.",
-        file: "/diagrams/samanya-dataflow.html",
+      cli: {
+        title: "🛠️ Skill de Graphify: Comandos & Flujo de Trabajo",
+        desc: "Herramientas de consulta y mantenimiento de dependencias integradas en el entorno del asistente de IA.",
+        isIframe: false,
+        contentHtml: `
+          <div style="space-y: 1rem;">
+            <p style="font-size: 0.85rem; color: #5C6058; margin-bottom: 1rem;">
+              El skill de Graphify permite a los agentes y desarrolladores navegar el repositorio como un grafo de conocimiento estructurado en lugar de realizar búsquedas de texto plano costosas o imprecisas:
+            </p>
+
+            <div class="code-block">
+# 1. Consulta en lenguaje natural con recorrido BFS (Broad Context)
+python -m graphify query "¿Cómo se programan los turnos por rango en la aplicación?"
+
+# 2. Búsqueda de camino más corto entre dos componentes
+python -m graphify path "ShiftsView" "SMY_TURNOS_ASIGNADOS"
+
+# 3. Explicación enfocada de un nodo o paquete específico
+python -m graphify explain "pkgln_cuadrantes_turnos"
+
+# 4. Actualización incremental automática tras modificar código (AST, cero costo)
+python -m graphify update .
+            </div>
+          </div>
+        `,
         details: [
           {
-            title: "Transformación de Datos",
+            title: "Reglas Mandatorias del Skill",
             items: [
-              "Los datos fluyen de JSON plano a CLOB estructurado y luego a registros %ROWTYPE tipados.",
-              "Eliminación de conversiones innecesarias gracias al soporte nativo de Oracle 19c+."
+              "Consulta Obligatoria Previa: Antes de planificar cambios, consultar el grafo de dependencias para identificar componentes impactados.",
+              "Actualización Obligatoria ante Cambios: Ejecutar python -m graphify update . tras modificar o crear archivos estructurales.",
+              "Consumo Eficiente de Tokens: Usar consultas acotadas que devuelven subgrafos precisos en vez de leer archivos en bloque."
             ]
           },
           {
-            title: "Seguridad y Cifrado",
+            title: "Archivos Generados en graphify-out/",
             items: [
-              "Contraseñas con hashing seguro bcrypt (cost factor 10) procesadas antes de persistir.",
-              "Parámetros confidenciales con flag ES_ENCRIPTADO = 'S' protegidos en SMY_PARAMETROS."
-            ]
-          },
-          {
-            title: "Auditoría en Tiempo Real",
-            items: [
-              "Cada operación exitosa dispara el registro de trazabilidad en SMY_AUDITORIA_ACCESOS.",
-              "Conservación del usuario, fecha y contexto de la ejecución."
+              "graph.json: Grafo persistente estructurado con nodos, aristas, pesos y metadatos de comunidad.",
+              "graph.html: Visualizador 3D/2D interactivo con Force-Directed Graph y búsqueda rápida.",
+              "GRAPH_REPORT.md: Informe ejecutivo con métricas del corpus, god nodes y comunidades identificadas."
             ]
           }
         ]
       },
-      lifecycle: {
-        title: "🔁 Ciclo de Vida de Entidades y Cuentas",
-        desc: "Transiciones de estado: Registrado, Verificación, Activo, Auditoría, Histórico y Suspensión.",
-        file: "/diagrams/samanya-lifecycle.html",
+      rules: {
+        title: "📜 Estándar Arquitectónico PL/SQL Oracle & Reglas Mandatorias",
+        desc: "Directrices corporativas obligatorias para todo desarrollo de base de datos y backend en Samanya OS.",
+        isIframe: false,
+        contentHtml: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem;">
+            <div style="background: #FEF7EE; border: 1px solid #DCB87F; border-radius: 12px; padding: 1.25rem;">
+              <h4 style="color: #9A5B12; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.5rem;">🚫 Prohibición Absoluta de Sintaxis ANSI JOIN</h4>
+              <p style="font-size: 0.82rem; color: #5C6058; line-height: 1.45;">
+                Queda terminantemente prohibido el uso de palabras como JOIN, INNER JOIN, LEFT JOIN. Las consultas multi-tabla se construyen exclusivamente con sintaxis clásica Oracle: tablas separadas por comas en el FROM y operadores (+) para uniones externas en el WHERE.
+              </p>
+            </div>
+
+            <div style="background: #F7F6F2; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <h4 style="color: #182F28; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.5rem;">📄 Parámetros de Entrada en CLOB JSON</h4>
+              <p style="font-size: 0.82rem; color: #5C6058; line-height: 1.45;">
+                Todos los métodos en paquetes <span class="code-badge">pkgca_</span>, <span class="code-badge">pkgcn_</span> y <span class="code-badge">pkgln_</span> reciben un documento JSON en un parámetro <span class="code-badge">pcl_json IN CLOB</span> y extraen los campos obligatoriamente con <span class="code-badge">JSON_VALUE(pcl_json, '$.campo')</span>.
+              </p>
+            </div>
+
+            <div style="background: #F7F6F2; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <h4 style="color: #182F28; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.5rem;">🔒 Transaccionalidad Controlada (p_do_commit)</h4>
+              <p style="font-size: 0.82rem; color: #5C6058; line-height: 1.45;">
+                Prohibido ejecutar <span class="code-badge">COMMIT;</span> directo. En la capa de lógica de negocio <span class="code-badge">pkgln_</span> se invoca obligatoriamente <span class="code-badge">p_do_commit('&lt;paquete&gt;.&lt;metodo&gt;')</span>. En caso de error, ROLLBACK y logging en SMY_ERRORES vía <span class="code-badge">uti_ge_excepciones_pkg.p_grabar_log</span>.
+              </p>
+            </div>
+
+            <div style="background: #F7F6F2; border: 1px solid #DEDBD1; border-radius: 12px; padding: 1.25rem;">
+              <h4 style="color: #182F28; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.5rem;">🇨🇴 Zona Horaria Oficial Bogotá (UTC-5)</h4>
+              <p style="font-size: 0.82rem; color: #5C6058; line-height: 1.45;">
+                Prohibido el uso directo de SYSDATE. Todas las fechas y horas se resuelven obligatoriamente mediante la función corporativa <span class="code-badge">f_fecha_actual</span>, garantizando concordancia horaria en Bogotá (America/Bogota).
+              </p>
+            </div>
+          </div>
+        `,
         details: [
           {
-            title: "Estados de Negocio (Tablas Maestras)",
+            title: "Clasificación de Paquetes PL/SQL",
             items: [
-              "Estados normalizados en SMY_ESTADOS_ORGANIZACIONES, SMY_ESTADOS_USUARIOS, etc.",
-              "Garantía de integridad referencial: ninguna entidad operativa se elimina físicamente."
+              "pkg<tabla>_dao: Acceso mono-tabla exclusivo por PK/ROWID (18 métodos oficiales, sin commit).",
+              "pkgca_<tabla>: Consultas, filtros multi-criterio y sentencias DML mono-tabla que NO son por el ID.",
+              "pkgcn_<proceso>: Sentencias SQL que involucran MÁS DE UNA TABLA simultáneamente o SELECT sobre JSON.",
+              "pkgln_<caso_uso>: Lógica de negocio y validaciones sin sentencias SQL directas sobre tablas."
             ]
           },
           {
-            title: "Manejo de Suspensiones",
+            title: "Actualización Obligatoria de build_all.sql",
             items: [
-              "Capacidad de suspensión inmediata por parte del Superadministrador ante irregularidades.",
-              "Ruta de reactivación controlada o baja definitiva pasando a estado histórico inactivo."
-            ]
-          },
-          {
-            title: "Auditoría de Cambios de Estado",
-            items: [
-              "Campos obligatorios fecha_creacion y id_usuario_ultima_modificacion en todas las tablas.",
-              "Historial inalterable de auditoría para trazabilidad clínica y administrativa."
+              "Cada vez que se crea un objeto de base de datos, es mandatorio agregar @@<archivo>.sql en backend/db/scripts/build_all.sql.",
+              "Se deben actualizar los contadores totales de compilación en el encabezado y resumen final."
             ]
           }
         ]
@@ -563,8 +839,8 @@
     };
 
     function renderDetails(type) {
-      const data = diagramMeta[type];
-      if (!data) return;
+      const data = graphDataMeta[type];
+      if (!data || !data.details) return;
 
       const container = document.getElementById('technical-details');
       container.innerHTML = data.details.map(box => `
@@ -577,28 +853,41 @@
       `).join('');
     }
 
-    function getResolvedPath(file) {
-      if (window.location.protocol === 'file:') {
-        return './public' + file;
-      }
-      return file;
-    }
-
-    function switchDiagram(type) {
-      const data = diagramMeta[type];
+    function switchTab(type) {
+      const data = graphDataMeta[type];
       if (!data) return;
 
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-type') === type);
       });
 
-      const resolvedPath = getResolvedPath(data.file);
-
       document.getElementById('viewer-title-text').textContent = data.title;
       document.getElementById('viewer-desc-text').textContent = data.desc;
-      document.getElementById('diagram-frame').src = resolvedPath;
-      document.getElementById('btn-standalone').href = resolvedPath;
-      document.getElementById('btn-external-link').href = resolvedPath;
+
+      const iframeWrapper = document.getElementById('iframe-wrapper');
+      const customContent = document.getElementById('custom-content');
+      const diagramFrame = document.getElementById('diagram-frame');
+      const btnStandalone = document.getElementById('btn-standalone');
+      const btnExternal = document.getElementById('btn-external-link');
+
+      if (data.isIframe) {
+        iframeWrapper.style.display = 'block';
+        customContent.style.display = 'none';
+        const resolvedPath = window.location.protocol === 'file:'
+          ? './graphify-out/graph.html'
+          : data.file;
+        diagramFrame.src = resolvedPath;
+        btnStandalone.href = resolvedPath;
+        btnExternal.href = resolvedPath;
+        btnStandalone.style.display = 'inline-flex';
+        btnExternal.style.display = 'inline-flex';
+      } else {
+        iframeWrapper.style.display = 'none';
+        customContent.style.display = 'block';
+        customContent.innerHTML = data.contentHtml || '';
+        btnStandalone.style.display = 'none';
+        btnExternal.style.display = 'none';
+      }
 
       renderDetails(type);
     }
@@ -607,7 +896,7 @@
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const type = btn.getAttribute('data-type');
-        switchDiagram(type);
+        switchTab(type);
       });
     });
 
@@ -616,8 +905,8 @@
       frame.src = frame.src;
     });
 
-    // Iniciar con arquitectura
-    switchDiagram('architecture');
+    // Iniciar con la vista del Grafo Interactivo
+    switchTab('graph');
   </script>
 </body>
 </html>

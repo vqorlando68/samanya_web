@@ -46,8 +46,14 @@ export const RegisterFamilyModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.nombres || !formData.apellidos || !formData.telefonoPrincipal) {
-      alert('Por favor complete los nombres y teléfono de contacto del familiar.');
+    if (!formData.nombres?.trim() || !formData.apellidos?.trim() || !formData.telefonoPrincipal?.trim() || !formData.email?.trim()) {
+      alert('Por favor complete los campos obligatorios del familiar: nombres, apellidos, teléfono y correo electrónico.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      alert('Por favor ingrese un correo electrónico válido (ej. nombre@dominio.com).');
       return;
     }
 
@@ -55,12 +61,12 @@ export const RegisterFamilyModal: React.FC = () => {
     try {
       await registrarFamiliar({
         tipoIdentificacion: formData.tipoIdentificacion,
-        identificacion: formData.identificacion,
-        nombres: formData.nombres,
-        apellidos: formData.apellidos,
-        telefonoPrincipal: formData.telefonoPrincipal,
-        telefonoSecundario: formData.telefonoSecundario,
-        email: formData.email,
+        identificacion: formData.identificacion.trim(),
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
+        telefonoPrincipal: formData.telefonoPrincipal.trim(),
+        telefonoSecundario: formData.telefonoSecundario?.trim(),
+        email: formData.email.trim(),
         direccion: formData.direccion || activeSede.direccion,
         ciudad: formData.ciudad || activeSede.ciudad,
         canalNotificacionPref: formData.canalNotificacionPref,
@@ -268,16 +274,25 @@ export const RegisterFamilyModal: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#182F28] mb-1">
-              Correo Electrónico
+            <label className="block text-xs font-bold text-[#182F28] mb-1 flex items-center justify-between">
+              <span>Correo Electrónico *</span>
+              <span className="text-[10px] text-[#B3803F] font-semibold">Obligatorio</span>
             </label>
             <input
               type="email"
+              required
               placeholder="contacto@correo.com"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[#DEDBD1] bg-[#F7F6F2] text-sm focus:outline-none focus:border-[#B3803F] focus:bg-white"
+              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-none ${
+                !formData.email?.trim()
+                  ? 'border-amber-300 bg-amber-50/20 focus:border-[#B3803F]'
+                  : 'border-[#DEDBD1] bg-[#F7F6F2] focus:border-[#B3803F] focus:bg-white'
+              }`}
             />
+            <span className="text-[10px] text-[#5C6058] mt-1 block">
+              Obligatorio por base de datos para la cuenta y notificaciones del familiar.
+            </span>
           </div>
 
           {/* 3. Dirección de Residencia */}

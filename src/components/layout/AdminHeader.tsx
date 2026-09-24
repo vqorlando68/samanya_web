@@ -8,6 +8,7 @@ import {
   UserPlus,
   HeartHandshake,
   UserCheck,
+  CalendarPlus,
   Bell,
   CheckCircle2,
   Edit3,
@@ -31,6 +32,7 @@ export const AdminHeader: React.FC = () => {
     setIsRegisterResidentOpen,
     setIsRegisterFamilyOpen,
     setIsRegisterWorkerOpen,
+    setIsProgramarTurnosOpen,
     setIsEditSedeOpen,
     metrics,
     residentes,
@@ -415,6 +417,23 @@ export const AdminHeader: React.FC = () => {
                 <div>
                   <div className="font-semibold">Registrar Trabajador</div>
                   <div className="text-[11px] text-[#7A745F]">Colaborador / Personal</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsQuickActionOpen(false);
+                  setIsProgramarTurnosOpen(true);
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-[#F7F6F2] flex items-center gap-2.5 text-[#182F28] font-medium cursor-pointer"
+              >
+                <div className="w-7 h-7 rounded-lg bg-[#274A3F]/10 text-[#274A3F] flex items-center justify-center">
+                  <CalendarPlus className="w-4 h-4 text-[#B3803F]" />
+                </div>
+                <div>
+                  <div className="font-semibold">Programar Turnos</div>
+                  <div className="text-[11px] text-[#7A745F]">Cuadrantes por rango de fechas</div>
                 </div>
               </button>
             </div>

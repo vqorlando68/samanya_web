@@ -24,6 +24,7 @@ import { EditWorkerModal } from './components/modals/EditWorkerModal';
 import { EditFamilyModal } from './components/modals/EditFamilyModal';
 import { EditSedeModal } from './components/modals/EditSedeModal';
 import { GestionDotacionModal } from './components/modals/GestionDotacionModal';
+import { ProgramarTurnosModal } from './components/modals/ProgramarTurnosModal';
 
 const AdminLayout: React.FC = () => {
   const { activeTab } = useAdmin();
@@ -55,6 +56,7 @@ const AdminLayout: React.FC = () => {
       <RegisterLeaveModal />
       <ResidentDetailModal />
       <GestionDotacionModal />
+      <ProgramarTurnosModal />
 
       {/* Modales de Edición */}
       <EditResidentModal />

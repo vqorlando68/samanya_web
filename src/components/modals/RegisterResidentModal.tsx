@@ -116,11 +116,95 @@ export const RegisterResidentModal: React.FC = () => {
     setMedicamentos((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const validarPaso = (pasoActual: number): boolean => {
+    if (pasoActual === 1) {
+      if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.identificacion.trim() || !formData.habitacion.trim()) {
+        alert('Por favor complete los campos obligatorios del residente (Nombres, Apellidos, Identificación y Habitación).');
+        return false;
+      }
+    }
+    if (pasoActual === 4 && formData.incluirAcudiente) {
+      const tieneDatos = !!(
+        formData.acudienteNombres.trim() ||
+        formData.acudienteApellidos.trim() ||
+        formData.acudienteIdentificacion.trim() ||
+        formData.acudienteTelefono.trim() ||
+        formData.acudienteEmail.trim()
+      );
+      if (tieneDatos) {
+        if (!formData.acudienteNombres.trim()) {
+          alert('Por favor complete los nombres del acudiente responsable.');
+          return false;
+        }
+        if (!formData.acudienteTelefono.trim()) {
+          alert('Por favor complete el teléfono de contacto del acudiente responsable.');
+          return false;
+        }
+        if (!formData.acudienteEmail.trim()) {
+          alert('El correo electrónico del acudiente es obligatorio para su registro en el sistema y acceso al portal.');
+          return false;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.acudienteEmail.trim())) {
+          alert('Por favor ingrese un correo electrónico válido para el acudiente (ej. nombre@dominio.com).');
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  const handleNextStep = () => {
+    if (!validarPaso(step)) return;
+    setStep((prev) => ((prev < 5 ? prev + 1 : prev) as any));
+  };
+
+  const handleGoToStep = (targetStep: number) => {
+    if (targetStep > step) {
+      if (!validarPaso(step)) return;
+    }
+    setStep(targetStep as any);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.nombres || !formData.apellidos || !formData.identificacion || !formData.habitacion) {
-      alert('Por favor complete los campos obligatorios del residente.');
+    if (!formData.nombres?.trim() || !formData.apellidos?.trim() || !formData.identificacion?.trim() || !formData.habitacion?.trim()) {
+      alert('Por favor complete los campos obligatorios del residente (Nombres, Apellidos, Identificación y Habitación).');
+      setStep(1);
       return;
+    }
+
+    if (formData.incluirAcudiente) {
+      const tieneDatos = !!(
+        formData.acudienteNombres.trim() ||
+        formData.acudienteApellidos.trim() ||
+        formData.acudienteIdentificacion.trim() ||
+        formData.acudienteTelefono.trim() ||
+        formData.acudienteEmail.trim()
+      );
+      if (tieneDatos) {
+        if (!formData.acudienteNombres.trim()) {
+          alert('Por favor ingrese los nombres del acudiente responsable o desmarque la casilla.');
+          setStep(4);
+          return;
+        }
+        if (!formData.acudienteTelefono.trim()) {
+          alert('Por favor ingrese el teléfono / WhatsApp del acudiente.');
+          setStep(4);
+          return;
+        }
+        if (!formData.acudienteEmail.trim()) {
+          alert('El correo electrónico del acudiente es obligatorio (requerido por el sistema).');
+          setStep(4);
+          return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.acudienteEmail.trim())) {
+          alert('Por favor ingrese un correo electrónico válido para el acudiente (ej. nombre@dominio.com).');
+          setStep(4);
+          return;
+        }
+      }
     }
 
     setIsSubmitting(true);
@@ -128,14 +212,14 @@ export const RegisterResidentModal: React.FC = () => {
       await registrarResidente({
         idCentro: activeSede.id,
         tipoIdentificacion: formData.tipoIdentificacion,
-        identificacion: formData.identificacion,
-        nombres: formData.nombres,
-        apellidos: formData.apellidos,
-        nombreCompleto: `${formData.nombres} ${formData.apellidos}`.trim(),
+        identificacion: formData.identificacion.trim(),
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
+        nombreCompleto: `${formData.nombres.trim()} ${formData.apellidos.trim()}`.trim(),
         fechaNacimiento: formData.fechaNacimiento || '1945-01-01',
         genero: formData.genero,
-        habitacion: formData.habitacion,
-        cama: formData.cama || `${formData.habitacion}-A`,
+        habitacion: formData.habitacion.trim(),
+        cama: formData.cama || `${formData.habitacion.trim()}-A`,
         eps: formData.eps,
         planComplementario: formData.planComplementario,
         tipoSangre: formData.tipoSangre,
@@ -158,13 +242,13 @@ export const RegisterResidentModal: React.FC = () => {
             condicionEntrega: it.condicionEntrega,
             notas: it.notas
           })),
-        familiarContacto: formData.incluirAcudiente && formData.acudienteNombres ? {
-          nombres: formData.acudienteNombres,
-          apellidos: formData.acudienteApellidos,
-          identificacion: formData.acudienteIdentificacion,
+        familiarContacto: (formData.incluirAcudiente && formData.acudienteNombres.trim() && formData.acudienteEmail.trim()) ? {
+          nombres: formData.acudienteNombres.trim(),
+          apellidos: formData.acudienteApellidos.trim(),
+          identificacion: formData.acudienteIdentificacion.trim(),
           parentesco: formData.acudienteParentesco,
-          telefono: formData.acudienteTelefono,
-          email: formData.acudienteEmail
+          telefono: formData.acudienteTelefono.trim(),
+          email: formData.acudienteEmail.trim()
         } : undefined
       });
 
@@ -208,6 +292,7 @@ export const RegisterResidentModal: React.FC = () => {
       setStep(1);
     } catch (err: any) {
       console.warn('[RegisterResidentModal] El registro no pudo completarse en Oracle:', err);
+      alert(`No fue posible completar el registro del residente:\n${err.message || 'Error en la base de datos'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -255,7 +340,7 @@ export const RegisterResidentModal: React.FC = () => {
         <div className="flex border-b border-[#DEDBD1] bg-[#F7F6F2] px-6 py-2.5 text-xs font-semibold text-[#5C6058] overflow-x-auto gap-2">
           <button
             type="button"
-            onClick={() => setStep(1)}
+            onClick={() => handleGoToStep(1)}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
               step === 1 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
             }`}
@@ -264,7 +349,7 @@ export const RegisterResidentModal: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={() => setStep(2)}
+            onClick={() => handleGoToStep(2)}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
               step === 2 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
             }`}
@@ -273,7 +358,7 @@ export const RegisterResidentModal: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={() => setStep(3)}
+            onClick={() => handleGoToStep(3)}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
               step === 3 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
             }`}
@@ -287,7 +372,7 @@ export const RegisterResidentModal: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={() => setStep(4)}
+            onClick={() => handleGoToStep(4)}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
               step === 4 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
             }`}
@@ -296,7 +381,7 @@ export const RegisterResidentModal: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={() => setStep(5)}
+            onClick={() => handleGoToStep(5)}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg cursor-pointer shrink-0 ${
               step === 5 ? 'bg-[#274A3F] text-white font-bold' : 'hover:text-[#182F28]'
             }`}
@@ -891,16 +976,25 @@ export const RegisterResidentModal: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-[#182F28] mb-1">
-                        Correo Electrónico
+                      <label className="block text-xs font-bold text-[#182F28] mb-1 flex items-center justify-between">
+                        <span>Correo Electrónico *</span>
+                        <span className="text-[10px] text-[#B3803F] font-semibold">Obligatorio</span>
                       </label>
                       <input
                         type="email"
+                        required
                         placeholder="claudia@gmail.com"
                         value={formData.acudienteEmail}
                         onChange={(e) => setFormData({ ...formData, acudienteEmail: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#DEDBD1] bg-[#F7F6F2] text-sm focus:outline-none focus:border-[#B3803F]"
+                        className={`w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-none ${
+                          formData.incluirAcudiente && formData.acudienteNombres && !formData.acudienteEmail.trim()
+                            ? 'border-amber-400 bg-amber-50/30 focus:border-[#B3803F]'
+                            : 'border-[#DEDBD1] bg-[#F7F6F2] focus:border-[#B3803F]'
+                        }`}
                       />
+                      <span className="text-[10px] text-[#5C6058] mt-1 block">
+                        Requerido por base de datos para la cuenta y notificaciones del acudiente.
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1128,7 +1222,7 @@ export const RegisterResidentModal: React.FC = () => {
               {step < 5 ? (
                 <button
                   type="button"
-                  onClick={() => setStep((step + 1) as any)}
+                  onClick={handleNextStep}
                   className="px-5 py-2.5 bg-[#274A3F] hover:bg-[#182F28] text-white font-bold rounded-xl text-sm shadow-xs transition-all cursor-pointer"
                 >
                   Continuar

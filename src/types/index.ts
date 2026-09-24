@@ -118,6 +118,23 @@ export type TurnoAsignado = {
   }>;
   estado: 'Programado' | 'Activo' | 'Finalizado' | 'Alerta Cobertura';
   alertas?: string;
+  area?: string;
+  observaciones?: string;
+};
+
+export type ProgramarTurnosRangoPayload = {
+  idCentro: number;
+  idTurnoPlantilla?: number;
+  nombreTurno: string;
+  tipo: 'Mañana' | 'Tarde' | 'Noche' | '24 Horas';
+  horario: string;
+  coberturaMinimaRequerida: number;
+  idsTrabajadores: number[];
+  fechaInicio: string; // YYYY-MM-DD
+  fechaFin: string;    // YYYY-MM-DD
+  diasSemana: number[]; // 0: Dom, 1: Lun, 2: Mar, 3: Mié, 4: Jue, 5: Vie, 6: Sáb
+  area?: string;
+  observaciones?: string;
 };
 
 export type PermisoAusencia = {

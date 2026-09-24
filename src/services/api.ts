@@ -242,6 +242,7 @@ export const adminApi = {
       idTrabajador: number;
       idTurno: number;
       fechaTurno: string;
+      observaciones?: string;
     }) {
       return postToPackage('/pkgln_cuadrantes_turnos/pr_asignar_turno_trabajador', payload);
     }
