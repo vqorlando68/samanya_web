@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig, loadEnv, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { spawn } from 'child_process';
@@ -133,9 +133,10 @@ function samanyaApiPlugin(): Plugin {
           });
           req.on('end', async () => {
             try {
+              const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '');
               const payload = body ? JSON.parse(body) : {};
-              const apiKey = process.env.OPENROUTER_API_KEY || process.env.VITE_OPENROUTER_API_KEY || '';
-              const model = payload.model || process.env.VITE_OPENROUTER_MODEL || 'openai/gpt-4o-mini';
+              const apiKey = env.OPENROUTER_API_KEY || env.VITE_OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY || process.env.VITE_OPENROUTER_API_KEY || '';
+              const model = payload.model || env.VITE_OPENROUTER_MODEL || 'openai/gpt-4o-mini';
 
               const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
