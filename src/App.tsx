@@ -25,6 +25,7 @@ import { EditFamilyModal } from './components/modals/EditFamilyModal';
 import { EditSedeModal } from './components/modals/EditSedeModal';
 import { GestionDotacionModal } from './components/modals/GestionDotacionModal';
 import { ProgramarTurnosModal } from './components/modals/ProgramarTurnosModal';
+import { SamanyaAiChat } from './components/chat/SamanyaAiChat';
 
 const AdminLayout: React.FC = () => {
   const { activeTab } = useAdmin();
@@ -66,6 +67,9 @@ const AdminLayout: React.FC = () => {
 
       {/* Notificaciones Flotantes */}
       <ToastNotification />
+
+      {/* Asistente Virtual Inteligente con OpenRouter */}
+      <SamanyaAiChat />
     </div>
   );
 };

@@ -125,6 +125,46 @@ function samanyaApiPlugin(): Plugin {
           return;
         }
 
+        // Chat de IA con OpenRouter
+        if (req.url === '/api/chat' && req.method === 'POST') {
+          let body = '';
+          req.on('data', (chunk) => {
+            body += chunk;
+          });
+          req.on('end', async () => {
+            try {
+              const payload = body ? JSON.parse(body) : {};
+              const apiKey = process.env.OPENROUTER_API_KEY || process.env.VITE_OPENROUTER_API_KEY || '';
+              const model = payload.model || process.env.VITE_OPENROUTER_MODEL || 'openai/gpt-4o-mini';
+
+              const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${apiKey}`,
+                  'Content-Type': 'application/json',
+                  'HTTP-Referer': 'http://localhost:3000',
+                  'X-Title': 'Samanya OS Web'
+                },
+                body: JSON.stringify({
+                  model,
+                  messages: payload.messages,
+                  temperature: payload.temperature ?? 0.3
+                })
+              });
+
+              const data = await response.json();
+              res.setHeader('Content-Type', 'application/json');
+              res.statusCode = response.status;
+              res.end(JSON.stringify(data));
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: false, error: err.message || 'Error comunicando con OpenRouter' }));
+            }
+          });
+          return;
+        }
+
         next();
       });
     }

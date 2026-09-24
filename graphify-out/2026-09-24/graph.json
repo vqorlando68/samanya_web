@@ -12606,7 +12606,7 @@
       "file_type": "code",
       "norm_label": "sendchatmessage()",
       "source_file": "src/services/aiService.ts",
-      "source_location": "L197"
+      "source_location": "L177"
     },
     {
       "id": "src_services_api_posttopackage",
@@ -63168,7 +63168,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/services/aiService.ts",
-      "source_location": "L202",
+      "source_location": "L182",
       "weight": 1.0
     },
     {
@@ -119088,7 +119088,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/aiService.ts",
-      "source_location": "L197",
+      "source_location": "L177",
       "weight": 1.0
     },
     {
