@@ -2286,9 +2286,9 @@
     "semantic_hash": ""
   },
   "src/components/modals/ResidentDetailModal.tsx": {
-    "mtime": 1790307925.671917,
-    "seen": 1790308013.4365573,
-    "ast_hash": "ac125d77ccb897f39c578e2aa86ad3cf",
+    "mtime": 1790308992.8923302,
+    "seen": 1790309086.7044477,
+    "ast_hash": "1dd0381d1c482e47473e5707a7f91a11",
     "semantic_hash": ""
   },
   "src/components/views/ClinicalSupervisionView.tsx": {
@@ -2334,9 +2334,9 @@
     "semantic_hash": ""
   },
   "src/context/AdminContext.tsx": {
-    "mtime": 1790307714.1588976,
-    "seen": 1790308013.436666,
-    "ast_hash": "0a5590a7ca72b1f334cf3b613087e6cf",
+    "mtime": 1790308292.1612144,
+    "seen": 1790308407.9684882,
+    "ast_hash": "a63e67a2673dcd35582e715d3842e3b6",
     "semantic_hash": ""
   },
   "src/data/seedData.ts": {
@@ -2352,15 +2352,15 @@
     "semantic_hash": ""
   },
   "src/services/api.ts": {
-    "mtime": 1790307604.90019,
-    "seen": 1790308013.4367223,
-    "ast_hash": "5b15b825ea71619bda82bc591378a198",
+    "mtime": 1790308275.4484549,
+    "seen": 1790308407.9685323,
+    "ast_hash": "a2b12b9ae00e295b77b986a8c8242640",
     "semantic_hash": ""
   },
   "src/types/index.ts": {
-    "mtime": 1790307590.4262576,
-    "seen": 1790308013.4367516,
-    "ast_hash": "0461515f066d484986a10293cded54ec",
+    "mtime": 1790308237.1562185,
+    "seen": 1790308407.9685764,
+    "ast_hash": "a38c950d8ed9363c19b4d67038c9e86c",
     "semantic_hash": ""
   },
   "src/vite-env.d.ts": {
@@ -2514,9 +2514,9 @@
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_dotacion_residentes.sql": {
-    "mtime": 1790307559.8628106,
-    "seen": 1790308013.4355822,
-    "ast_hash": "31e53cc630b6614b19a210e608648a7d",
+    "mtime": 1790308262.132574,
+    "seen": 1790308407.9654615,
+    "ast_hash": "adccceafc031d87b44a77aa5d9b77a05",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgsmy_dotacion_catalogo_dao.sql": {
@@ -2580,9 +2580,15 @@
     "semantic_hash": ""
   },
   "src/components/modals/SolicitarDotacionModal.tsx": {
-    "mtime": 1790307958.8508234,
-    "seen": 1790308013.436567,
-    "ast_hash": "5a9c946108fe453a5fe0ae702ac88f56",
+    "mtime": 1790308334.0884545,
+    "seen": 1790308407.9684093,
+    "ast_hash": "f5302546dca4c10af9681d6e6fea6b5b",
+    "semantic_hash": ""
+  },
+  "src/components/modals/ImprimirSolicitudDotacionModal.tsx": {
+    "mtime": 1790309901.813283,
+    "seen": 1790310114.3272183,
+    "ast_hash": "31f1b729f806da72bed027648d7bd21e",
     "semantic_hash": ""
   }
 }

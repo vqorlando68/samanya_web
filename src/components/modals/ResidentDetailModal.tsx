@@ -18,10 +18,12 @@ import {
   RefreshCw,
   RotateCcw,
   ClipboardList,
-  CheckCircle2
+  CheckCircle2,
+  Printer
 } from 'lucide-react';
 import { ResidentAvatar } from '../common/ResidentAvatar';
 import { DotacionResidente } from '../../types';
+import { ImprimirSolicitudDotacionModal } from './ImprimirSolicitudDotacionModal';
 
 export const ResidentDetailModal: React.FC = () => {
   const {
@@ -55,13 +57,14 @@ export const ResidentDetailModal: React.FC = () => {
   const [observacionesRecambio, setObservacionesRecambio] = useState('');
 
   const dotacionesResidente = (dotaciones || []).filter((d) => d.idResidente === selectedResidente?.id);
-
+  const dotacionesSolicitadas = dotacionesResidente.filter((d) => d.estadoElemento === 'Solicitado');
+  const [mostrarModalImprimir, setMostrarModalImprimir] = useState(false);
 
   if (!isResidenteDetailOpen || !selectedResidente) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl max-w-2xl w-full border border-[#DEDBD1] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-3xl max-w-4xl lg:max-w-5xl w-full border border-[#DEDBD1] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header Modal */}
         <div className="p-6 bg-[#182F28] text-white flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -316,6 +319,17 @@ export const ResidentDetailModal: React.FC = () => {
                 <span className="text-xs text-[#7A745F] font-mono">
                   {dotacionesResidente.length} artículo(s)
                 </span>
+                {dotacionesSolicitadas.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setMostrarModalImprimir(true)}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-[#182F28] hover:bg-[#274A3F] text-[#DCB87F] text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-2xs border border-[#DCB87F]/40"
+                    title="Imprimir solicitud de dotación pendiente en PDF o compartir por WhatsApp/Correo"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-[#DCB87F]" />
+                    <span>Imprimir Solicitud ({dotacionesSolicitadas.length})</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => abrirSolicitarDotacion(selectedResidente)}
@@ -690,17 +704,31 @@ export const ResidentDetailModal: React.FC = () => {
 
         {/* Footer */}
         <div className="p-4 border-t border-[#DEDBD1] bg-[#F7F6F2] flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => {
-              setEditingResidente(selectedResidente);
-              setIsEditResidenteOpen(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#FEF7EE] hover:bg-[#fcecd7] text-[#9A5B12] font-bold rounded-xl text-xs transition-colors cursor-pointer border border-[#DCB87F]"
-          >
-            <Edit3 className="w-4 h-4" />
-            <span>Editar Información</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setEditingResidente(selectedResidente);
+                setIsEditResidenteOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#FEF7EE] hover:bg-[#fcecd7] text-[#9A5B12] font-bold rounded-xl text-xs transition-colors cursor-pointer border border-[#DCB87F]"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>Editar Información</span>
+            </button>
+
+            {dotacionesSolicitadas.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setMostrarModalImprimir(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-[#182F28] hover:bg-[#274A3F] text-[#DCB87F] font-bold rounded-xl text-xs transition-colors cursor-pointer border border-[#DCB87F]/40 shadow-xs"
+                title="Generar PDF e imprimir solicitud de dotación pendiente, o enviar por WhatsApp/Correo"
+              >
+                <Printer className="w-4 h-4 text-[#DCB87F]" />
+                <span>Imprimir Solicitud Pendiente ({dotacionesSolicitadas.length})</span>
+              </button>
+            )}
+          </div>
 
           <button
             type="button"
@@ -711,6 +739,15 @@ export const ResidentDetailModal: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Modal para Imprimir Solicitud de Dotación */}
+      <ImprimirSolicitudDotacionModal
+        isOpen={mostrarModalImprimir}
+        onClose={() => setMostrarModalImprimir(false)}
+        residente={selectedResidente}
+        articulos={dotacionesSolicitadas}
+        activeSede={activeSede}
+      />
     </div>
   );
 };

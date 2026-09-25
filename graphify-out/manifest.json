@@ -2286,9 +2286,9 @@
     "semantic_hash": ""
   },
   "src/components/modals/ResidentDetailModal.tsx": {
-    "mtime": 1790307925.671917,
-    "seen": 1790308013.4365573,
-    "ast_hash": "ac125d77ccb897f39c578e2aa86ad3cf",
+    "mtime": 1790308992.8923302,
+    "seen": 1790309086.7044477,
+    "ast_hash": "1dd0381d1c482e47473e5707a7f91a11",
     "semantic_hash": ""
   },
   "src/components/views/ClinicalSupervisionView.tsx": {
@@ -2583,6 +2583,12 @@
     "mtime": 1790308334.0884545,
     "seen": 1790308407.9684093,
     "ast_hash": "f5302546dca4c10af9681d6e6fea6b5b",
+    "semantic_hash": ""
+  },
+  "src/components/modals/ImprimirSolicitudDotacionModal.tsx": {
+    "mtime": 1790310670.8595297,
+    "seen": 1790310721.3269067,
+    "ast_hash": "461f95e93b613e473f5cf323b670ae86",
     "semantic_hash": ""
   }
 }
