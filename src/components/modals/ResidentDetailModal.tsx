@@ -16,7 +16,9 @@ import {
   Package,
   Plus,
   RefreshCw,
-  RotateCcw
+  RotateCcw,
+  ClipboardList,
+  CheckCircle2
 } from 'lucide-react';
 import { ResidentAvatar } from '../common/ResidentAvatar';
 import { DotacionResidente } from '../../types';
@@ -34,7 +36,9 @@ export const ResidentDetailModal: React.FC = () => {
     setIsEditFamiliarOpen,
     dotaciones,
     agregarArticuloDotacionResidente,
-    registrarRecambioDotacion
+    registrarRecambioDotacion,
+    abrirSolicitarDotacion,
+    entregarDotacionSolicitada
   } = useAdmin();
 
   const [mostrarFormAgregarDotacion, setMostrarFormAgregarDotacion] = useState(false);
@@ -314,6 +318,15 @@ export const ResidentDetailModal: React.FC = () => {
                 </span>
                 <button
                   type="button"
+                  onClick={() => abrirSolicitarDotacion(selectedResidente)}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-[#DCB87F] hover:bg-[#c9a56c] text-[#182F28] text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-2xs"
+                  title="Ingresar requerimiento o solicitud de dotación para este residente"
+                >
+                  <ClipboardList className="w-3.5 h-3.5 text-[#182F28]" />
+                  <span>Solicitar Dotación</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setMostrarFormAgregarDotacion(!mostrarFormAgregarDotacion)}
                   className="flex items-center gap-1 px-2.5 py-1 bg-[#182F28] hover:bg-[#274A3F] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
                 >
@@ -521,74 +534,126 @@ export const ResidentDetailModal: React.FC = () => {
                             <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-white border border-[#DEDBD1] text-[#182F28] font-bold">
                               {dot.cantidad} unidad(es)
                             </span>
+                            {dot.estadoElemento === 'Solicitado' && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300">
+                                SOLICITADO
+                              </span>
+                            )}
                           </div>
 
-                          <div className="flex items-center gap-4 text-xs text-[#5C6058] mt-1.5 flex-wrap">
-                            <span>
-                              Entrega inicial: <strong className="text-[#182F28]">{dot.fechaEntrega}</strong>
-                            </span>
-                            {dot.frecuenciaCambioMeses ? (
+                          {dot.estadoElemento === 'Solicitado' ? (
+                            <div className="text-xs text-[#5C6058] mt-1.5 space-y-1">
+                              <div className="flex items-center gap-3 flex-wrap">
+                                {dot.fechaSolicitud && (
+                                  <span>
+                                    Fecha Solicitud: <strong className="text-[#182F28]">{dot.fechaSolicitud}</strong>
+                                  </span>
+                                )}
+                                {dot.fechaRequerida && (
+                                  <span>
+                                    Requerido para: <strong className="text-[#182F28]">{dot.fechaRequerida}</strong>
+                                  </span>
+                                )}
+                                {dot.condicionEntrega && (
+                                  <span className="font-semibold text-[#9A5B12]">
+                                    {dot.condicionEntrega}
+                                  </span>
+                                )}
+                              </div>
+                              {dot.notas && (
+                                <p className="text-[11px] text-[#7A745F] italic">
+                                  {dot.notas}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-4 text-xs text-[#5C6058] mt-1.5 flex-wrap">
                               <span>
-                                Ciclo de reposición: <strong className="text-[#182F28]">{dot.frecuenciaCambioMeses} meses</strong>
+                                Entrega inicial: <strong className="text-[#182F28]">{dot.fechaEntrega}</strong>
                               </span>
-                            ) : (
-                              <span>Entrega única</span>
-                            )}
-                            {dot.fechaUltimoCambio && dot.fechaUltimoCambio !== dot.fechaEntrega && (
-                              <span>
-                                Último recambio: <strong className="text-[#182F28]">{dot.fechaUltimoCambio}</strong>
-                              </span>
-                            )}
-                          </div>
+                              {dot.frecuenciaCambioMeses ? (
+                                <span>
+                                  Ciclo de reposición: <strong className="text-[#182F28]">{dot.frecuenciaCambioMeses} meses</strong>
+                                </span>
+                              ) : (
+                                <span>Entrega única</span>
+                              )}
+                              {dot.fechaUltimoCambio && dot.fechaUltimoCambio !== dot.fechaEntrega && (
+                                <span>
+                                  Último recambio: <strong className="text-[#182F28]">{dot.fechaUltimoCambio}</strong>
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
 
-                        {/* Semáforo de Estado de Recambio */}
+                        {/* Semáforo de Estado de Recambio o Estado Solicitado */}
                         <div className="flex flex-col items-end gap-1.5 shrink-0">
-                          {semaforo === 'VENCIDO' && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700 border border-red-300">
-                              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-                              <span>Vencido ({Math.abs(dias || 0)} días)</span>
-                            </span>
-                          )}
+                          {dot.estadoElemento === 'Solicitado' ? (
+                            <>
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-300">
+                                <Clock className="w-3 h-3 text-blue-600" />
+                                <span>Pendiente Recibir</span>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => entregarDotacionSolicitada(dot.id)}
+                                className="flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-[#182F28] hover:bg-[#274A3F] text-white transition-all cursor-pointer shadow-2xs"
+                                title="Confirmar recepción física y entrega al residente"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#DCB87F]" />
+                                <span>Marcar Entregado</span>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {semaforo === 'VENCIDO' && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700 border border-red-300">
+                                  <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                                  <span>Vencido ({Math.abs(dias || 0)} días)</span>
+                                </span>
+                              )}
 
-                          {semaforo === 'PROXIMO' && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                              <span className="w-2 h-2 rounded-full bg-amber-500" />
-                              <span>Próximo recambio ({dias} días)</span>
-                            </span>
-                          )}
+                              {semaforo === 'PROXIMO' && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                                  <span>Próximo recambio ({dias} días)</span>
+                                </span>
+                              )}
 
-                          {semaforo === 'VIGENTE' && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                              <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                              <span>Vigente ({dias} días)</span>
-                            </span>
-                          )}
+                              {semaforo === 'VIGENTE' && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                                  <span>Vigente ({dias} días)</span>
+                                </span>
+                              )}
 
-                          {semaforo === 'SIN_VENCIMIENTO' && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
-                              Sin vencimiento
-                            </span>
-                          )}
+                              {semaforo === 'SIN_VENCIMIENTO' && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
+                                  Sin vencimiento
+                                </span>
+                              )}
 
-                          {/* Botón para registrar recambio */}
-                          {dot.frecuenciaCambioMeses && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setItemParaRecambio(dot);
-                                setMotivoRecambio(
-                                  semaforo === 'VENCIDO'
-                                    ? 'Renovación por vencimiento de ciclo'
-                                    : 'Recambio periódico programado'
-                                );
-                              }}
-                              className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white border border-[#DEDBD1] hover:border-[#182F28] text-[#182F28] hover:bg-[#182F28] hover:text-white transition-all cursor-pointer shadow-2xs"
-                              title="Registrar nuevo recambio físico y resetear ciclo"
-                            >
-                              <RotateCcw className="w-3 h-3 text-[#B3803F]" />
-                              <span>Registrar Recambio</span>
-                            </button>
+                              {/* Botón para registrar recambio */}
+                              {dot.frecuenciaCambioMeses && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setItemParaRecambio(dot);
+                                    setMotivoRecambio(
+                                      semaforo === 'VENCIDO'
+                                        ? 'Renovación por vencimiento de ciclo'
+                                        : 'Recambio periódico programado'
+                                    );
+                                  }}
+                                  className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white border border-[#DEDBD1] hover:border-[#182F28] text-[#182F28] hover:bg-[#182F28] hover:text-white transition-all cursor-pointer shadow-2xs"
+                                  title="Registrar nuevo recambio físico y resetear ciclo"
+                                >
+                                  <RotateCcw className="w-3 h-3 text-[#B3803F]" />
+                                  <span>Registrar Recambio</span>
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>

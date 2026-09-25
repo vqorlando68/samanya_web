@@ -25,6 +25,7 @@ import { EditWorkerModal } from './components/modals/EditWorkerModal';
 import { EditFamilyModal } from './components/modals/EditFamilyModal';
 import { EditSedeModal } from './components/modals/EditSedeModal';
 import { GestionDotacionModal } from './components/modals/GestionDotacionModal';
+import { SolicitarDotacionModal } from './components/modals/SolicitarDotacionModal';
 import { ProgramarTurnosModal } from './components/modals/ProgramarTurnosModal';
 import { SamanyaAiChat } from './components/chat/SamanyaAiChat';
 
@@ -58,6 +59,7 @@ const AdminLayout: React.FC = () => {
       <RegisterLeaveModal />
       <ResidentDetailModal />
       <GestionDotacionModal />
+      <SolicitarDotacionModal />
       <ProgramarTurnosModal />
 
       {/* Modales de Edición */}

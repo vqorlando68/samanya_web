@@ -388,6 +388,41 @@ export const adminApi = {
       idUsuario?: number;
     }) {
       return postToPackage('/pkgln_dotacion_residentes/pr_registrar_recambio', payload);
+    },
+
+    async solicitarDotacionResidente(payload: {
+      idResidente: number;
+      prioridad?: 'Normal' | 'Alta' | 'Urgente';
+      motivoSolicitud?: string;
+      fechaRequerida?: string;
+      notas?: string;
+      idUsuario?: number;
+      articulos?: Array<{
+        idElementoCatalogo?: number | null;
+        nombreElemento: string;
+        categoria?: string;
+        cantidad: number;
+        frecuenciaCambioMeses?: number | null;
+        especificaciones?: string;
+        notas?: string;
+      }>;
+      idElementoCatalogo?: number | null;
+      nombreElemento?: string;
+      categoria?: string;
+      cantidad?: number;
+      frecuenciaCambioMeses?: number | null;
+      especificaciones?: string;
+    }) {
+      return postToPackage('/pkgln_dotacion_residentes/pr_solicitar_dotacion_residente', payload);
+    },
+
+    async entregarDotacionSolicitada(payload: {
+      idDotacionResidente: number;
+      condicionEntrega?: string;
+      notas?: string;
+      idUsuario?: number;
+    }) {
+      return postToPackage('/pkgln_dotacion_residentes/pr_entregar_dotacion_solicitada', payload);
     }
   }
 };

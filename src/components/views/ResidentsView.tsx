@@ -14,7 +14,8 @@ import {
   Utensils,
   Activity,
   Pill,
-  Package
+  Package,
+  ClipboardList
 } from 'lucide-react';
 import { ResidentAvatar } from '../common/ResidentAvatar';
 
@@ -33,6 +34,7 @@ export const ResidentsView: React.FC = () => {
     setIsEditFamiliarOpen,
     sincronizarResidentes,
     setIsGestionDotacionOpen,
+    abrirSolicitarDotacion,
     dotaciones
   } = useAdmin();
 
@@ -118,6 +120,16 @@ export const ResidentsView: React.FC = () => {
           >
             <Package className="w-4 h-4 text-[#B3803F]" />
             <span>Catálogo Dotación</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => abrirSolicitarDotacion()}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-[#182F28] hover:bg-[#274A3F] text-[#DCB87F] border border-[#DCB87F]/40 font-bold rounded-xl text-sm shadow-2xs transition-all cursor-pointer"
+            title="Ingresar solicitud de dotación, lencería o insumos para cualquier residente"
+          >
+            <ClipboardList className="w-4 h-4 text-[#DCB87F]" />
+            <span>Solicitar Dotación</span>
           </button>
 
           <button
@@ -298,33 +310,62 @@ export const ResidentsView: React.FC = () => {
                   const resDot = (dotaciones || []).filter((d) => d.idResidente === res.id);
                   const vencidos = resDot.filter((d) => d.semaforoCambio === 'VENCIDO').length;
                   const proximos = resDot.filter((d) => d.semaforoCambio === 'PROXIMO').length;
-                  if (resDot.length === 0) return null;
+                  const solicitados = resDot.filter((d) => d.estadoElemento === 'Solicitado' || d.estadoElemento === 'En Trámite').length;
+
+                  if (resDot.length === 0) {
+                    return (
+                      <div className="mt-2.5 p-2 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1] flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5 text-[#7A745F]">
+                          <Package className="w-3.5 h-3.5 text-[#B3803F]" />
+                          <span>Sin dotación asignada</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            abrirSolicitarDotacion(res);
+                          }}
+                          className="text-[11px] font-bold text-[#9A5B12] hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <ClipboardList className="w-3 h-3" />
+                          <span>Solicitar</span>
+                        </button>
+                      </div>
+                    );
+                  }
 
                   return (
                     <div className="mt-2.5 p-2 bg-[#F7F6F2] rounded-xl border border-[#DEDBD1] flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5 text-[#182F28] font-semibold">
                         <Package className="w-3.5 h-3.5 text-[#B3803F]" />
-                        <span>{resDot.length} artículo(s) dotación</span>
+                        <span>{resDot.length} artículo(s)</span>
                       </div>
-                      {vencidos > 0 ? (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">
-                          {vencidos} vencido(s)
-                        </span>
-                      ) : proximos > 0 ? (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
-                          {proximos} por renovar
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          Vigente
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {solicitados > 0 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">
+                            {solicitados} solic.
+                          </span>
+                        )}
+                        {vencidos > 0 ? (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">
+                            {vencidos} vencido(s)
+                          </span>
+                        ) : proximos > 0 ? (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
+                            {proximos} por renovar
+                          </span>
+                        ) : solicitados === 0 ? (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            Vigente
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   );
                 })()}
               </div>
 
-              {/* Botones Ficha y Editar */}
+              {/* Botones Ficha, Solicitar y Editar */}
               <div className="pt-3 border-t border-[#DEDBD1]/60 mt-3 flex items-center gap-2">
                 <button
                   type="button"
@@ -333,6 +374,16 @@ export const ResidentsView: React.FC = () => {
                 >
                   <Eye className="w-3.5 h-3.5 text-[#B3803F]" />
                   <span>Ver Ficha</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => abrirSolicitarDotacion(res)}
+                  className="py-2 px-2.5 bg-white hover:bg-[#F2EFE9] text-[#182F28] font-bold rounded-xl text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer border border-[#DEDBD1]"
+                  title="Solicitar dotación para este residente"
+                >
+                  <ClipboardList className="w-3.5 h-3.5 text-[#B3803F]" />
+                  <span className="hidden sm:inline">Solicitar</span>
                 </button>
 
                 <button

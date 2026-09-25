@@ -83,6 +83,7 @@ AS
                     ELSE TRUNC(dr.fecha_proximo_cambio - f_fecha_actual)
                 END AS dias_para_cambio,
                 CASE 
+                    WHEN dr.estado_elemento IN ('SOLICITADO', 'EN TRAMITE') THEN 'SOLICITADO'
                     WHEN dr.fecha_proximo_cambio IS NULL THEN 'SIN_VENCIMIENTO'
                     WHEN dr.fecha_proximo_cambio < f_fecha_actual THEN 'VENCIDO'
                     WHEN dr.fecha_proximo_cambio <= (f_fecha_actual + 30) THEN 'PROXIMO'
@@ -97,9 +98,10 @@ AS
               AND (v_estado IS NULL OR dr.estado_elemento = v_estado)
             ORDER BY 
                 CASE 
-                    WHEN dr.fecha_proximo_cambio IS NOT NULL AND dr.fecha_proximo_cambio < f_fecha_actual THEN 1
-                    WHEN dr.fecha_proximo_cambio IS NOT NULL AND dr.fecha_proximo_cambio <= (f_fecha_actual + 30) THEN 2
-                    ELSE 3
+                    WHEN dr.estado_elemento IN ('SOLICITADO', 'EN TRAMITE') THEN 1
+                    WHEN dr.fecha_proximo_cambio IS NOT NULL AND dr.fecha_proximo_cambio < f_fecha_actual THEN 2
+                    WHEN dr.fecha_proximo_cambio IS NOT NULL AND dr.fecha_proximo_cambio <= (f_fecha_actual + 30) THEN 3
+                    ELSE 4
                 END,
                 dr.categoria,
                 dr.nombre_elemento;

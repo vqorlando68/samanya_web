@@ -63,6 +63,20 @@ AS
         pcl_json IN CLOB
     );
 
+    /**
+     * Registra una solicitud de dotación para un residente (estado inicial SOLICITADO)
+     */
+    PROCEDURE pr_solicitar_dotacion_residente (
+        pcl_json IN CLOB
+    );
+
+    /**
+     * Registra la entrega efectiva de una dotación previamente solicitada
+     */
+    PROCEDURE pr_entregar_dotacion_solicitada (
+        pcl_json IN CLOB
+    );
+
 END PKGLN_DOTACION_RESIDENTES;
 /
 
@@ -402,6 +416,208 @@ AS
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_registrar_recambio;
+
+    PROCEDURE pr_solicitar_dotacion_residente (
+        pcl_json IN CLOB
+    ) IS
+        v_id_residente     NUMBER;
+        v_prioridad        VARCHAR2(50);
+        v_motivo           VARCHAR2(250);
+        v_fecha_requerida  VARCHAR2(30);
+        v_notas_gen        VARCHAR2(500);
+        v_id_usuario       NUMBER;
+        v_fecha_hoy        DATE;
+        v_cant_insertados  NUMBER := 0;
+        v_nombre_single    VARCHAR2(150);
+        vro_residente      smy_residentes%ROWTYPE;
+        vro_item           smy_dotacion_residentes%ROWTYPE;
+        vro_error          smy_errores%ROWTYPE;
+        v_nota_final       VARCHAR2(1000);
+    BEGIN
+        v_id_residente     := TO_NUMBER(JSON_VALUE(pcl_json, '$.idResidente'));
+        v_prioridad        := NVL(TRIM(JSON_VALUE(pcl_json, '$.prioridad')), 'Normal');
+        v_motivo           := TRIM(JSON_VALUE(pcl_json, '$.motivoSolicitud'));
+        v_fecha_requerida  := TRIM(JSON_VALUE(pcl_json, '$.fechaRequerida'));
+        v_notas_gen        := TRIM(JSON_VALUE(pcl_json, '$.notas'));
+        v_id_usuario       := TO_NUMBER(JSON_VALUE(pcl_json, '$.idUsuario'));
+        v_fecha_hoy        := f_fecha_actual;
+
+        IF v_id_residente IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20014, 'El identificador del residente es obligatorio para solicitar dotación.');
+        END IF;
+
+        IF PKGSMY_RESIDENTES_DAO.f_existe(v_id_residente, vro_residente) = FALSE THEN
+            RAISE_APPLICATION_ERROR(-20016, 'El residente especificado no existe.');
+        END IF;
+
+        -- 1. Iterar cuando se envía un array de múltiples artículos ($.articulos[*])
+        FOR r_art IN (
+            SELECT id_elemento_catalogo,
+                   nombre_elemento,
+                   categoria,
+                   cantidad,
+                   frecuencia_cambio_meses,
+                   especificaciones,
+                   notas
+            FROM JSON_TABLE(pcl_json, '$.articulos[*]'
+                COLUMNS (
+                    id_elemento_catalogo    NUMBER        PATH '$.idElementoCatalogo',
+                    nombre_elemento         VARCHAR2(150) PATH '$.nombreElemento',
+                    categoria               VARCHAR2(100) PATH '$.categoria',
+                    cantidad                NUMBER        PATH '$.cantidad',
+                    frecuencia_cambio_meses NUMBER        PATH '$.frecuenciaCambioMeses',
+                    especificaciones        VARCHAR2(200) PATH '$.especificaciones',
+                    notas                   VARCHAR2(500) PATH '$.notas'
+                )
+            )
+        ) LOOP
+            IF TRIM(r_art.nombre_elemento) IS NOT NULL THEN
+                v_nota_final := 'Solicitud: ' || NVL(v_motivo, 'Requerimiento de dotación');
+                IF r_art.especificaciones IS NOT NULL THEN
+                    v_nota_final := v_nota_final || ' | Espec: ' || TRIM(r_art.especificaciones);
+                END IF;
+                IF v_fecha_requerida IS NOT NULL THEN
+                    v_nota_final := v_nota_final || ' | Requerido para: ' || v_fecha_requerida;
+                END IF;
+                IF r_art.notas IS NOT NULL THEN
+                    v_nota_final := v_nota_final || ' | ' || TRIM(r_art.notas);
+                ELSIF v_notas_gen IS NOT NULL THEN
+                    v_nota_final := v_nota_final || ' | ' || v_notas_gen;
+                END IF;
+
+                vro_item.id                             := SEQ_SMY_DOTACION_RESIDENTES.NEXTVAL;
+                vro_item.id_residente                   := v_id_residente;
+                vro_item.id_elemento_catalogo           := r_art.id_elemento_catalogo;
+                vro_item.nombre_elemento                := TRIM(r_art.nombre_elemento);
+                vro_item.categoria                      := NVL(TRIM(r_art.categoria), 'General');
+                vro_item.cantidad                       := NVL(r_art.cantidad, 1);
+                vro_item.fecha_entrega                  := NULL;
+                vro_item.frecuencia_cambio_meses        := r_art.frecuencia_cambio_meses;
+                vro_item.fecha_proximo_cambio           := NULL;
+                vro_item.estado_elemento                := 'SOLICITADO';
+                vro_item.condicion_entrega              := 'Prioridad: ' || v_prioridad;
+                vro_item.notas                          := SUBSTR(v_nota_final, 1, 500);
+                vro_item.id_usuario_entrega             := NULL;
+                vro_item.fecha_ultimo_cambio            := NULL;
+                vro_item.fecha_creacion                 := v_fecha_hoy;
+                vro_item.id_usuario_ultima_modificacion := v_id_usuario;
+
+                PKGSMY_DOTACION_RESIDENTES_DAO.p_insertar(vro_item);
+                v_cant_insertados                       := v_cant_insertados + 1;
+            END IF;
+        END LOOP;
+
+        -- 2. Compatibilidad mono-artículo cuando no se envió colección articulos
+        IF v_cant_insertados = 0 THEN
+            v_nombre_single := TRIM(JSON_VALUE(pcl_json, '$.nombreElemento'));
+            IF v_nombre_single IS NULL THEN
+                RAISE_APPLICATION_ERROR(-20015, 'Debe especificar al menos un artículo a solicitar.');
+            END IF;
+
+            v_nota_final := 'Solicitud: ' || NVL(v_motivo, 'Requerimiento de dotación');
+            IF TRIM(JSON_VALUE(pcl_json, '$.especificaciones')) IS NOT NULL THEN
+                v_nota_final := v_nota_final || ' | Espec: ' || TRIM(JSON_VALUE(pcl_json, '$.especificaciones'));
+            END IF;
+            IF v_fecha_requerida IS NOT NULL THEN
+                v_nota_final := v_nota_final || ' | Requerido para: ' || v_fecha_requerida;
+            END IF;
+            IF v_notas_gen IS NOT NULL THEN
+                v_nota_final := v_nota_final || ' | ' || v_notas_gen;
+            END IF;
+
+            vro_item.id                             := SEQ_SMY_DOTACION_RESIDENTES.NEXTVAL;
+            vro_item.id_residente                   := v_id_residente;
+            vro_item.id_elemento_catalogo           := TO_NUMBER(JSON_VALUE(pcl_json, '$.idElementoCatalogo'));
+            vro_item.nombre_elemento                := v_nombre_single;
+            vro_item.categoria                      := NVL(TRIM(JSON_VALUE(pcl_json, '$.categoria')), 'General');
+            vro_item.cantidad                       := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.cantidad')), 1);
+            vro_item.fecha_entrega                  := NULL;
+            vro_item.frecuencia_cambio_meses        := TO_NUMBER(JSON_VALUE(pcl_json, '$.frecuenciaCambioMeses'));
+            vro_item.fecha_proximo_cambio           := NULL;
+            vro_item.estado_elemento                := 'SOLICITADO';
+            vro_item.condicion_entrega              := 'Prioridad: ' || v_prioridad;
+            vro_item.notas                          := SUBSTR(v_nota_final, 1, 500);
+            vro_item.id_usuario_entrega             := NULL;
+            vro_item.fecha_ultimo_cambio            := NULL;
+            vro_item.fecha_creacion                 := v_fecha_hoy;
+            vro_item.id_usuario_ultima_modificacion := v_id_usuario;
+
+            PKGSMY_DOTACION_RESIDENTES_DAO.p_insertar(vro_item);
+        END IF;
+
+        p_do_commit('pkgln_dotacion_residentes.pr_solicitar_dotacion_residente');
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            IF SQLCODE BETWEEN -20999 AND -20001 THEN
+                RAISE;
+            END IF;
+            vro_error.nombre_programa := 'PKGLN_DOTACION_RESIDENTES';
+            vro_error.nombre_metodo   := 'PR_SOLICITAR_DOTACION_RESIDENTE';
+            vro_error.parametros      := pcl_json;
+            uti_ge_excepciones_pkg.p_grabar_log(vro_error);
+            RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
+    END pr_solicitar_dotacion_residente;
+
+    PROCEDURE pr_entregar_dotacion_solicitada (
+        pcl_json IN CLOB
+    ) IS
+        v_id_dotacion   NUMBER;
+        v_condicion     VARCHAR2(50);
+        v_notas         VARCHAR2(500);
+        v_id_usuario    NUMBER;
+        v_fecha_hoy     DATE;
+        vro_dotacion    smy_dotacion_residentes%ROWTYPE;
+        vro_error       smy_errores%ROWTYPE;
+    BEGIN
+        v_id_dotacion := TO_NUMBER(JSON_VALUE(pcl_json, '$.idDotacionResidente'));
+        v_condicion   := NVL(TRIM(JSON_VALUE(pcl_json, '$.condicionEntrega')), 'Nuevo');
+        v_notas       := TRIM(JSON_VALUE(pcl_json, '$.notas'));
+        v_id_usuario  := TO_NUMBER(JSON_VALUE(pcl_json, '$.idUsuario'));
+        v_fecha_hoy   := f_fecha_actual;
+
+        IF v_id_dotacion IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20017, 'El identificador del registro de dotación es obligatorio.');
+        END IF;
+
+        IF PKGSMY_DOTACION_RESIDENTES_DAO.f_existe(v_id_dotacion, vro_dotacion) = FALSE THEN
+            RAISE_APPLICATION_ERROR(-20018, 'El artículo de dotación del residente no existe.');
+        END IF;
+
+        vro_dotacion.estado_elemento                := 'ENTREGADO';
+        vro_dotacion.fecha_entrega                  := v_fecha_hoy;
+        vro_dotacion.fecha_ultimo_cambio            := v_fecha_hoy;
+        vro_dotacion.condicion_entrega              := v_condicion;
+        vro_dotacion.id_usuario_entrega             := v_id_usuario;
+        vro_dotacion.id_usuario_ultima_modificacion := v_id_usuario;
+
+        IF v_notas IS NOT NULL THEN
+            vro_dotacion.notas := SUBSTR(NVL(vro_dotacion.notas, '') || ' | Entrega: ' || v_notas, 1, 500);
+        END IF;
+
+        IF vro_dotacion.frecuencia_cambio_meses IS NOT NULL AND vro_dotacion.frecuencia_cambio_meses > 0 THEN
+            vro_dotacion.fecha_proximo_cambio := ADD_MONTHS(v_fecha_hoy, vro_dotacion.frecuencia_cambio_meses);
+        ELSE
+            vro_dotacion.fecha_proximo_cambio := NULL;
+        END IF;
+
+        PKGSMY_DOTACION_RESIDENTES_DAO.p_actualizar(vro_dotacion);
+
+        p_do_commit('pkgln_dotacion_residentes.pr_entregar_dotacion_solicitada');
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            IF SQLCODE BETWEEN -20999 AND -20001 THEN
+                RAISE;
+            END IF;
+            vro_error.nombre_programa := 'PKGLN_DOTACION_RESIDENTES';
+            vro_error.nombre_metodo   := 'PR_ENTREGAR_DOTACION_SOLICITADA';
+            vro_error.parametros      := pcl_json;
+            uti_ge_excepciones_pkg.p_grabar_log(vro_error);
+            RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
+    END pr_entregar_dotacion_solicitada;
 
 END PKGLN_DOTACION_RESIDENTES;
 /

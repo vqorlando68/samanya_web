@@ -210,16 +210,48 @@ export type DotacionResidente = {
   nombreElemento: string;
   categoria: string;
   cantidad: number;
-  fechaEntrega: string;
+  fechaEntrega?: string;
+  fechaSolicitud?: string;
+  fechaRequerida?: string;
   frecuenciaCambioMeses?: number | null;
   fechaProximoCambio?: string | null;
   fechaUltimoCambio?: string | null;
-  estadoElemento: 'Entregado' | 'Cambio Pendiente' | 'Renovado' | 'Devuelto' | 'Baja / Deterioro';
+  estadoElemento: 'Solicitado' | 'En Trámite' | 'Entregado' | 'Cambio Pendiente' | 'Renovado' | 'Devuelto' | 'Baja / Deterioro';
+  prioridad?: 'Normal' | 'Alta' | 'Urgente';
+  motivoSolicitud?: string;
+  especificaciones?: string;
   condicionEntrega?: string;
   notas?: string;
   usuarioEntrega?: string;
-  semaforoCambio?: 'VIGENTE' | 'PROXIMO' | 'VENCIDO' | 'SIN_VENCIMIENTO';
+  usuarioSolicita?: string;
+  semaforoCambio?: 'VIGENTE' | 'PROXIMO' | 'VENCIDO' | 'SIN_VENCIMIENTO' | 'SOLICITADO';
   diasParaCambio?: number | null;
   historial?: HistorialCambioDotacion[];
+};
+
+export type ArticuloSolicitudDotacion = {
+  idElementoCatalogo?: number | null;
+  nombreElemento: string;
+  categoria: string;
+  cantidad: number;
+  frecuenciaCambioMeses?: number | null;
+  especificaciones?: string;
+  notas?: string;
+};
+
+export type SolicitudDotacionPayload = {
+  idResidente: number;
+  prioridad: 'Normal' | 'Alta' | 'Urgente';
+  motivoSolicitud: string;
+  fechaRequerida?: string;
+  notas?: string;
+  articulos: ArticuloSolicitudDotacion[];
+  // Campos opcionales por compatibilidad mono-artículo
+  idElementoCatalogo?: number | null;
+  nombreElemento?: string;
+  categoria?: string;
+  cantidad?: number;
+  frecuenciaCambioMeses?: number | null;
+  especificaciones?: string;
 };
 

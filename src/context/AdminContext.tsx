@@ -11,6 +11,7 @@ import {
   ElementoDotacionCatalogo,
   DotacionResidente,
   HistorialCambioDotacion,
+  SolicitudDotacionPayload,
   ProgramarTurnosRangoPayload
 } from '../types';
 import {
@@ -78,6 +79,11 @@ interface AdminContextType {
   setIsResidenteDetailOpen: (open: boolean) => void;
   isGestionDotacionOpen: boolean;
   setIsGestionDotacionOpen: (open: boolean) => void;
+  isSolicitarDotacionOpen: boolean;
+  setIsSolicitarDotacionOpen: (open: boolean) => void;
+  solicitarDotacionResidentePreseleccionado: Residente | null;
+  setSolicitarDotacionResidentePreseleccionado: (res: Residente | null) => void;
+  abrirSolicitarDotacion: (residente?: Residente | null) => void;
 
   // Dotación e Inventario
   catalogoDotacion: ElementoDotacionCatalogo[];
@@ -86,6 +92,8 @@ interface AdminContextType {
   eliminarElementoCatalogo: (id: number) => Promise<void>;
   registrarDotacionResidente: (idResidente: number, items: Array<Partial<DotacionResidente>>) => Promise<void>;
   agregarArticuloDotacionResidente: (idResidente: number, item: Partial<DotacionResidente>) => Promise<void>;
+  registrarSolicitudDotacion: (payload: SolicitudDotacionPayload) => Promise<void>;
+  entregarDotacionSolicitada: (idDotacionResidente: number, condicion?: string, notas?: string) => Promise<void>;
   registrarRecambioDotacion: (
     idDotacionResidente: number,
     cambio: { motivo: string; condicionNuevo?: string; observaciones?: string }
@@ -248,6 +256,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [isGestionDotacionOpen, setIsGestionDotacionOpen] = useState(false);
+  const [isSolicitarDotacionOpen, setIsSolicitarDotacionOpen] = useState(false);
+  const [solicitarDotacionResidentePreseleccionado, setSolicitarDotacionResidentePreseleccionado] = useState<Residente | null>(null);
   const [isSyncingGlobal, setIsSyncingGlobal] = useState(false);
   const [isOracleLive, setIsOracleLive] = useState(false);
   const [oracleMetrics, setOracleMetrics] = useState<AdminDashboardMetrics | null>(null);
@@ -1052,6 +1062,121 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       })
     );
     showToast('🔄 Recambio de dotación registrado exitosamente', 'success');
+  };
+
+  const abrirSolicitarDotacion = (residente?: Residente | null) => {
+    setSolicitarDotacionResidentePreseleccionado(residente || null);
+    setIsSolicitarDotacionOpen(true);
+  };
+
+  const registrarSolicitudDotacion = async (payload: SolicitudDotacionPayload) => {
+    const hoy = new Date().toISOString().split('T')[0];
+    const itemsParaRegistrar: Array<{
+      idElementoCatalogo?: number | null;
+      nombreElemento: string;
+      categoria: string;
+      cantidad: number;
+      frecuenciaCambioMeses?: number | null;
+      especificaciones?: string;
+      notas?: string;
+    }> =
+      payload.articulos && payload.articulos.length > 0
+        ? payload.articulos
+        : [
+            {
+              idElementoCatalogo: payload.idElementoCatalogo ?? null,
+              nombreElemento: payload.nombreElemento || 'Artículo de Dotación',
+              categoria: payload.categoria || 'General',
+              cantidad: payload.cantidad || 1,
+              frecuenciaCambioMeses: payload.frecuenciaCambioMeses ?? null,
+              especificaciones: payload.especificaciones,
+              notas: payload.notas
+            }
+          ];
+
+    const nuevasDotaciones: DotacionResidente[] = itemsParaRegistrar.map((it, idx) => ({
+      id: Date.now() + idx,
+      idResidente: payload.idResidente,
+      idElementoCatalogo: it.idElementoCatalogo ?? null,
+      nombreElemento: it.nombreElemento,
+      categoria: it.categoria || 'General',
+      cantidad: it.cantidad || 1,
+      fechaSolicitud: hoy,
+      fechaRequerida: payload.fechaRequerida,
+      frecuenciaCambioMeses: it.frecuenciaCambioMeses ?? null,
+      estadoElemento: 'Solicitado',
+      prioridad: payload.prioridad || 'Normal',
+      motivoSolicitud: payload.motivoSolicitud,
+      especificaciones: it.especificaciones,
+      condicionEntrega: `Prioridad: ${payload.prioridad || 'Normal'}`,
+      notas: [
+        payload.motivoSolicitud ? `Motivo: ${payload.motivoSolicitud}` : '',
+        it.especificaciones ? `Especificaciones: ${it.especificaciones}` : '',
+        it.notas || payload.notas || ''
+      ]
+        .filter(Boolean)
+        .join(' | '),
+      usuarioSolicita: 'Administrador',
+      semaforoCambio: 'SOLICITADO',
+      historial: []
+    }));
+
+    try {
+      await adminApi.dotacion.solicitarDotacionResidente({
+        idResidente: payload.idResidente,
+        prioridad: payload.prioridad,
+        motivoSolicitud: payload.motivoSolicitud,
+        fechaRequerida: payload.fechaRequerida,
+        notas: payload.notas,
+        articulos: itemsParaRegistrar
+      }).catch(() => null);
+    } catch (err) {
+      console.warn('Backend sync failed, stored locally:', err);
+    }
+
+    setDotaciones((prev) => [...nuevasDotaciones, ...prev]);
+    showToast(
+      `📋 Solicitud de ${nuevasDotaciones.length} artículo(s) registrada exitosamente`,
+      'success'
+    );
+    setIsSolicitarDotacionOpen(false);
+  };
+
+  const entregarDotacionSolicitada = async (
+    idDotacionResidente: number,
+    condicion: string = 'Nuevo de paquete',
+    notasEntrega: string = 'Entrega física completada'
+  ) => {
+    const hoy = new Date().toISOString().split('T')[0];
+    try {
+      await adminApi.dotacion.entregarDotacionSolicitada({
+        idDotacionResidente,
+        condicionEntrega: condicion,
+        notas: notasEntrega
+      }).catch(() => null);
+    } catch (err) {
+      console.warn('Backend sync failed, stored locally:', err);
+    }
+
+    setDotaciones((prev) =>
+      prev.map((d) => {
+        if (d.id !== idDotacionResidente) return d;
+        const nuevoProximo = calcularFechaProximo(hoy, d.frecuenciaCambioMeses);
+        const { semaforo, dias } = calcularSemaforo(nuevoProximo);
+        return {
+          ...d,
+          fechaEntrega: hoy,
+          fechaUltimoCambio: hoy,
+          fechaProximoCambio: nuevoProximo,
+          estadoElemento: 'Entregado',
+          condicionEntrega: condicion,
+          semaforoCambio: semaforo,
+          diasParaCambio: dias,
+          usuarioEntrega: 'Administrador'
+        };
+      })
+    );
+    showToast('✅ Dotación entregada físicamente al residente', 'success');
   };
 
   // 2. Registrar Familiar / Acudiente
@@ -1869,6 +1994,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         dotaciones,
         isGestionDotacionOpen,
         setIsGestionDotacionOpen,
+        isSolicitarDotacionOpen,
+        setIsSolicitarDotacionOpen,
+        solicitarDotacionResidentePreseleccionado,
+        setSolicitarDotacionResidentePreseleccionado,
+        abrirSolicitarDotacion,
+        registrarSolicitudDotacion,
+        entregarDotacionSolicitada,
         guardarElementoCatalogo,
         eliminarElementoCatalogo,
         registrarDotacionResidente,
