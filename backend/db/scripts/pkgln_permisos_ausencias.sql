@@ -147,7 +147,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_PERMISOS_AUSENCIAS';
             vro_error.nombre_metodo   := 'PR_REGISTRAR_PERMISO';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_registrar_permiso;
@@ -202,7 +202,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_PERMISOS_AUSENCIAS';
             vro_error.nombre_metodo   := 'PR_GESTIONAR_SOLICITUD_PERMISO';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_gestionar_solicitud_permiso;

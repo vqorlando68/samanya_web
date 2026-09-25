@@ -3,6 +3,7 @@ import { AdminProvider, useAdmin } from './context/AdminContext';
 import { AdminSidebar } from './components/layout/AdminSidebar';
 import { AdminHeader } from './components/layout/AdminHeader';
 import { ToastNotification } from './components/common/ToastNotification';
+import { SamanyaAlertModal } from './components/common/SamanyaAlertModal';
 
 // Views
 import { DashboardView } from './components/views/DashboardView';
@@ -65,8 +66,9 @@ const AdminLayout: React.FC = () => {
       <EditFamilyModal />
       <EditSedeModal />
 
-      {/* Notificaciones Flotantes */}
+      {/* Notificaciones Flotantes y Diálogos con Estilo Samanya */}
       <ToastNotification />
+      <SamanyaAlertModal />
 
       {/* Asistente Virtual Inteligente con OpenRouter */}
       <SamanyaAiChat />

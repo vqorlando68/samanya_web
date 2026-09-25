@@ -152,7 +152,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_DOTACION_RESIDENTES';
             vro_error.nombre_metodo   := 'PR_GUARDAR_ARTICULO_CATALOGO';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_guardar_articulo_catalogo;
@@ -250,7 +250,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_DOTACION_RESIDENTES';
             vro_error.nombre_metodo   := 'PR_REGISTRAR_ENTREGA_INGRESO';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_registrar_entrega_ingreso;
@@ -330,7 +330,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_DOTACION_RESIDENTES';
             vro_error.nombre_metodo   := 'PR_AGREGAR_ARTICULO_RESIDENTE';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_agregar_articulo_residente;
@@ -398,7 +398,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_DOTACION_RESIDENTES';
             vro_error.nombre_metodo   := 'PR_REGISTRAR_RECAMBIO';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_registrar_recambio;

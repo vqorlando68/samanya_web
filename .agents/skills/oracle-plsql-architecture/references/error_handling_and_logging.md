@@ -29,7 +29,7 @@ El procedimiento `uti_ge_excepciones_pkg.p_grabar_log` utiliza internamente `PRA
 |---|---|---|
 | `nombre_programa` | Nombre literal del paquete PL/SQL. Prohibido usar comodines genéricos. | `'pkgcn_citas'` |
 | `nombre_metodo` | Nombre literal del procedimiento o función que falló. | `'pr_confirmar_cita'` |
-| `parametros` | Parámetros de entrada formateados y legibles con `CHR(10)`. En CLOBs grandes, proteger contra desbordamientos con `SUBSTR`. | `'p_id_cita: ' \|\| p_id_cita \|\| CHR(10) \|\| 'p_json: ' \|\| ...` |
+| `parametros` | Parámetros de entrada. Al ser de tipo CLOB en `SMY_ERRORES`, se asigna directamente `vro_error.parametros := pcl_json;` sin truncamiento ni `SUBSTR`. En parámetros escalares, concatenar de forma legible con `CHR(10)`. | `'p_id_cita: ' || p_id_cita || CHR(10) || 'p_json: ' || ...` |
 
 ## 4. Antipatrones Prohibidos
 1. `WHEN OTHERS THEN NULL;` $\rightarrow$ Destruye la trazabilidad.

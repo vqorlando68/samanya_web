@@ -151,9 +151,25 @@ interface AdminContextType {
   rechazarPermiso: (idPermiso: number, comentarios: string) => Promise<void>;
   registrarPermiso: (nuevoPermiso: Omit<PermisoAusencia, 'id' | 'fechaSolicitud'> & { fechaSolicitud?: string }) => Promise<void>;
 
-  // Notificaciones Toast
+  // Notificaciones Toast y Alertas con Estilo Samanya
   toast: { message: string; type: 'success' | 'alert' | 'info' } | null;
   showToast: (message: string, type?: 'success' | 'alert' | 'info') => void;
+  alertModal: {
+    isOpen: boolean;
+    title?: string;
+    message: string;
+    type?: 'alert' | 'warning' | 'info' | 'success';
+    confirmText?: string;
+    onConfirm?: () => void;
+  } | null;
+  showAlert: (
+    message: string,
+    title?: string,
+    type?: 'alert' | 'warning' | 'info' | 'success',
+    confirmText?: string,
+    onConfirm?: () => void
+  ) => void;
+  closeAlert: () => void;
 
   // Conexión y sincronización en vivo con Oracle
   isSyncingGlobal: boolean;
@@ -609,6 +625,48 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setTimeout(() => setToast(null), 3800);
   };
 
+  // Diálogo / Alerta con estilo institucional Samanya
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title?: string;
+    message: string;
+    type?: 'alert' | 'warning' | 'info' | 'success';
+    confirmText?: string;
+    onConfirm?: () => void;
+  } | null>(null);
+
+  const showAlert = (
+    message: string,
+    title?: string,
+    type: 'alert' | 'warning' | 'info' | 'success' = 'alert',
+    confirmText?: string,
+    onConfirm?: () => void
+  ) => {
+    setAlertModal({
+      isOpen: true,
+      title,
+      message,
+      type,
+      confirmText,
+      onConfirm
+    });
+  };
+
+  const closeAlert = () => {
+    setAlertModal(null);
+  };
+
+  // Interceptar window.alert para que cualquier mensaje use el diseño institucional Samanya
+  useEffect(() => {
+    const originalAlert = window.alert;
+    window.alert = (msg?: any) => {
+      showAlert(String(msg ?? ''), 'Atención', 'alert');
+    };
+    return () => {
+      window.alert = originalAlert;
+    };
+  }, []);
+
   // Cálculo de Métricas del Dashboard
   const sedeResidentes = residentes.filter((r) => r.idCentro === activeSedeId);
   const residentesActivos = sedeResidentes.filter((r) => r.estado === 'Activo').length;
@@ -681,6 +739,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       data.estado === 'En Observación' ? 2 :
       data.estado === 'Hospitalizado' ? 3 : 4;
 
+    const idParentesco =
+      data.familiarContacto?.parentesco === 'Hijo/a' ? 1 :
+      data.familiarContacto?.parentesco === 'Cónyuge' ? 2 :
+      data.familiarContacto?.parentesco === 'Hermano/a' ? 3 :
+      data.familiarContacto?.parentesco === 'Tutor Legal' ? 4 :
+      data.familiarContacto?.parentesco === 'Sobrino/a' ? 5 : 6;
+
     // Payload para el paquete Oracle PKGLN_ADMISION_RESIDENTE
     const payload = {
       idCentro: data.idCentro || activeSedeId,
@@ -708,6 +773,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       acudienteAsociado: data.familiarContacto
         ? {
             ...data.familiarContacto,
+            idTipoIdentificacion: 1,
+            idParentesco,
+            idCanalNotifPref: 1,
             esPrincipal: true
           }
         : undefined
@@ -1794,6 +1862,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         registrarPermiso,
         toast,
         showToast,
+        alertModal,
+        showAlert,
+        closeAlert,
         catalogoDotacion,
         dotaciones,
         isGestionDotacionOpen,

@@ -785,7 +785,7 @@ AS
             END IF;
             vro_error.nombre_programa     := 'PKGLN_ARCHIVOS';
             vro_error.nombre_metodo       := 'PR_PREPARAR_CARGA_FOTO_TALENTO';
-            vro_error.parametros          := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros          := pcl_json;
             vro_error.id_usuario_creacion := v_id_usuario;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
@@ -982,7 +982,7 @@ AS
             END IF;
             vro_error.nombre_programa     := 'PKGLN_ARCHIVOS';
             vro_error.nombre_metodo       := 'PR_REGISTRAR_FOTO_TALENTO_HUMANO';
-            vro_error.parametros          := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros          := pcl_json;
             vro_error.id_usuario_creacion := NVL(v_id_usuario_creacion, v_id_usuario);
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
@@ -1152,7 +1152,7 @@ AS
             END IF;
             vro_error.nombre_programa     := 'PKGLN_ARCHIVOS';
             vro_error.nombre_metodo       := 'PR_REGISTRAR_SOPORTE_TALENTO_HUMANO';
-            vro_error.parametros          := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros          := pcl_json;
             vro_error.id_usuario_creacion := NVL(v_id_usuario_creacion, 1);
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);

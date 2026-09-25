@@ -86,10 +86,13 @@ export const adminApi = {
         nombres: string;
         apellidos: string;
         identificacion: string;
-        parentesco: string;
+        parentesco?: string;
+        idParentesco?: number;
+        idTipoIdentificacion?: number;
+        idCanalNotifPref?: number;
         telefono: string;
         email: string;
-        esPrincipal: boolean;
+        esPrincipal?: boolean;
       };
     }) {
       return postToPackage('/pkgln_admision_residente/pr_registrar_residente', payload);

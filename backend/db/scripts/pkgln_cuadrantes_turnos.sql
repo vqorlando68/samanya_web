@@ -119,7 +119,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_CUADRANTES_TURNOS';
             vro_error.nombre_metodo   := 'PR_ASIGNAR_TURNO_TRABAJADOR';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_asignar_turno_trabajador;
@@ -137,7 +137,7 @@ AS
         WHEN OTHERS THEN
             vro_error.nombre_programa := 'PKGLN_CUADRANTES_TURNOS';
             vro_error.nombre_metodo   := 'F_VALIDAR_COBERTURA_JSON';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END f_validar_cobertura_json;
@@ -210,7 +210,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_CUADRANTES_TURNOS';
             vro_error.nombre_metodo   := 'PR_PROGRAMAR_TURNOS_RANGO';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_programar_turnos_rango;

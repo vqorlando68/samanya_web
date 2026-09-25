@@ -502,7 +502,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_USUARIOS';
             vro_error.nombre_metodo   := 'PR_ACTUALIZAR_NOMBRE_USUARIO';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_actualizar_nombre_usuario;
@@ -543,7 +543,7 @@ AS
             ROLLBACK;
             vro_error.nombre_programa     := 'PKGLN_USUARIOS';
             vro_error.nombre_metodo       := 'PR_REGISTRAR_ACCESO_EXITOSO';
-            vro_error.parametros          := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros          := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_registrar_acceso_exitoso;
@@ -596,7 +596,7 @@ EXCEPTION
         -- 3. Asignación de metadatos de depuración
         vro_error.nombre_programa := 'PKGLN_DOMINIO';
         vro_error.nombre_metodo   := 'PR_METODO';
-        vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+        vro_error.parametros      := pcl_json; -- El campo PARAMETROS en SMY_ERRORES es CLOB (sin SUBSTR)
 
         -- 4. Persistencia autónoma del error
         uti_ge_excepciones_pkg.p_grabar_log(vro_error);

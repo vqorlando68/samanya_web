@@ -144,7 +144,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_TALENTO_HUMANO';
             vro_error.nombre_metodo   := 'PR_REGISTRAR_TRABAJADOR';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_registrar_trabajador;
@@ -184,7 +184,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_TALENTO_HUMANO';
             vro_error.nombre_metodo   := 'PR_ACTUALIZAR_ESTADO_TRABAJADOR';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_actualizar_estado_trabajador;
@@ -251,7 +251,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_TALENTO_HUMANO';
             vro_error.nombre_metodo   := 'PR_ACTUALIZAR_TRABAJADOR';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_actualizar_trabajador;

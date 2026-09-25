@@ -182,7 +182,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_GESTION_FAMILIARES';
             vro_error.nombre_metodo   := 'PR_REGISTRAR_FAMILIAR';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_registrar_familiar;
@@ -246,7 +246,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_GESTION_FAMILIARES';
             vro_error.nombre_metodo   := 'PR_VINCULAR_FAMILIAR_RESIDENTE';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_vincular_familiar_residente;
@@ -310,7 +310,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_GESTION_FAMILIARES';
             vro_error.nombre_metodo   := 'PR_ACTUALIZAR_FAMILIAR';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_actualizar_familiar;
@@ -347,7 +347,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_GESTION_FAMILIARES';
             vro_error.nombre_metodo   := 'PR_ELIMINAR_FAMILIAR';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_eliminar_familiar;

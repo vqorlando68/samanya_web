@@ -182,12 +182,13 @@ AS
             v_acu_email          := TRIM(JSON_VALUE(pcl_json, '$.acudienteAsociado.email'));
 
             vro_acudiente.id                     := SEQ_SMY_ACUDIENTES.NEXTVAL;
-            vro_acudiente.id_tipo_identificacion := 1;
+            vro_acudiente.id_tipo_identificacion := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.acudienteAsociado.idTipoIdentificacion')), 1);
             vro_acudiente.identificacion         := NVL(v_acu_identificacion, 'PENDIENTE');
             vro_acudiente.nombres                := v_acu_nombres;
             vro_acudiente.apellidos              := v_acu_apellidos;
             vro_acudiente.telefono_principal     := v_acu_telefono;
             vro_acudiente.email                  := v_acu_email;
+            vro_acudiente.id_canal_notif_pref    := NVL(TO_NUMBER(JSON_VALUE(pcl_json, '$.acudienteAsociado.idCanalNotifPref')), 1);
             vro_acudiente.fecha_creacion         := f_fecha_actual;
             PKGSMY_ACUDIENTES_DAO.p_insertar(vro_acudiente);
 
@@ -196,9 +197,9 @@ AS
             vro_res_acu.id_residente       := vro_residente.id;
             vro_res_acu.id_acudiente       := vro_acudiente.id;
             vro_res_acu.id_parentesco      := v_acu_parentesco;
-            vro_res_acu.es_principal       := 1;
-            vro_res_acu.es_responsable_pago:= 1;
-            vro_res_acu.autorizado_salidas := 1;
+            vro_res_acu.es_principal       := 'S';
+            vro_res_acu.es_responsable_pago:= 'S';
+            vro_res_acu.autorizado_salidas := 'S';
             vro_res_acu.fecha_creacion     := f_fecha_actual;
             PKGSMY_RESIDENTE_ACUDIENTE_DAO.p_insertar(vro_res_acu);
         END IF;
@@ -253,7 +254,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_ADMISION_RESIDENTE';
             vro_error.nombre_metodo   := 'PR_REGISTRAR_RESIDENTE';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_registrar_residente;
@@ -339,7 +340,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_ADMISION_RESIDENTE';
             vro_error.nombre_metodo   := 'PR_ACTUALIZAR_RESIDENTE';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_actualizar_residente;

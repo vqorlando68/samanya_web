@@ -28,7 +28,7 @@ Cada vez que se solicite generar, modificar, revisar, optimizar, refactorizar o 
      * **Asignación de secuencias**: Utilizar asignación directa (`v_id := SEQ_NOMBRE.NEXTVAL;`), **nunca hacer SELECT ... FROM DUAL**.
      * Orquesta el flujo: valida con DAO (`IF pkg<tabla>_dao.f_existe(...)`), actualiza con DAO (`pkg<tabla>_dao.p_actualizar(...)`), o invoca `pkgcn_` si aplica una sentencia multi-tabla o proyección JSON.
      * **Control transaccional (COMMIT controlado)**: Se debe invocar obligatoriamente el procedimiento `p_do_commit('<objeto>.<metodo>');` enviando como parámetro el contexto. **NUNCA mediante `COMMIT;` directo**.
-     * Captura `WHEN OTHERS`, ejecuta `ROLLBACK;`, puebla `vro_error smy_errores%ROWTYPE;`, invoca `uti_ge_excepciones_pkg.p_grabar_log(vro_error);` y lanza `RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);`.
+     * Captura `WHEN OTHERS`, ejecuta `ROLLBACK;`, puebla `vro_error smy_errores%ROWTYPE;` (asignando directamente `vro_error.parametros := pcl_json;` ya que el campo en `SMY_ERRORES` es CLOB, sin `SUBSTR`), invoca `uti_ge_excepciones_pkg.p_grabar_log(vro_error);` y lanza `RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);`.
 
 2. **Prohibición Absoluta de la Nomenclatura `JOIN`**:
    - Queda terminantemente prohibido el uso de la sintaxis ANSI JOIN (`JOIN`, `INNER JOIN`, `LEFT JOIN`, etc.).

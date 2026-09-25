@@ -1266,9 +1266,9 @@
     "semantic_hash": "62658a145e09da5d32099ec3ddc44a3a"
   },
   "backend/db/scripts/pkgln_archivos.sql": {
-    "mtime": 1790110208.3117816,
-    "seen": 1790113220.8791728,
-    "ast_hash": "db3845489222891a0d7956b116cb915c",
+    "mtime": 1790306852.115177,
+    "seen": 1790306999.3882153,
+    "ast_hash": "4bc89dc5cec47bc0c096b5fb96206817",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_auth.sql": {
@@ -1926,9 +1926,9 @@
     "semantic_hash": ""
   },
   ".agents/AGENTS.md": {
-    "mtime": 1789774755.7359016,
-    "seen": 1789774807.3828065,
-    "ast_hash": "60ec9f7c53e32e1891a3f864ec6827e0",
+    "mtime": 1790306916.0993798,
+    "seen": 1790306999.388564,
+    "ast_hash": "b81a116a0e81be242a1fd4f29228626d",
     "semantic_hash": ""
   },
   ".agents/rules/graphify.md": {
@@ -1938,9 +1938,9 @@
     "semantic_hash": ""
   },
   ".agents/rules/oracle-plsql-architecture.md": {
-    "mtime": 1789774766.280717,
-    "seen": 1789774807.3828106,
-    "ast_hash": "98d1678270ec291951ee767d6b1de548",
+    "mtime": 1790306932.0115142,
+    "seen": 1790306999.3885684,
+    "ast_hash": "d39f423c3ec28f4081efa614ecde48ed",
     "semantic_hash": ""
   },
   ".agents/skills/archify/SKILL.md": {
@@ -2118,9 +2118,9 @@
     "semantic_hash": ""
   },
   ".agents/skills/oracle-plsql-architecture/SKILL.md": {
-    "mtime": 1789774778.3167095,
-    "seen": 1789774807.3828719,
-    "ast_hash": "d43a501d08eaf7159cd20f5d77a5cc9a",
+    "mtime": 1790306873.0670867,
+    "seen": 1790306999.388631,
+    "ast_hash": "8bd78889a3d4ed1586c4f400abe0a6e3",
     "semantic_hash": ""
   },
   ".agents/skills/oracle-plsql-architecture/references/architectural_decision_tree.md": {
@@ -2136,9 +2136,9 @@
     "semantic_hash": ""
   },
   ".agents/skills/oracle-plsql-architecture/references/error_handling_and_logging.md": {
-    "mtime": 1789174132.8481743,
-    "seen": 1789745141.2719553,
-    "ast_hash": "923b6afc3402ab6237abc29d72ea928b",
+    "mtime": 1790306890.1501586,
+    "seen": 1790306999.388637,
+    "ast_hash": "dbae29e4126450300e5c13a47958f969",
     "semantic_hash": ""
   },
   ".agents/workflows/graphify.md": {
@@ -2148,9 +2148,9 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1789774748.814247,
-    "seen": 1789774807.3828824,
-    "ast_hash": "60ec9f7c53e32e1891a3f864ec6827e0",
+    "mtime": 1790306904.4860678,
+    "seen": 1790306999.3886416,
+    "ast_hash": "b81a116a0e81be242a1fd4f29228626d",
     "semantic_hash": ""
   },
   "arquitectura.html": {
@@ -2208,51 +2208,51 @@
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_admision_residente.sql": {
-    "mtime": 1790042366.4843044,
-    "seen": 1790042530.3613474,
-    "ast_hash": "5e344ec86cb1b87d78d59229875e8ead",
+    "mtime": 1790306708.947788,
+    "seen": 1790306999.3882117,
+    "ast_hash": "7ace2a6d970248b1f5e96777fa053d2f",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_cuadrantes_turnos.sql": {
-    "mtime": 1790219405.9413538,
-    "seen": 1790219481.5875177,
-    "ast_hash": "6fff0b0bb3ae061fd6c0feec67c10f29",
+    "mtime": 1790306821.6337407,
+    "seen": 1790306999.3882222,
+    "ast_hash": "1c32fc328cebeb89e2dc0a14cb1780a1",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_dashboard_administrador.sql": {
-    "mtime": 1789775292.9374404,
-    "seen": 1789775424.0451696,
-    "ast_hash": "eba09c9aa54225bc2e76371c93b21b1b",
+    "mtime": 1790306723.2703502,
+    "seen": 1790306999.3882246,
+    "ast_hash": "87b79d2ed26e688837f8a1657abeb592",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_gestion_familiares.sql": {
-    "mtime": 1790044227.271755,
-    "seen": 1790044894.4238524,
-    "ast_hash": "db8a3df06dbbe842e58db00390490b75",
+    "mtime": 1790306744.6538365,
+    "seen": 1790306999.3882284,
+    "ast_hash": "e64c2fcab310556f2f35223afb39bdf6",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_permisos_ausencias.sql": {
-    "mtime": 1790109204.85664,
-    "seen": 1790109567.264537,
-    "ast_hash": "037ad82ef5a48effae73edbca43bc6f2",
+    "mtime": 1790306777.9614093,
+    "seen": 1790306999.3882303,
+    "ast_hash": "da8f92ae68bab3233e4a180e6fd3860a",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_talento_humano.sql": {
-    "mtime": 1789776101.1159344,
-    "seen": 1789776598.360387,
-    "ast_hash": "b513066b0317b0b25328eb76f89a05f2",
+    "mtime": 1790306763.776357,
+    "seen": 1790306999.3882344,
+    "ast_hash": "c02f8f16a751bda9f995364b8c79e5e4",
     "semantic_hash": ""
   },
   "src/App.tsx": {
-    "mtime": 1790275706.0491598,
-    "seen": 1790275811.1400743,
-    "ast_hash": "ec9a048179db2f4a3a3eceff322a981c",
+    "mtime": 1790305196.1053095,
+    "seen": 1790305502.464885,
+    "ast_hash": "1d265944fc3813d8d8dd325cd28c3edc",
     "semantic_hash": ""
   },
   "src/components/common/ToastNotification.tsx": {
-    "mtime": 1789770890.464016,
-    "seen": 1789772088.272106,
-    "ast_hash": "b29e587d9bf7b99bcf291395f5ab1835",
+    "mtime": 1790305166.2603946,
+    "seen": 1790305502.4649067,
+    "ast_hash": "8993a5d5b96c94f261583354e9500405",
     "semantic_hash": ""
   },
   "src/components/layout/AdminHeader.tsx": {
@@ -2274,9 +2274,9 @@
     "semantic_hash": ""
   },
   "src/components/modals/RegisterResidentModal.tsx": {
-    "mtime": 1790218438.4952934,
-    "seen": 1790218564.1203544,
-    "ast_hash": "da5b41b8d774c87eb7022a48baf6bebd",
+    "mtime": 1790305309.4583206,
+    "seen": 1790305502.4649522,
+    "ast_hash": "0a611ea3a25a859aa1c24311a54b7c07",
     "semantic_hash": ""
   },
   "src/components/modals/RegisterWorkerModal.tsx": {
@@ -2334,9 +2334,9 @@
     "semantic_hash": ""
   },
   "src/context/AdminContext.tsx": {
-    "mtime": 1790219173.3795977,
-    "seen": 1790219481.5878935,
-    "ast_hash": "4b8489432a789e173e2314285fc6b58c",
+    "mtime": 1790306009.3630743,
+    "seen": 1790306262.4998505,
+    "ast_hash": "ecc8b5848e411308280df095762086c8",
     "semantic_hash": ""
   },
   "src/data/seedData.ts": {
@@ -2352,9 +2352,9 @@
     "semantic_hash": ""
   },
   "src/services/api.ts": {
-    "mtime": 1790219004.8231273,
-    "seen": 1790219481.5879002,
-    "ast_hash": "a83b9b260e2ffc093f71273f1446dcac",
+    "mtime": 1790305994.975391,
+    "seen": 1790306262.499877,
+    "ast_hash": "16dfa1460c1aa7d07463c3595a9e5b89",
     "semantic_hash": ""
   },
   "src/types/index.ts": {
@@ -2376,9 +2376,9 @@
     "semantic_hash": ""
   },
   "vite.config.ts": {
-    "mtime": 1790275604.8426964,
-    "seen": 1790275811.1404786,
-    "ast_hash": "c485b346b6dac345af9f5968786b84b1",
+    "mtime": 1790277679.5311737,
+    "seen": 1790305502.4650884,
+    "ast_hash": "91e2e51df0e40face0ba12cf72334406",
     "semantic_hash": ""
   },
   "index.html": {
@@ -2514,9 +2514,9 @@
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgln_dotacion_residentes.sql": {
-    "mtime": 1790126919.261911,
-    "seen": 1790127533.6956904,
-    "ast_hash": "96bf95feb53714e101d2a3884e83491d",
+    "mtime": 1790306801.3522997,
+    "seen": 1790306999.3882263,
+    "ast_hash": "56df77bb0f4fe80e646ace9a87ee7414",
     "semantic_hash": ""
   },
   "backend/db/scripts/pkgsmy_dotacion_catalogo_dao.sql": {
@@ -2568,9 +2568,15 @@
     "semantic_hash": ""
   },
   "src/services/aiService.ts": {
-    "mtime": 1790277078.2791798,
-    "seen": 1790277347.1886902,
-    "ast_hash": "db9d038f506847e3f5d9913e6e3d6ada",
+    "mtime": 1790277575.827787,
+    "seen": 1790305502.465052,
+    "ast_hash": "7bb16092430ad7ad245c29ace489c1f0",
+    "semantic_hash": ""
+  },
+  "src/components/common/SamanyaAlertModal.tsx": {
+    "mtime": 1790305132.968686,
+    "seen": 1790305502.4649026,
+    "ast_hash": "4266cdeed7d1337423440a1c00df15ff",
     "semantic_hash": ""
   }
 }

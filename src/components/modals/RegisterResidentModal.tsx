@@ -6,6 +6,7 @@ import {
   HeartHandshake,
   Stethoscope,
   AlertTriangle,
+  AlertCircle,
   Camera,
   Pill,
   Plus,
@@ -17,11 +18,20 @@ import { MedicamentoPrescrito } from '../../types';
 import { obtenerIniciales } from '../../utils/avatarUtils';
 
 export const RegisterResidentModal: React.FC = () => {
-  const { isRegisterResidentOpen, setIsRegisterResidentOpen, registrarResidente, activeSede, catalogoDotacion } = useAdmin();
+  const {
+    isRegisterResidentOpen,
+    setIsRegisterResidentOpen,
+    registrarResidente,
+    activeSede,
+    catalogoDotacion,
+    showAlert,
+    showToast
+  } = useAdmin();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fotoPreview, setFotoPreview] = useState<string | undefined>(undefined);
+  const [errorMensaje, setErrorMensaje] = useState<string | null>(null);
 
   // Lista de Dotación de Ingreso (Catálogo Sugerido + Personalización)
   const [itemsDotacion, setItemsDotacion] = useState<
@@ -99,7 +109,11 @@ export const RegisterResidentModal: React.FC = () => {
 
   const handleAgregarMedicamento = () => {
     if (!nuevoMed.medicamento.trim() || !nuevoMed.cantidad.trim() || !nuevoMed.frecuencia.trim()) {
-      alert('Por favor ingrese el nombre del medicamento, la cantidad/dosis y la frecuencia.');
+      showAlert(
+        'Por favor ingrese el nombre del medicamento, la dosis/cantidad y la frecuencia de administración.',
+        'Medicamento Incompleto',
+        'warning'
+      );
       return;
     }
     setMedicamentos((prev) => [...prev, { ...nuevoMed }]);
@@ -118,8 +132,24 @@ export const RegisterResidentModal: React.FC = () => {
 
   const validarPaso = (pasoActual: number): boolean => {
     if (pasoActual === 1) {
-      if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.identificacion.trim() || !formData.habitacion.trim()) {
-        alert('Por favor complete los campos obligatorios del residente (Nombres, Apellidos, Identificación y Habitación).');
+      if (!formData.nombres.trim() || !formData.apellidos.trim() || !formData.identificacion.trim()) {
+        showAlert(
+          'Por favor complete los campos obligatorios del residente:\n• Nombres\n• Apellidos\n• Número de Documento',
+          'Datos Personales Requeridos',
+          'warning'
+        );
+        setErrorMensaje('Complete los campos obligatorios del residente (Nombres, Apellidos y Documento).');
+        return false;
+      }
+    }
+    if (pasoActual === 2) {
+      if (!formData.habitacion.trim()) {
+        showAlert(
+          'Por favor asigne la habitación correspondiente al residente en la sede.',
+          'Habitación Requerida',
+          'warning'
+        );
+        setErrorMensaje('Por favor ingrese la Habitación Asignada antes de continuar.');
         return false;
       }
     }
@@ -133,29 +163,35 @@ export const RegisterResidentModal: React.FC = () => {
       );
       if (tieneDatos) {
         if (!formData.acudienteNombres.trim()) {
-          alert('Por favor complete los nombres del acudiente responsable.');
+          showAlert('Por favor complete los nombres del acudiente responsable o desmarque la opción.', 'Acudiente Responsable', 'warning');
+          setErrorMensaje('Complete los nombres del acudiente responsable.');
           return false;
         }
         if (!formData.acudienteTelefono.trim()) {
-          alert('Por favor complete el teléfono de contacto del acudiente responsable.');
+          showAlert('Por favor complete el teléfono o WhatsApp de contacto del acudiente responsable.', 'Acudiente Responsable', 'warning');
+          setErrorMensaje('Complete el teléfono de contacto del acudiente.');
           return false;
         }
         if (!formData.acudienteEmail.trim()) {
-          alert('El correo electrónico del acudiente es obligatorio para su registro en el sistema y acceso al portal.');
+          showAlert('El correo electrónico del acudiente es obligatorio para su vinculación institucional y acceso al portal.', 'Acudiente Responsable', 'warning');
+          setErrorMensaje('El correo electrónico del acudiente es obligatorio.');
           return false;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.acudienteEmail.trim())) {
-          alert('Por favor ingrese un correo electrónico válido para el acudiente (ej. nombre@dominio.com).');
+          showAlert('Por favor ingrese un correo electrónico válido para el acudiente (ej. nombre@dominio.com).', 'Correo Inválido', 'warning');
+          setErrorMensaje('El correo del acudiente no tiene un formato válido.');
           return false;
         }
       }
     }
+    setErrorMensaje(null);
     return true;
   };
 
   const handleNextStep = () => {
     if (!validarPaso(step)) return;
+    setErrorMensaje(null);
     setStep((prev) => ((prev < 5 ? prev + 1 : prev) as any));
   };
 
@@ -163,14 +199,31 @@ export const RegisterResidentModal: React.FC = () => {
     if (targetStep > step) {
       if (!validarPaso(step)) return;
     }
+    setErrorMensaje(null);
     setStep(targetStep as any);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.nombres?.trim() || !formData.apellidos?.trim() || !formData.identificacion?.trim() || !formData.habitacion?.trim()) {
-      alert('Por favor complete los campos obligatorios del residente (Nombres, Apellidos, Identificación y Habitación).');
+    if (!formData.nombres?.trim() || !formData.apellidos?.trim() || !formData.identificacion?.trim()) {
+      showAlert(
+        'Por favor complete los datos obligatorios del residente en el Paso 1 (Nombres, Apellidos y Documento).',
+        'Datos Obligatorios Requeridos',
+        'warning'
+      );
+      setErrorMensaje('Por favor complete Nombres, Apellidos y Documento.');
       setStep(1);
+      return;
+    }
+
+    if (!formData.habitacion?.trim()) {
+      showAlert(
+        'Por favor asigne la habitación del residente en el Paso 2 (Cuidado & Dieta).',
+        'Habitación Asignada Requerida',
+        'warning'
+      );
+      setErrorMensaje('Por favor asigne la habitación del residente.');
+      setStep(2);
       return;
     }
 
@@ -184,23 +237,27 @@ export const RegisterResidentModal: React.FC = () => {
       );
       if (tieneDatos) {
         if (!formData.acudienteNombres.trim()) {
-          alert('Por favor ingrese los nombres del acudiente responsable o desmarque la casilla.');
+          showAlert('Por favor ingrese los nombres del acudiente responsable o desmarque la casilla.', 'Acudiente Responsable', 'warning');
+          setErrorMensaje('Complete los nombres del acudiente responsable.');
           setStep(4);
           return;
         }
         if (!formData.acudienteTelefono.trim()) {
-          alert('Por favor ingrese el teléfono / WhatsApp del acudiente.');
+          showAlert('Por favor ingrese el teléfono / WhatsApp de contacto del acudiente.', 'Acudiente Responsable', 'warning');
+          setErrorMensaje('Complete el teléfono del acudiente.');
           setStep(4);
           return;
         }
         if (!formData.acudienteEmail.trim()) {
-          alert('El correo electrónico del acudiente es obligatorio (requerido por el sistema).');
+          showAlert('El correo electrónico del acudiente es obligatorio para su vinculación en el sistema.', 'Acudiente Responsable', 'warning');
+          setErrorMensaje('El correo electrónico del acudiente es obligatorio.');
           setStep(4);
           return;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.acudienteEmail.trim())) {
-          alert('Por favor ingrese un correo electrónico válido para el acudiente (ej. nombre@dominio.com).');
+          showAlert('Por favor ingrese un correo electrónico válido para el acudiente (ej. nombre@dominio.com).', 'Correo Inválido', 'warning');
+          setErrorMensaje('El correo del acudiente no es válido.');
           setStep(4);
           return;
         }
@@ -292,7 +349,11 @@ export const RegisterResidentModal: React.FC = () => {
       setStep(1);
     } catch (err: any) {
       console.warn('[RegisterResidentModal] El registro no pudo completarse en Oracle:', err);
-      alert(`No fue posible completar el registro del residente:\n${err.message || 'Error en la base de datos'}`);
+      showAlert(
+        `No fue posible completar el registro del residente:\n\n${err.message || 'Error en la base de datos'}`,
+        'Error en Registro',
+        'alert'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -392,6 +453,23 @@ export const RegisterResidentModal: React.FC = () => {
             </span>
           </button>
         </div>
+
+        {/* Banner de alerta de validación contextual */}
+        {errorMensaje && (
+          <div className="mx-6 mt-3 p-3 bg-[#FBE8E6] border border-[#A4453A]/30 rounded-2xl flex items-center justify-between text-[#6B241C] text-xs font-semibold animate-in fade-in slide-in-from-top-1 duration-150">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-[#A4453A] shrink-0" />
+              <span>{errorMensaje}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setErrorMensaje(null)}
+              className="text-[#A4453A] hover:text-[#6B241C] p-1 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto flex-1 space-y-4">
@@ -1082,7 +1160,7 @@ export const RegisterResidentModal: React.FC = () => {
                       type="button"
                       onClick={() => {
                         if (!nuevoItemDotacion.nombreElemento.trim()) {
-                          alert('Ingrese el nombre del artículo.');
+                          showAlert('Por favor ingrese el nombre del artículo antes de agregarlo.', 'Artículo Requerido', 'warning');
                           return;
                         }
                         setItemsDotacion((prev) => [

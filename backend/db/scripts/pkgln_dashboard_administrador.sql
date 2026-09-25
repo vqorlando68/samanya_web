@@ -76,7 +76,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_DASHBOARD_ADMINISTRADOR';
             vro_error.nombre_metodo   := 'F_OBTENER_RESUMEN_JSON';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END f_obtener_resumen_json;
@@ -103,7 +103,7 @@ AS
             END IF;
             vro_error.nombre_programa := 'PKGLN_DASHBOARD_ADMINISTRADOR';
             vro_error.nombre_metodo   := 'PR_CONSULTAR_ALERTAS_PRIORITARIAS';
-            vro_error.parametros      := SUBSTR(pcl_json, 1, 4000);
+            vro_error.parametros      := pcl_json;
             uti_ge_excepciones_pkg.p_grabar_log(vro_error);
             RAISE_APPLICATION_ERROR(-20000, 'Se presento un error comunicarse con soporte. Número error: ' || vro_error.id || ' - ' || SQLERRM);
     END pr_consultar_alertas_prioritarias;
